@@ -1,4 +1,4 @@
-var generateData = function(amount) {
+var generateData = function (amount) {
   var result = [];
   var data = {
     coin: "100",

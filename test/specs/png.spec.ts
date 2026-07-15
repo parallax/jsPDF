@@ -401,7 +401,7 @@ describe("Module: PNGSupport", () => {
   describe("more PNGs", () => {
     beforeAll(loadGlobals);
 
-    function runTest(fileName, compression) {
+    function runTest(fileName: string, compression: "NONE" | "MEDIUM") {
       const testName = fileName.replace(/\.png$/i, "");
       const pngData = loadBinaryResource("reference/images/" + fileName);
       const doc = new jsPDF({

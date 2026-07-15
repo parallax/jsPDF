@@ -5,7 +5,7 @@
 
 describe("Module: addimage Uint8Array", () => {
   beforeAll(loadGlobals);
-  function convertDataURIToArrayBuffer(dataURI) {
+  function convertDataURIToArrayBuffer(dataURI: string) {
     var BASE64_MARKER = ";base64,";
     var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
     var base64 = dataURI.substring(base64Index);

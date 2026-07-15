@@ -32,7 +32,7 @@ declare module "../types.js" {
  * @name jpeg_support
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -50,7 +50,7 @@ declare module "../types.js" {
   //takes a string imgData containing the raw bytes of
   //a jpeg image and returns [width, height]
   //Algorithm from: http://www.64lines.com/jpeg-width-height
-  var getJpegInfo = function(imgData: string) {
+  var getJpegInfo = function (imgData: string) {
     var width, height, numcomponents;
     var blockLength = imgData.charCodeAt(4) * 256 + imgData.charCodeAt(5);
     var len = imgData.length;
@@ -74,7 +74,7 @@ declare module "../types.js" {
   /**
    * @ignore
    */
-  jsPDFAPI.processJPEG = function(
+  jsPDFAPI.processJPEG = function (
     this: jsPDFDocument,
     data: string | ArrayBuffer | ImageTypedArray,
     index?: number,

@@ -14,19 +14,19 @@ describe("Lib: FileSaver", () => {
   });
 
   describe("saving a Blob", () => {
-    let createdAnchors;
-    let createObjectURLSpy;
-    let revokeObjectURLSpy;
+    let createdAnchors: HTMLAnchorElement[];
+    let createObjectURLSpy: jasmine.Spy;
+    let revokeObjectURLSpy: jasmine.Spy;
 
     beforeEach(() => {
       jasmine.clock().install();
 
       createdAnchors = [];
       const originalCreateElement = document.createElement.bind(document);
-      spyOn(document, "createElement").and.callFake(tagName => {
+      spyOn(document, "createElement").and.callFake((tagName: string) => {
         const element = originalCreateElement(tagName);
         if (String(tagName).toLowerCase() === "a") {
-          createdAnchors.push(element);
+          createdAnchors.push(element as HTMLAnchorElement);
         }
         return element;
       });
@@ -92,7 +92,8 @@ describe("Lib: FileSaver", () => {
 
     it("uses the blob's own name property when no name is given", () => {
       const blob = new Blob(["data"], { type: "text/plain" });
-      blob.name = "from-blob.txt";
+      // FileSaver reads an optional non-standard `name` property off the blob.
+      (blob as Blob & { name?: string }).name = "from-blob.txt";
 
       try {
         saveAs(blob);
@@ -118,7 +119,10 @@ describe("Lib: FileSaver", () => {
       // the click is scheduled with setTimeout(..., 0)
       jasmine.clock().tick(1);
       expect(anchor.dispatchEvent).toHaveBeenCalledTimes(1);
-      const event = anchor.dispatchEvent.calls.mostRecent().args[0];
+      // dispatchEvent was replaced with a spy in stubClicks().
+      const event: Event = (
+        anchor.dispatchEvent as unknown as jasmine.Spy
+      ).calls.mostRecent().args[0];
       expect(event.type).toBe("click");
       expect(revokeObjectURLSpy).not.toHaveBeenCalled();
 

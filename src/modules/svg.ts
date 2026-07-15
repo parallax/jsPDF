@@ -75,7 +75,7 @@ declare module "../types.js" {
 
       // @if MODULE_FORMAT!='es'
       if (typeof exports === "object" && typeof module !== "undefined") {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           try {
             resolve(require("canvg"));
           } catch (e) {
@@ -84,7 +84,7 @@ declare module "../types.js" {
         });
       }
       if (typeof define === "function" && define.amd) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           try {
             require(["canvg"], resolve);
           } catch (e) {

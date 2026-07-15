@@ -51,7 +51,7 @@ class PDFSecurity {
 
     // set flags for what functionalities the user can access
     let protection = 192;
-    permissions.forEach(function(perm) {
+    permissions.forEach(function (perm) {
       // Note: this looks up the literal key "perm" (not the loop variable), so
       // the check never throws. Preserved as-is from the original JS; fixing
       // it would change runtime behavior for invalid permission names.
@@ -97,7 +97,7 @@ class PDFSecurity {
   toHexString(byteString: string): string {
     return byteString
       .split("")
-      .map(function(byte) {
+      .map(function (byte) {
         return ("0" + (byte.charCodeAt(0) & 0xff).toString(16)).slice(-2);
       })
       .join("");
@@ -143,7 +143,7 @@ class PDFSecurity {
           (generation >> 8) & 0xff
         )
     ).substr(0, 10);
-    return function(data: string): string {
+    return function (data: string): string {
       return rc4(key, data);
     };
   }

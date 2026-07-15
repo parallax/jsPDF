@@ -178,7 +178,10 @@ break`
   it("should justify custom font", () => {
     const doc = jsPDF({ floatPrecision: 2 });
     var PTSans;
-    if (typeof global === "object" && global.isNode === true) {
+    if (
+      typeof global === "object" &&
+      (global as { isNode?: boolean }).isNode === true
+    ) {
       doc.allowFsRead = ["./test/reference/PTSans.ttf"];
       PTSans = doc.loadFile("./test/reference/PTSans.ttf");
     } else {
@@ -203,7 +206,8 @@ break`
   it("should throw an error if not a string", () => {
     expect(() => {
       const doc = jsPDF({ floatPrecision: 2 });
-      doc.text(10, 10, 43290943);
+      // Deliberately invalid: text must be a string or array (negative test).
+      doc.text(10, 10, 43290943 as unknown as string);
     }).toThrow(
       new Error('Type of text must be string or Array. "10" is not recognized.')
     );

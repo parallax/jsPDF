@@ -188,7 +188,7 @@ class GifWriter {
 
     var ended = false;
 
-    this.addFrame = function(
+    this.addFrame = function (
       x: number,
       y: number,
       w: number,
@@ -307,7 +307,7 @@ class GifWriter {
       return p;
     };
 
-    this.end = function(): number {
+    this.end = function (): number {
       if (ended === false) {
         buf[p++] = 0x3b; // Trailer.
         ended = true;
@@ -315,16 +315,16 @@ class GifWriter {
       return p;
     };
 
-    this.getOutputBuffer = function(): GifBuffer {
+    this.getOutputBuffer = function (): GifBuffer {
       return buf;
     };
-    this.setOutputBuffer = function(v: GifBuffer): void {
+    this.setOutputBuffer = function (v: GifBuffer): void {
       buf = v;
     };
-    this.getOutputBufferPosition = function(): number {
+    this.getOutputBufferPosition = function (): number {
       return p;
     };
-    this.setOutputBufferPosition = function(v: number): void {
+    this.setOutputBufferPosition = function (v: number): void {
       p = v;
     };
   }
@@ -680,21 +680,21 @@ class GifReader {
       }
     }
 
-    this.numFrames = function(): number {
+    this.numFrames = function (): number {
       return frames.length;
     };
 
-    this.loopCount = function(): number | null {
+    this.loopCount = function (): number | null {
       return loop_count;
     };
 
-    this.frameInfo = function(frame_num: number): GifFrameInfo {
+    this.frameInfo = function (frame_num: number): GifFrameInfo {
       if (frame_num < 0 || frame_num >= frames.length)
         throw new Error("Frame index out of range.");
       return frames[frame_num];
     };
 
-    this.decodeAndBlitFrameBGRA = function(
+    this.decodeAndBlitFrameBGRA = function (
       this: GifReader,
       frame_num: number,
       pixels: GifPixelBuffer
@@ -775,7 +775,7 @@ class GifReader {
     };
 
     // I will go to copy and paste hell one day...
-    this.decodeAndBlitFrameRGBA = function(
+    this.decodeAndBlitFrameRGBA = function (
       this: GifReader,
       frame_num: number,
       pixels: GifPixelBuffer

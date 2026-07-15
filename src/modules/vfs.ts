@@ -26,10 +26,10 @@ declare module "../types.js" {
  * @name vFS
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  var _initializeVFS = function(this: jsPDFDocument) {
+  var _initializeVFS = function (this: jsPDFDocument) {
     if (typeof this.internal.vFS === "undefined") {
       this.internal.vFS = {};
     }
@@ -46,7 +46,7 @@ declare module "../types.js" {
    * @example
    * doc.existsFileInVFS("someFile.txt");
    */
-  jsPDFAPI.existsFileInVFS = function(this: jsPDFDocument, filename: string) {
+  jsPDFAPI.existsFileInVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
     return typeof this.internal.vFS[filename] !== "undefined";
   };
@@ -62,7 +62,7 @@ declare module "../types.js" {
    * @example
    * doc.addFileToVFS("someFile.txt", "BADFACE1");
    */
-  jsPDFAPI.addFileToVFS = function(
+  jsPDFAPI.addFileToVFS = function (
     this: jsPDFDocument,
     filename: string,
     filecontent: string
@@ -82,7 +82,7 @@ declare module "../types.js" {
    * @example
    * doc.getFileFromVFS("someFile.txt");
    */
-  jsPDFAPI.getFileFromVFS = function(this: jsPDFDocument, filename: string) {
+  jsPDFAPI.getFileFromVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
 
     if (typeof this.internal.vFS[filename] !== "undefined") {

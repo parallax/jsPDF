@@ -4,16 +4,19 @@
 /**
  * Acroform testing
  */
-describe("Module: Acroform Unit Test", function() {
+describe("Module: Acroform Unit Test", function () {
   beforeAll(loadGlobals);
-  it("setBit", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.setBit("invalid", 1);
+  // Note: the `("invalid" as unknown) as number`-style casts throughout this
+  // file feed deliberately invalid values to negative tests that expect a
+  // throw.
+  it("setBit", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.setBit("invalid" as unknown as number, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.setBit")
     );
-    expect(function() {
-      jsPDF.API.__acroform__.setBit(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.setBit(0, "invalid" as unknown as number);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.setBit")
     );
@@ -22,14 +25,14 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.setBit(0, 2)).toEqual(4);
   });
 
-  it("getBit", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.getBit("invalid", 1);
+  it("getBit", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.getBit("invalid" as unknown as number, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.getBit")
     );
-    expect(function() {
-      jsPDF.API.__acroform__.getBit(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.getBit(0, "invalid" as unknown as number);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.getBit")
     );
@@ -39,14 +42,14 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.getBit(4, 2)).toEqual(1);
   });
 
-  it("clearBit", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.clearBit("invalid", 1);
+  it("clearBit", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.clearBit("invalid" as unknown as number, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.clearBit")
     );
-    expect(function() {
-      jsPDF.API.__acroform__.clearBit(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.clearBit(0, "invalid" as unknown as number);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.clearBit")
     );
@@ -58,16 +61,16 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.clearBit(4, 2)).toEqual(0);
   });
 
-  it("setBitForPdf", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.setBitForPdf("invalid", 1);
+  it("setBitForPdf", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.setBitForPdf("invalid" as unknown as number, 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.setBitForPdf"
       )
     );
-    expect(function() {
-      jsPDF.API.__acroform__.setBitForPdf(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.setBitForPdf(0, "invalid" as unknown as number);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.setBitForPdf"
@@ -78,16 +81,16 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.setBitForPdf(0, 3)).toEqual(4);
   });
 
-  it("getBitForPdf", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.getBitForPdf("invalid", 1);
+  it("getBitForPdf", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.getBitForPdf("invalid" as unknown as number, 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.getBitForPdf"
       )
     );
-    expect(function() {
-      jsPDF.API.__acroform__.getBitForPdf(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.getBitForPdf(0, "invalid" as unknown as number);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.getBitForPdf"
@@ -99,16 +102,16 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.getBitForPdf(4, 3)).toEqual(1);
   });
 
-  it("clearBitForPdf", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.clearBitForPdf("invalid", 1);
+  it("clearBitForPdf", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.clearBitForPdf("invalid" as unknown as number, 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf"
       )
     );
-    expect(function() {
-      jsPDF.API.__acroform__.clearBitForPdf(0, "invalid");
+    expect(function () {
+      jsPDF.API.__acroform__.clearBitForPdf(0, "invalid" as unknown as number);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf"
@@ -122,8 +125,16 @@ describe("Module: Acroform Unit Test", function() {
     expect(jsPDF.API.__acroform__.clearBitForPdf(4, 3)).toEqual(0);
   });
 
-  it("AcroFormField Rect, x, y, width, height", function() {
-    var doc = new jsPDF("p", "pt", "a4");
+  it("AcroFormField Rect, x, y, width, height", function () {
+    // Legacy positional constructor form jsPDF(orientation, unit, format);
+    // still supported at runtime by src/jspdf.ts.
+    var doc = new (
+      jsPDF as unknown as new (
+        orientation?: string,
+        unit?: string,
+        format?: string | number[]
+      ) => ReturnType<typeof jsPDF>
+    )("p", "pt", "a4");
     var textFieldRect = new TextField();
     textFieldRect.Rect = [50, 140, 30, 10];
     // doc.addField(textFieldRect);
@@ -150,7 +161,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(textFieldRect.height).toEqual(0);
   });
 
-  it("AcroFormField value", function() {
+  it("AcroFormField value", function () {
     var formObject = new TextField();
 
     formObject.value = "test1";
@@ -214,7 +225,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(radioGroup.value).toEqual("Test6");
   });
 
-  it("AcroFormField defaultValue", function() {
+  it("AcroFormField defaultValue", function () {
     var formObject = new TextField();
 
     formObject.defaultValue = "test1";
@@ -271,7 +282,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(radioGroup.defaultValue).toEqual("Test6");
   });
 
-  it("AcroFormField AS", function() {
+  it("AcroFormField AS", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -291,7 +302,7 @@ describe("Module: Acroform Unit Test", function() {
 
     expect(radioButton1.AS).toEqual("/Test");
   });
-  it("AcroFormField appearanceState", function() {
+  it("AcroFormField appearanceState", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -317,7 +328,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(radioButton1.appearanceState).toEqual("Test2b");
   });
 
-  it("AcroFormChoiceField getOptions, setOptions, addOption, removeOption", function() {
+  it("AcroFormChoiceField getOptions, setOptions, addOption, removeOption", function () {
     var listbox = new ListBox();
 
     listbox.Opt = "[(c)(a)(d)(f)(b)(s)]"; // classic initialization
@@ -328,10 +339,14 @@ describe("Module: Acroform Unit Test", function() {
     expect(listbox.getOptions()).toEqual(["c", "a", "d", "f", "b", "s", ""]);
 
     listbox.setOptions(["c", "a", "d", "f", "b", "s"]);
-    expect(listbox.getOptions("")).toEqual(["c", "a", "d", "f", "b", "s"]);
+    // getOptions() takes no arguments; the historical spurious "" argument is
+    // kept (and ignored at runtime) via a cast.
+    expect(
+      (listbox.getOptions as unknown as (x?: string) => string[])("")
+    ).toEqual(["c", "a", "d", "f", "b", "s"]);
   });
 
-  it("AcroFormChoiceField sort", function() {
+  it("AcroFormChoiceField sort", function () {
     var listbox = new ListBox();
 
     listbox.Opt = "[(c)(a)(d)(f)(b)(g)]"; // classic initialization
@@ -374,9 +389,11 @@ describe("Module: Acroform Unit Test", function() {
     expect(listbox.Opt).toEqual("[(a) (b) (c) (d) (f) (g)]");
   });
 
-  it("arrayToPdfArray", function() {
-    expect(function() {
-      jsPDF.API.__acroform__.arrayToPdfArray("notAnArray");
+  it("arrayToPdfArray", function () {
+    expect(function () {
+      jsPDF.API.__acroform__.arrayToPdfArray(
+        "notAnArray" as unknown as unknown[]
+      );
     }).toThrow(
       new Error("Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray")
     );
@@ -398,7 +415,7 @@ describe("Module: Acroform Unit Test", function() {
     ).toEqual("[549 3.14 false (Ralph) /SomeName]");
   });
 
-  it("AcroFormField T", function() {
+  it("AcroFormField T", function () {
     var field = new TextField();
     expect(field.T.substr(1, 11)).toEqual("FieldObject");
     field.T = "testname";
@@ -409,28 +426,28 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.fieldName).toEqual("testname");
   });
 
-  it("AcroFormField FT", function() {
+  it("AcroFormField FT", function () {
     var field = new TextField();
 
-    expect(function() {
+    expect(function () {
       field.FT = "Invalid";
     }).toThrow(new Error('Invalid value "Invalid" for attribute FT supplied.'));
-    expect(function() {
+    expect(function () {
       field.FT = "/Btn";
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute FT supplied.')
     );
-    expect(function() {
+    expect(function () {
       field.FT = "/Tx";
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute FT supplied.')
     );
-    expect(function() {
+    expect(function () {
       field.FT = "/Ch";
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute FT supplied.')
     );
-    expect(function() {
+    expect(function () {
       field.FT = "/Sig";
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute FT supplied.')
@@ -440,14 +457,14 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.FT).toEqual("/Tx");
   });
 
-  it("AcroFormTextField Ff", function() {
+  it("AcroFormTextField Ff", function () {
     var field = new TextField();
 
-    expect(function() {
-      field.Ff = "Invalid";
+    expect(function () {
+      field.Ff = "Invalid" as unknown as number;
     }).toThrow(new Error('Invalid value "Invalid" for attribute Ff supplied.'));
-    expect(function() {
-      field.FT = 0;
+    expect(function () {
+      field.FT = 0 as unknown as string;
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute Ff supplied.')
     );
@@ -545,7 +562,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.richText).toEqual(false);
     expect(field.Ff).toEqual(0);
   });
-  it("AcroFormComboBox", function() {
+  it("AcroFormComboBox", function () {
     expect(new ComboBox().combo).toEqual(true);
     var field = new ComboBox();
     expect(field.Ff).toEqual(Math.pow(2, 17));
@@ -588,7 +605,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.commitOnSelChange).toEqual(false);
   });
 
-  it("AcroFormEditBox", function() {
+  it("AcroFormEditBox", function () {
     expect(new EditBox().combo).toEqual(true);
     expect(new EditBox().edit).toEqual(true);
 
@@ -603,7 +620,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.combo).toEqual(true);
     expect(field.edit).toEqual(true);
   });
-  it("AcroFormButton", function() {
+  it("AcroFormButton", function () {
     expect(new Button().FT).toEqual("/Btn");
 
     var field = new Button();
@@ -634,13 +651,13 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.radioIsUnison).toEqual(false);
   });
 
-  it("AcroFormField F", function() {
+  it("AcroFormField F", function () {
     var field = new TextField();
 
-    expect(function() {
-      field.F = "Invalid";
+    expect(function () {
+      field.F = "Invalid" as unknown as number;
     }).toThrow(new Error('Invalid value "Invalid" for attribute F supplied.'));
-    expect(function() {
+    expect(function () {
       field.F = 0;
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute F supplied.')
@@ -655,7 +672,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.F).toEqual(4);
   });
 
-  it("AcroFormCheckBox", function() {
+  it("AcroFormCheckBox", function () {
     var field = new CheckBox();
 
     expect(field.FT).toEqual("/Btn");
@@ -666,7 +683,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.textAlign).toEqual("center");
   });
 
-  it("AcroFormField fontName, fontStyle", function() {
+  it("AcroFormField fontName, fontStyle", function () {
     var field = new TextField();
 
     expect(field.fontName).toEqual("helvetica");
@@ -678,7 +695,7 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.fontStyle).toEqual("bold");
   });
 
-  it("AcroFormField textAlign", function() {
+  it("AcroFormField textAlign", function () {
     var field = new TextField();
 
     expect(field.Q).toEqual(undefined);
@@ -686,36 +703,39 @@ describe("Module: Acroform Unit Test", function() {
     field.textAlign = "left";
     expect(field.textAlign).toEqual("left");
     expect(field.Q).toEqual(0);
-    field.textAlign = 0;
+    // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
+    field.textAlign = 0 as unknown as string;
     expect(field.textAlign).toEqual("left");
     expect(field.Q).toEqual(0);
 
     field.textAlign = "center";
     expect(field.textAlign).toEqual("center");
     expect(field.Q).toEqual(1);
-    field.textAlign = 1;
+    // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
+    field.textAlign = 1 as unknown as string;
     expect(field.textAlign).toEqual("center");
     expect(field.Q).toEqual(1);
 
     field.textAlign = "right";
     expect(field.textAlign).toEqual("right");
     expect(field.Q).toEqual(2);
-    field.textAlign = 2;
+    // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
+    field.textAlign = 2 as unknown as string;
     expect(field.textAlign).toEqual("right");
     expect(field.Q).toEqual(2);
 
-    expect(function() {
-      field.Q = "invalid";
+    expect(function () {
+      field.Q = "invalid" as unknown as number;
     }).toThrow(new Error('Invalid value "invalid" for attribute Q supplied.'));
-    expect(function() {
+    expect(function () {
       field.Q = 3;
     }).toThrow(new Error('Invalid value "3" for attribute Q supplied.'));
-    expect(function() {
+    expect(function () {
       field.Q = 0;
     }).not.toThrow(new Error('Invalid value "0" for attribute Q supplied.'));
   });
 
-  it("addField", function() {
+  it("addField", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -723,30 +743,33 @@ describe("Module: Acroform Unit Test", function() {
       floatPrecision: 2
     });
 
-    expect(function() {
+    expect(function () {
       doc.addField(new TextField());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
+    expect(function () {
       doc.addField(new ChoiceField());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
+    expect(function () {
       doc.addField(new PasswordField());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
+    expect(function () {
       doc.addField(new Button());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
+    expect(function () {
       doc.addField(new PushButton());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
+    expect(function () {
       doc.addField(new ComboBox());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
-      doc.addField(new Object());
+    expect(function () {
+      // Deliberately invalid field object (negative test).
+      doc.addField(
+        new Object() as unknown as Parameters<typeof doc.addField>[0]
+      );
     }).toThrow(new Error("Invalid argument passed to jsPDF.addField."));
   });
 
-  it("addButton", function() {
+  it("addButton", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -754,15 +777,18 @@ describe("Module: Acroform Unit Test", function() {
       floatPrecision: 2
     });
 
-    expect(function() {
+    expect(function () {
       doc.addField(new Button());
     }).not.toThrow(new Error("Invalid argument passed to jsPDF.addField."));
-    expect(function() {
-      doc.addField(new Object());
+    expect(function () {
+      // Deliberately invalid field object (negative test).
+      doc.addField(
+        new Object() as unknown as Parameters<typeof doc.addField>[0]
+      );
     }).toThrow(new Error("Invalid argument passed to jsPDF.addField."));
   });
 
-  it("AcroFormPasswordField", function() {
+  it("AcroFormPasswordField", function () {
     var field = new PasswordField();
 
     expect(field.Ff).toEqual(Math.pow(2, 13));
@@ -774,11 +800,11 @@ describe("Module: Acroform Unit Test", function() {
     expect(field.password).toEqual(true);
     expect(field.Ff).toEqual(Math.pow(2, 13));
   });
-  it("AcroFormPushButton", function() {
+  it("AcroFormPushButton", function () {
     expect(new PushButton().pushButton).toEqual(true);
     expect(new PushButton() instanceof Button).toEqual(true);
   });
-  it("ComboBox TopIndex", function() {
+  it("ComboBox TopIndex", function () {
     var comboBox = new ComboBox();
     expect(comboBox.topIndex).toEqual(0);
     comboBox.topIndex = 1;
@@ -786,9 +812,9 @@ describe("Module: Acroform Unit Test", function() {
   });
 });
 
-describe("Module: Acroform Integration Test", function() {
+describe("Module: Acroform Integration Test", function () {
   beforeAll(loadGlobals);
-  it("ComboBox - old", function() {
+  it("ComboBox - old", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -810,7 +836,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "combobox.pdf", "acroform");
   });
 
-  it("ComboBox - new", function() {
+  it("ComboBox - new", function () {
     var doc = jsPDF({
       orientation: "p",
       unit: "mm",
@@ -836,7 +862,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "combobox.pdf", "acroform");
   });
 
-  it("CheckBox - old", function() {
+  it("CheckBox - old", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -852,7 +878,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "checkbox.pdf", "acroform");
   });
 
-  it("CheckBox - new", function() {
+  it("CheckBox - new", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -868,7 +894,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "checkbox.pdf", "acroform");
   });
 
-  it("ListBox - old", function() {
+  it("ListBox - old", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -889,7 +915,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "listbox.pdf", "acroform");
   });
 
-  it("ListBox - new", function() {
+  it("ListBox - new", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -910,7 +936,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "listbox.pdf", "acroform");
   });
 
-  it("should add a PushButton", function() {
+  it("should add a PushButton", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -926,7 +952,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "pushbutton.pdf", "acroform");
   });
 
-  it("should add a TextField", function() {
+  it("should add a TextField", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -946,7 +972,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "textfield.pdf", "acroform");
   });
 
-  it("should add a TextField: var. 2", function() {
+  it("should add a TextField: var. 2", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -966,7 +992,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "textfield.pdf", "acroform");
   });
 
-  it("should add a Password", function() {
+  it("should add a Password", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -981,7 +1007,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "password.pdf", "acroform");
   });
 
-  it("Check multiline text", function() {
+  it("Check multiline text", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -999,7 +1025,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "textfieldMultiline.pdf", "acroform");
   });
 
-  it("Check multiline text in small form", function() {
+  it("Check multiline text in small form", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -1017,7 +1043,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "textfieldMultilineSmallForm.pdf", "acroform");
   });
 
-  it("should add a RadioGroup Cross", function() {
+  it("should add a RadioGroup Cross", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -1048,7 +1074,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "radiogroup.pdf", "acroform");
   });
 
-  it("should add a RadioGroup Circle", function() {
+  it("should add a RadioGroup Circle", function () {
     var doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -1079,7 +1105,7 @@ describe("Module: Acroform Integration Test", function() {
   });
 
   //fix for issue #1783
-  it("acroform and annotations", function() {
+  it("acroform and annotations", function () {
     var doc = jsPDF({ floatPrecision: 2 });
 
     //index items
@@ -1104,7 +1130,7 @@ describe("Module: Acroform Integration Test", function() {
     comparePdf(doc.output(), "with_annotations.pdf", "acroform");
   });
 
-  it("should export all needed Classes", function() {
+  it("should export all needed Classes", function () {
     expect(jsPDF.API.AcroForm.Appearance);
     expect(jsPDF.API.AcroForm.CheckBox);
     expect(jsPDF.API.AcroForm.Button);
@@ -1128,8 +1154,8 @@ describe("Module: Acroform Integration Test", function() {
     expect(jsPDF.API.AcroFormRadioButton);
     expect(jsPDF.API.AcroFormTextField);
   });
-  describe("Security: PDF Injection Prevention", function() {
-    it("should escape malicious characters in ChoiceField options", function() {
+  describe("Security: PDF Injection Prevention", function () {
+    it("should escape malicious characters in ChoiceField options", function () {
       const doc = new jsPDF();
       const field = new doc.AcroFormChoiceField();
       const maliciousInput = "/dummy] /AA << /JS (app.alert(1)) >> [";
@@ -1143,7 +1169,7 @@ describe("Module: Acroform Integration Test", function() {
       expect(output).toContain("/dummy#5D");
     });
 
-    it("should escape appearanceState in CheckBox", function() {
+    it("should escape appearanceState in CheckBox", function () {
       const doc = new jsPDF();
       const field = new doc.AcroFormCheckBox();
       field.x = 0;
@@ -1161,7 +1187,7 @@ describe("Module: Acroform Integration Test", function() {
       expect(output).toContain("#2FAA");
     });
 
-    it("should escape appearanceState in RadioButton", function() {
+    it("should escape appearanceState in RadioButton", function () {
       const doc = new jsPDF();
       const field = new doc.AcroFormRadioButton();
       const maliciousInput = "Off /AA << >>";
@@ -1174,10 +1200,13 @@ describe("Module: Acroform Integration Test", function() {
       expect(output).not.toContain("/AA <<");
       expect(output).toContain("#2FAA");
     });
-    it("escapes malicious input in CheckBox AS", function() {
+    it("escapes malicious input in CheckBox AS", function () {
       var doc = new jsPDF();
       var field = new doc.AcroFormCheckBox();
-      field.x = 10; field.y = 10; field.width = 20; field.height = 10;
+      field.x = 10;
+      field.y = 10;
+      field.width = 20;
+      field.height = 10;
       doc.addField(field);
 
       field.AS = "/Off /AA << /E << /S /JavaScript /JS (app.alert(1)) >> >>";
@@ -1187,15 +1216,22 @@ describe("Module: Acroform Integration Test", function() {
       expect(field.AS).toContain("#2FAA");
     });
 
-    it("escapes malicious input in RadioButton child appearanceState", function() {
+    it("escapes malicious input in RadioButton child appearanceState", function () {
       var doc = new jsPDF();
       var group = new doc.AcroFormRadioButton();
-      group.x = 10; group.y = 10; group.width = 20; group.height = 10;
+      group.x = 10;
+      group.y = 10;
+      group.width = 20;
+      group.height = 10;
       doc.addField(group);
 
       var child = group.createOption("opt1");
-      child.x = 10; child.y = 10; child.width = 20; child.height = 10;
-      child.appearanceState = "Off /AA << /E << /S /JavaScript /JS (app.alert(1)) >> >>";
+      child.x = 10;
+      child.y = 10;
+      child.width = 20;
+      child.height = 10;
+      child.appearanceState =
+        "Off /AA << /E << /S /JavaScript /JS (app.alert(1)) >> >>";
 
       var output = doc.output();
       expect(output).not.toContain("/AA << /E << /S /JavaScript");

@@ -1,5 +1,13 @@
 /* global describe, it, jsPDF, expect */
 
+/**
+ * Minimal view of Node's `process` used by the Node-only specs below
+ * (@types/node is not part of the test compilation).
+ */
+declare const process: {
+  permission?: { has(perm: string, url?: string): boolean };
+};
+
 describe("Module: FileLoad", () => {
   beforeAll(loadGlobals);
   var successURL =
@@ -29,10 +37,13 @@ describe("Module: FileLoad", () => {
     if (typeof isNode !== "undefined" && isNode) {
       doc.allowFsRead = [successURL];
     }
-    doc.loadFile(successURL, false, function(data) {
+    // The declared callback type requires a string return, but the runtime
+    // ignores the callback's return value (LoadFileCallback in
+    // src/modules/fileloading.ts), so the void callback is safe.
+    doc.loadFile(successURL, false, function (data?: string) {
       expect(data).toEqual("success");
       done();
-    });
+    } as unknown as (data: string) => string);
   });
 
   it("should fail to load a file (async)", done => {
@@ -40,10 +51,11 @@ describe("Module: FileLoad", () => {
     if (typeof isNode !== "undefined" && isNode) {
       doc.allowFsRead = ["fail.txt"];
     }
-    doc.loadFile("fail.txt", false, function(data) {
+    // See the cast note in the async success spec above.
+    doc.loadFile("fail.txt", false, function (data?: string) {
       expect(data).toEqual(undefined);
       done();
-    });
+    } as unknown as (data: string) => string);
   });
 });
 
@@ -52,7 +64,7 @@ if (typeof isNode !== "undefined" && isNode) {
 
   describe("Module: FileLoad (Node permissions)", () => {
     const absSuccess = path.resolve("./test/reference/success.txt");
-    let originalPermission;
+    let originalPermission: typeof process.permission;
 
     beforeEach(() => {
       originalPermission = process.permission;

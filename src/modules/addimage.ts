@@ -59,11 +59,7 @@ export type ImageCompression = "NONE" | "FAST" | "MEDIUM" | "SLOW";
 
 /** Everything `addImage` accepts as its imageData argument. */
 export type ImageInput =
-  | string
-  | HTMLImageElement
-  | HTMLCanvasElement
-  | Uint8Array
-  | RGBAData;
+  string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData;
 
 /** Options-object form of `addImage` (adapted from types/index.d.ts). */
 export interface ImageOptions {
@@ -126,9 +122,12 @@ export interface AddImageNamespace {
     imageData: ImageInput | ImageTypedArray | ArrayBuffer,
     fallbackFormat?: string
   ): string;
-  sHashCode(data: string | ImageTypedArray): number;
-  validateStringAsBase64(possibleBase64String: string): boolean;
-  extractImageFromDataUrl(dataUrl: string | null): string | null;
+  /** `data` is optional at runtime: absent/unrecognized input hashes to 0. */
+  sHashCode(data?: string | ImageTypedArray): number;
+  /** Called without an argument, validates the empty string (returns false). */
+  validateStringAsBase64(possibleBase64String?: string): boolean;
+  /** Returns null for absent or non-data-URL input. */
+  extractImageFromDataUrl(dataUrl?: string | null): string | null;
   isArrayBuffer(object: unknown): object is ArrayBuffer;
   isArrayBufferView(object: unknown): object is ImageTypedArray;
   binaryStringToUint8Array(binary_string: string): Uint8Array;
@@ -147,8 +146,8 @@ declare module "../types.js" {
       format: string,
       x: number,
       y: number,
-      w: number,
-      h: number,
+      w?: number,
+      h?: number,
       alias?: string,
       compression?: ImageCompression,
       rotation?: number
@@ -157,8 +156,8 @@ declare module "../types.js" {
       imageData: ImageInput,
       x: number,
       y: number,
-      w: number,
-      h: number,
+      w?: number,
+      h?: number,
       alias?: string,
       compression?: ImageCompression,
       rotation?: number
@@ -176,7 +175,7 @@ declare module "../types.js" {
   }
 }
 
-(function(jsPDFAPI: jsPDFAPIType) {
+(function (jsPDFAPI: jsPDFAPIType) {
   "use strict";
 
   var namespace = "addImage_";
@@ -269,81 +268,84 @@ declare module "../types.js" {
    *
    * @returns {string} filetype of Image
    */
-  var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function(
-    imageData: ImageInput | ImageTypedArray | ArrayBuffer,
-    fallbackFormat?: string
-  ) {
-    fallbackFormat = fallbackFormat || UNKNOWN;
-    var i;
-    var j;
-    var result = UNKNOWN;
-    var headerSchemata;
-    var compareResult;
-    var fileType;
-
-    // Duck-typed RGBA check, mirroring the legacy untyped behavior (a string
-    // or typed array simply has no `data` member).
-    var imageDataAsRGBA = imageData as RGBAData;
-    if (
-      fallbackFormat === "RGBA" ||
-      (imageDataAsRGBA.data !== undefined &&
-        imageDataAsRGBA.data instanceof Uint8ClampedArray &&
-        "height" in imageDataAsRGBA &&
-        "width" in imageDataAsRGBA)
+  var getImageFileTypeByImageData =
+    (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function (
+      imageData: ImageInput | ImageTypedArray | ArrayBuffer,
+      fallbackFormat?: string
     ) {
-      return "RGBA";
-    }
+      fallbackFormat = fallbackFormat || UNKNOWN;
+      var i;
+      var j;
+      var result = UNKNOWN;
+      var headerSchemata;
+      var compareResult;
+      var fileType;
 
-    if (isArrayBufferView(imageData)) {
-      for (fileType in imageFileTypeHeaders) {
-        headerSchemata = imageFileTypeHeaders[fileType];
-        for (i = 0; i < headerSchemata.length; i += 1) {
-          compareResult = true;
-          for (j = 0; j < headerSchemata[i].length; j += 1) {
-            if (headerSchemata[i][j] === undefined) {
-              continue;
+      // Duck-typed RGBA check, mirroring the legacy untyped behavior (a string
+      // or typed array simply has no `data` member).
+      var imageDataAsRGBA = imageData as RGBAData;
+      if (
+        fallbackFormat === "RGBA" ||
+        (imageDataAsRGBA.data !== undefined &&
+          imageDataAsRGBA.data instanceof Uint8ClampedArray &&
+          "height" in imageDataAsRGBA &&
+          "width" in imageDataAsRGBA)
+      ) {
+        return "RGBA";
+      }
+
+      if (isArrayBufferView(imageData)) {
+        for (fileType in imageFileTypeHeaders) {
+          headerSchemata = imageFileTypeHeaders[fileType];
+          for (i = 0; i < headerSchemata.length; i += 1) {
+            compareResult = true;
+            for (j = 0; j < headerSchemata[i].length; j += 1) {
+              if (headerSchemata[i][j] === undefined) {
+                continue;
+              }
+              if (headerSchemata[i][j] !== imageData[j]) {
+                compareResult = false;
+                break;
+              }
             }
-            if (headerSchemata[i][j] !== imageData[j]) {
-              compareResult = false;
+            if (compareResult === true) {
+              result = fileType;
               break;
             }
           }
-          if (compareResult === true) {
-            result = fileType;
-            break;
-          }
         }
-      }
-    } else {
-      for (fileType in imageFileTypeHeaders) {
-        headerSchemata = imageFileTypeHeaders[fileType];
-        for (i = 0; i < headerSchemata.length; i += 1) {
-          compareResult = true;
-          for (j = 0; j < headerSchemata[i].length; j += 1) {
-            if (headerSchemata[i][j] === undefined) {
-              continue;
+      } else {
+        for (fileType in imageFileTypeHeaders) {
+          headerSchemata = imageFileTypeHeaders[fileType];
+          for (i = 0; i < headerSchemata.length; i += 1) {
+            compareResult = true;
+            for (j = 0; j < headerSchemata[i].length; j += 1) {
+              if (headerSchemata[i][j] === undefined) {
+                continue;
+              }
+              if (
+                headerSchemata[i][j] !== (imageData as string).charCodeAt(j)
+              ) {
+                compareResult = false;
+                break;
+              }
             }
-            if (headerSchemata[i][j] !== (imageData as string).charCodeAt(j)) {
-              compareResult = false;
+            if (compareResult === true) {
+              result = fileType;
               break;
             }
           }
-          if (compareResult === true) {
-            result = fileType;
-            break;
-          }
         }
       }
-    }
 
-    if (result === UNKNOWN && fallbackFormat !== UNKNOWN) {
-      result = fallbackFormat;
-    }
-    return result;
-  });
+      if (result === UNKNOWN && fallbackFormat !== UNKNOWN) {
+        result = fallbackFormat;
+      }
+      return result;
+    });
 
   // Image functionality ported from pdf.js
-  var putImage = function(this: jsPDFDocument, image: ImageProperties) {
+  var putImage = function (this: jsPDFDocument, image: ImageProperties) {
     var out = this.internal.write;
     var putStream = this.internal.putStream;
     var getFilters = this.internal.getFilters;
@@ -355,7 +357,8 @@ declare module "../types.js" {
 
     image.objectId = this.internal.newObject();
 
-    var additionalKeyValues: Array<{ key: string; value: string | number }> = [];
+    var additionalKeyValues: Array<{ key: string; value: string | number }> =
+      [];
     additionalKeyValues.push({ key: "Type", value: "/XObject" });
     additionalKeyValues.push({ key: "Subtype", value: "/Image" });
     additionalKeyValues.push({ key: "Width", value: image.width });
@@ -462,18 +465,20 @@ declare module "../types.js" {
       out("endobj");
     }
   };
-  var putResourcesCallback = function(this: jsPDFDocument) {
-    var images = this.internal.collections[
-      namespace + "images"
-    ] as Record<string, ImageProperties>;
+  var putResourcesCallback = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     for (var i in images) {
       putImage.call(this, images[i]);
     }
   };
-  var putXObjectsDictCallback = function(this: jsPDFDocument) {
-    var images = this.internal.collections[
-        namespace + "images"
-      ] as Record<string, ImageProperties>,
+  var putXObjectsDictCallback = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+        string,
+        ImageProperties
+      >,
       out = this.internal.write,
       image;
     for (var i in images) {
@@ -482,14 +487,14 @@ declare module "../types.js" {
     }
   };
 
-  var checkCompressValue = function(value?: string): ImageCompression {
+  var checkCompressValue = function (value?: string): ImageCompression {
     if (value && typeof value === "string") value = value.toUpperCase();
     return typeof value === "string" && value in jsPDFAPI.image_compression
       ? (value as ImageCompression)
       : image_compression.NONE;
   };
 
-  var initialize = function(this: jsPDFDocument) {
+  var initialize = function (this: jsPDFDocument) {
     if (!this.internal.collections[namespace + "images"]) {
       this.internal.collections[namespace + "images"] = {};
       this.internal.events.subscribe("putResources", putResourcesCallback);
@@ -497,24 +502,25 @@ declare module "../types.js" {
     }
   };
 
-  var getImages = function(this: jsPDFDocument) {
-    var images = this.internal.collections[
-      namespace + "images"
-    ] as Record<string, ImageProperties>;
+  var getImages = function (this: jsPDFDocument) {
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     initialize.call(this);
     return images;
   };
-  var getImageIndex = function(this: jsPDFDocument) {
+  var getImageIndex = function (this: jsPDFDocument) {
     return Object.keys(this.internal.collections[namespace + "images"]).length;
   };
-  var notDefined = function(value?: string | number | null) {
+  var notDefined = function (value?: string | number | null) {
     return (
       typeof value === "undefined" ||
       value === null ||
       (value as string).length === 0
     );
   };
-  var generateAliasFromImageData = function(
+  var generateAliasFromImageData = function (
     imageData: ImageInput | ImageTypedArray
   ) {
     if (typeof imageData === "string" || isArrayBufferView(imageData)) {
@@ -526,7 +532,7 @@ declare module "../types.js" {
     return null;
   };
 
-  var isImageTypeSupported = function(type: string) {
+  var isImageTypeSupported = function (type: string) {
     return (
       // Dynamic plugin dispatch: the processXXX methods are contributed by
       // the individual image-format plugins.
@@ -536,13 +542,11 @@ declare module "../types.js" {
     );
   };
 
-  var isDOMElement = function(object: unknown): object is HTMLElement {
-    return (
-      typeof object === "object" && (object as HTMLElement).nodeType === 1
-    );
+  var isDOMElement = function (object: unknown): object is HTMLElement {
+    return typeof object === "object" && (object as HTMLElement).nodeType === 1;
   };
 
-  var getImageDataFromElement = function(
+  var getImageDataFromElement = function (
     element: HTMLElement,
     format?: string
   ): string {
@@ -552,11 +556,7 @@ declare module "../types.js" {
 
       //is base64 encoded dataUrl, directly process it
       if (src.indexOf("data:image/") === 0) {
-        return atob(
-          unescape(src)
-            .split("base64,")
-            .pop()
-        );
+        return atob(unescape(src).split("base64,").pop());
       }
 
       //it is probably an url, try to load it
@@ -590,22 +590,18 @@ declare module "../types.js" {
           mimeType = "image/jpeg";
           break;
       }
-      return atob(
-        canvas
-          .toDataURL(mimeType, 1.0)
-          .split("base64,")
-          .pop()
-      );
+      return atob(canvas.toDataURL(mimeType, 1.0).split("base64,").pop());
     }
   };
 
-  var checkImagesForAlias = function(
+  var checkImagesForAlias = function (
     this: jsPDFDocument,
     alias: number | string
   ): ImageProperties | undefined {
-    var images = this.internal.collections[
-      namespace + "images"
-    ] as Record<string, ImageProperties>;
+    var images = this.internal.collections[namespace + "images"] as Record<
+      string,
+      ImageProperties
+    >;
     if (images) {
       for (var e in images) {
         if (alias === images[e].alias) {
@@ -615,7 +611,7 @@ declare module "../types.js" {
     }
   };
 
-  var determineWidthAndHeight = function(
+  var determineWidthAndHeight = function (
     this: jsPDFDocument,
     width: number,
     height: number,
@@ -641,7 +637,7 @@ declare module "../types.js" {
     return [width, height];
   };
 
-  var writeImageToPDF = function(
+  var writeImageToPDF = function (
     this: jsPDFDocument,
     x: number,
     y: number,
@@ -665,7 +661,7 @@ declare module "../types.js" {
       var c = Math.cos(rotation);
       var s = Math.sin(rotation);
       //like in pdf Reference do it 4 digits instead of 2
-      var f4 = function(number: number) {
+      var f4 = function (number: number) {
         return number.toFixed(4);
       };
       var rotationTransformationMatrix: Array<string | number> = [
@@ -758,8 +754,8 @@ declare module "../types.js" {
    * @param {string} data
    * @returns {string}
    */
-  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function(
-    data: string | ImageTypedArray
+  var sHashCode = (jsPDFAPI.__addimage__.sHashCode = function (
+    data?: string | ImageTypedArray
   ) {
     var hash = 0,
       i,
@@ -791,39 +787,38 @@ declare module "../types.js" {
    *
    * @returns {boolean}
    */
-  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 = function(
-    possibleBase64String: string
-  ) {
-    possibleBase64String = possibleBase64String || "";
-    possibleBase64String.toString().trim();
+  var validateStringAsBase64 = (jsPDFAPI.__addimage__.validateStringAsBase64 =
+    function (possibleBase64String?: string) {
+      possibleBase64String = possibleBase64String || "";
+      possibleBase64String.toString().trim();
 
-    var result = true;
+      var result = true;
 
-    if (possibleBase64String.length === 0) {
-      result = false;
-    }
+      if (possibleBase64String.length === 0) {
+        result = false;
+      }
 
-    if (possibleBase64String.length % 4 !== 0) {
-      result = false;
-    }
+      if (possibleBase64String.length % 4 !== 0) {
+        result = false;
+      }
 
-    if (
-      /^[A-Za-z0-9+/]+$/.test(
-        possibleBase64String.substr(0, possibleBase64String.length - 2)
-      ) === false
-    ) {
-      result = false;
-    }
+      if (
+        /^[A-Za-z0-9+/]+$/.test(
+          possibleBase64String.substr(0, possibleBase64String.length - 2)
+        ) === false
+      ) {
+        result = false;
+      }
 
-    if (
-      /^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(
-        possibleBase64String.substr(-2)
-      ) === false
-    ) {
-      result = false;
-    }
-    return result;
-  });
+      if (
+        /^[A-Za-z0-9/][A-Za-z0-9+/]|[A-Za-z0-9+/]=|==$/.test(
+          possibleBase64String.substr(-2)
+        ) === false
+      ) {
+        result = false;
+      }
+      return result;
+    });
 
   /**
    * Strips out and returns info from a valid base64 data URI
@@ -833,33 +828,32 @@ declare module "../types.js" {
    * @param {string} dataUrl a valid data URI of format 'data:[<MIME-type>][;base64],<data>'
    * @returns {string} The raw Base64-encoded data.
    */
-  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl = function(
-    dataUrl: string | null
-  ) {
-    if (dataUrl == null) {
-      return null;
-    }
+  var extractImageFromDataUrl = (jsPDFAPI.__addimage__.extractImageFromDataUrl =
+    function (dataUrl?: string | null) {
+      if (dataUrl == null) {
+        return null;
+      }
 
-    // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
+      // avoid using a regexp for parsing because it might be vulnerable against ReDoS attacks
 
-    dataUrl = dataUrl.trim();
+      dataUrl = dataUrl.trim();
 
-    if (!dataUrl.startsWith("data:")) {
-      return null;
-    }
+      if (!dataUrl.startsWith("data:")) {
+        return null;
+      }
 
-    const commaIndex = dataUrl.indexOf(",");
-    if (commaIndex < 0) {
-      return null;
-    }
+      const commaIndex = dataUrl.indexOf(",");
+      if (commaIndex < 0) {
+        return null;
+      }
 
-    const dataScheme = dataUrl.substring(0, commaIndex).trim();
-    if (!dataScheme.endsWith("base64")) {
-      return null;
-    }
+      const dataScheme = dataUrl.substring(0, commaIndex).trim();
+      if (!dataScheme.endsWith("base64")) {
+        return null;
+      }
 
-    return dataUrl.substring(commaIndex + 1);
-  });
+      return dataUrl.substring(commaIndex + 1);
+    });
 
   /**
    * Tests supplied object to determine if ArrayBuffer
@@ -870,7 +864,7 @@ declare module "../types.js" {
    *
    * @returns {boolean}
    */
-  jsPDFAPI.__addimage__.isArrayBuffer = function(
+  jsPDFAPI.__addimage__.isArrayBuffer = function (
     object: unknown
   ): object is ArrayBuffer {
     return object instanceof ArrayBuffer;
@@ -884,7 +878,7 @@ declare module "../types.js" {
    * @param {Object} object an Object
    * @returns {boolean}
    */
-  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function(
+  var isArrayBufferView = (jsPDFAPI.__addimage__.isArrayBufferView = function (
     object: unknown
   ): object is ImageTypedArray {
     return (
@@ -909,16 +903,17 @@ declare module "../types.js" {
    * @param {string} BinaryString with ImageData
    * @returns {Uint8Array}
    */
-  var binaryStringToUint8Array = (jsPDFAPI.__addimage__.binaryStringToUint8Array = function(
-    binary_string: string
-  ) {
-    var len = binary_string.length;
-    var bytes = new Uint8Array(len);
-    for (var i = 0; i < len; i++) {
-      bytes[i] = binary_string.charCodeAt(i);
-    }
-    return bytes;
-  });
+  var binaryStringToUint8Array =
+    (jsPDFAPI.__addimage__.binaryStringToUint8Array = function (
+      binary_string: string
+    ) {
+      var len = binary_string.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      return bytes;
+    });
 
   /**
    * Convert the Buffer to a Binary String
@@ -930,26 +925,27 @@ declare module "../types.js" {
    *
    * @returns {String}
    */
-  var arrayBufferToBinaryString = (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function(
-    buffer: ArrayBuffer | ImageTypedArray
-  ) {
-    var out = "";
-    // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
-    // Do not copy the array if input is already an array.
-    var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
-    for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
-      // Limit the amount of characters being parsed to prevent overflow.
-      // Note that while TextDecoder would be faster, it does not have the same
-      // functionality as fromCharCode with any provided encodings as of 3/2021.
-      out += String.fromCharCode.apply(
-        null,
-        // fromCharCode is declared to take number[], but accepts any
-        // array-like of char codes at runtime.
-        buf.subarray(i, i + ARRAY_APPLY_BATCH) as unknown as number[]
-      );
-    }
-    return out;
-  });
+  var arrayBufferToBinaryString =
+    (jsPDFAPI.__addimage__.arrayBufferToBinaryString = function (
+      buffer: ArrayBuffer | ImageTypedArray
+    ) {
+      var out = "";
+      // There are calls with both ArrayBuffer and already converted Uint8Array or other BufferView.
+      // Do not copy the array if input is already an array.
+      var buf = isArrayBufferView(buffer) ? buffer : new Uint8Array(buffer);
+      for (var i = 0; i < buf.length; i += ARRAY_APPLY_BATCH) {
+        // Limit the amount of characters being parsed to prevent overflow.
+        // Note that while TextDecoder would be faster, it does not have the same
+        // functionality as fromCharCode with any provided encodings as of 3/2021.
+        out += String.fromCharCode.apply(
+          null,
+          // fromCharCode is declared to take number[], but accepts any
+          // array-like of char codes at runtime.
+          buf.subarray(i, i + ARRAY_APPLY_BATCH) as unknown as number[]
+        );
+      }
+      return out;
+    });
 
   /**
    * Possible parameter for addImage, an RGBA buffer with size.
@@ -980,7 +976,7 @@ declare module "../types.js" {
    *
    * @returns jsPDF
    */
-  jsPDFAPI.addImage = function(
+  jsPDFAPI.addImage = function (
     this: jsPDFDocument,
     arg0: ImageInput | ImageOptions,
     arg1?: string | number,
@@ -1058,7 +1054,7 @@ declare module "../types.js" {
     return this;
   };
 
-  var processImageData = function(
+  var processImageData = function (
     this: jsPDFDocument,
     imageData: ImageInput,
     format: string,
@@ -1138,36 +1134,37 @@ declare module "../types.js" {
    * @param {string} stringData
    * @returns {string} binary string
    */
-  var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function(
-    stringData: string,
-    throwError?: boolean
-  ) {
-    throwError = typeof throwError === "boolean" ? throwError : true;
-    var imageData = "";
-    var rawData;
+  var convertBase64ToBinaryString =
+    (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function (
+      stringData: string,
+      throwError?: boolean
+    ) {
+      throwError = typeof throwError === "boolean" ? throwError : true;
+      var imageData = "";
+      var rawData;
 
-    if (typeof stringData === "string") {
-      rawData = extractImageFromDataUrl(stringData) ?? stringData;
+      if (typeof stringData === "string") {
+        rawData = extractImageFromDataUrl(stringData) ?? stringData;
 
-      try {
-        imageData = atob(rawData);
-      } catch (e) {
-        if (throwError) {
-          if (!validateStringAsBase64(rawData)) {
-            throw new Error(
-              "Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString "
-            );
-          } else {
-            throw new Error(
-              "atob-Error in jsPDF.convertBase64ToBinaryString " +
-                (e as Error).message
-            );
+        try {
+          imageData = atob(rawData);
+        } catch (e) {
+          if (throwError) {
+            if (!validateStringAsBase64(rawData)) {
+              throw new Error(
+                "Supplied Data is not a valid base64-String jsPDF.convertBase64ToBinaryString "
+              );
+            } else {
+              throw new Error(
+                "atob-Error in jsPDF.convertBase64ToBinaryString " +
+                  (e as Error).message
+              );
+            }
           }
         }
       }
-    }
-    return imageData;
-  });
+      return imageData;
+    });
 
   /**
    * @name getImageProperties
@@ -1175,7 +1172,7 @@ declare module "../types.js" {
    * @param {Object} imageData
    * @returns {Object}
    */
-  jsPDFAPI.getImageProperties = function(
+  jsPDFAPI.getImageProperties = function (
     this: jsPDFDocument,
     imageData: ImageInput
   ) {

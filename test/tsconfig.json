@@ -1,7 +1,14 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": ["jasmine"]
+    "types": [
+      "jasmine"
+    ]
   },
-  "include": ["globals.d.ts", "specs/**/*.ts", "utils/**/*.ts"]
+  "include": [
+    "globals.d.ts",
+    "specs/**/*.ts",
+    "utils/**/*.ts",
+    "../src/modules/canvg.d.ts"
+  ]
 }

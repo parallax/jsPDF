@@ -164,7 +164,9 @@ describe("Core: Display modes", () => {
   it("should throw an error for invalid page modes", () => {
     const doc = new jsPDF({ floatPrecision: 2 });
     expect(() => {
-      doc.setDisplayMode(null, null, "MadeUp");
+      // Deliberately invalid page mode (cast through unknown) to assert the
+      // runtime validation throws.
+      doc.setDisplayMode(null, null, "MadeUp" as unknown as "FullScreen");
     }).toThrow(
       new Error(
         `Page mode must be one of UseNone, UseOutlines, UseThumbs, or FullScreen. "MadeUp" is not recognized.`

@@ -11,7 +11,7 @@ describe("Module: Context2D autoPaging", () => {
     var ctx = doc.context2d;
     doc.context2d.autoPaging = true;
 
-    var writeArray = [];
+    var writeArray: string[] = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     ctx.strokeStyle = "#FF0000";
     ctx.strokeRect(20, 20, 150, 3000);
@@ -167,7 +167,7 @@ describe("Module: Context2D autoPaging", () => {
     var ctx = doc.context2d;
     doc.context2d.autoPaging = true;
 
-    var writeArray = [];
+    var writeArray: string[] = [];
     doc.__private__.setCustomOutputDestination(writeArray);
     ctx.fillText("test", 0, 1000);
 

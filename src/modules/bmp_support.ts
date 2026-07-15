@@ -28,10 +28,10 @@ declare module "../types.js" {
  * @name bmp_support
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processBMP = function(
+  jsPDFAPI.processBMP = function (
     this: jsPDFDocument,
     imageData: Uint8Array,
     index?: number,

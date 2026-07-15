@@ -25,7 +25,7 @@ declare module "../types.js" {
  * @name setLanguage
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -41,7 +41,7 @@ declare module "../types.js" {
    * doc.setLanguage("en-US")
    * doc.save('english.pdf')
    */
-  jsPDFAPI.setLanguage = function(this: jsPDFDocument, langCode: string) {
+  jsPDFAPI.setLanguage = function (this: jsPDFDocument, langCode: string) {
     "use strict";
 
     var langCodes: Record<string, string> = {
@@ -251,13 +251,14 @@ declare module "../types.js" {
     if (langCodes[langCode] !== undefined) {
       this.internal.languageSettings.languageCode = langCode;
       if (this.internal.languageSettings.isSubscribed === false) {
-        this.internal.events.subscribe("putCatalog", function(
-          this: jsPDFDocument
-        ) {
-          this.internal.write(
-            "/Lang (" + this.internal.languageSettings.languageCode + ")"
-          );
-        });
+        this.internal.events.subscribe(
+          "putCatalog",
+          function (this: jsPDFDocument) {
+            this.internal.write(
+              "/Lang (" + this.internal.languageSettings.languageCode + ")"
+            );
+          }
+        );
         this.internal.languageSettings.isSubscribed = true;
       }
     }

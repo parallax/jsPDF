@@ -38,7 +38,7 @@ declare module "../types.js" {
  * @name total_pages
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
   /**
    * @name putTotalPages
@@ -47,7 +47,7 @@ declare module "../types.js" {
    * @returns {jsPDF} jsPDF-instance
    */
 
-  jsPDFAPI.putTotalPages = function(
+  jsPDFAPI.putTotalPages = function (
     this: jsPDFDocument,
     pageExpression: string
   ) {

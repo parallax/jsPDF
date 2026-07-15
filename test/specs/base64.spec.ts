@@ -5,7 +5,9 @@
 
 describe("Module: addimage bas64Validation", () => {
   beforeAll(loadGlobals);
-  var global =
+  // Explicitly typed: the initializer references `global` itself, which
+  // TypeScript cannot infer (TS7022). Only `isNode` is accessed on it.
+  var global: { isNode?: boolean } =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
     (typeof global !== "undefined" && global) ||
@@ -26,7 +28,7 @@ describe("Module: addimage bas64Validation", () => {
       }
       ctx.putImageData(image, 0, 0);
 
-      expect(function() {
+      expect(function () {
         doc.addImage(canvas.toDataURL(), 10, 10);
       }).not.toThrow();
     });

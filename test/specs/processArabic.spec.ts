@@ -1,25 +1,25 @@
 /* global describe, it, expect, jsPDF */
-describe("Module: ArabicParser", function() {
+describe("Module: ArabicParser", function () {
   beforeAll(loadGlobals);
-  it("isArabicLetter", function() {
+  it("isArabicLetter", function () {
     expect(jsPDF.API.__arabicParser__.isArabicLetter("ف")).toEqual(true);
     expect(jsPDF.API.__arabicParser__.isArabicLetter("a")).toEqual(false);
   });
 
-  it("isArabicEndLetter", function() {
+  it("isArabicEndLetter", function () {
     expect(jsPDF.API.__arabicParser__.isArabicEndLetter("د")).toEqual(true);
     expect(jsPDF.API.__arabicParser__.isArabicEndLetter("ف")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicEndLetter("a")).toEqual(false);
   });
 
-  it("isArabicAlfLetter", function() {
+  it("isArabicAlfLetter", function () {
     expect(jsPDF.API.__arabicParser__.isArabicAlfLetter("ا")).toEqual(true);
     expect(jsPDF.API.__arabicParser__.isArabicAlfLetter("د")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicAlfLetter("ف")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicAlfLetter("a")).toEqual(false);
   });
 
-  it("arabicLetterHasIsolatedForm", function() {
+  it("arabicLetterHasIsolatedForm", function () {
     expect(jsPDF.API.__arabicParser__.arabicLetterHasIsolatedForm("ا")).toEqual(
       true
     );
@@ -34,7 +34,7 @@ describe("Module: ArabicParser", function() {
     );
   });
 
-  it("arabicLetterHasFinalForm", function() {
+  it("arabicLetterHasFinalForm", function () {
     expect(jsPDF.API.__arabicParser__.arabicLetterHasFinalForm("ا")).toEqual(
       true
     );
@@ -49,7 +49,7 @@ describe("Module: ArabicParser", function() {
     );
   });
 
-  it("arabicLetterHasInitialForm", function() {
+  it("arabicLetterHasInitialForm", function () {
     expect(jsPDF.API.__arabicParser__.arabicLetterHasInitialForm("ا")).toEqual(
       false
     );
@@ -65,7 +65,7 @@ describe("Module: ArabicParser", function() {
     );
   });
 
-  it("arabicLetterHasMedialForm", function() {
+  it("arabicLetterHasMedialForm", function () {
     expect(jsPDF.API.__arabicParser__.arabicLetterHasMedialForm("ا")).toEqual(
       false
     );
@@ -81,7 +81,7 @@ describe("Module: ArabicParser", function() {
     );
   });
 
-  it("isArabicDiacritic", function() {
+  it("isArabicDiacritic", function () {
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("ا")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("د")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("ف")).toEqual(false);
@@ -89,7 +89,7 @@ describe("Module: ArabicParser", function() {
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("a")).toEqual(false);
   });
 
-  it("getCorrectForm", function() {
+  it("getCorrectForm", function () {
     expect(jsPDF.API.__arabicParser__.getCorrectForm("a", "", "")).toEqual(-1);
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("د")).toEqual(false);
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("ف")).toEqual(false);
@@ -97,7 +97,7 @@ describe("Module: ArabicParser", function() {
     expect(jsPDF.API.__arabicParser__.isArabicDiacritic("a")).toEqual(false);
   });
 
-  it("feh", function() {
+  it("feh", function () {
     expect(jsPDF.API.processArabic("ف").charCodeAt(0)).toEqual(65233);
     expect(jsPDF.API.processArabic("دف").charCodeAt(1)).toEqual(65233);
 
@@ -120,7 +120,7 @@ describe("Module: ArabicParser", function() {
     expect(jsPDF.API.processArabic("فففف").charCodeAt(3)).toEqual(65234);
   });
 
-  it("dal", function() {
+  it("dal", function () {
     expect(jsPDF.API.processArabic("د").charCodeAt(0)).toEqual(65193);
 
     expect(jsPDF.API.processArabic("دف").charCodeAt(0)).toEqual(65193);
@@ -141,7 +141,7 @@ describe("Module: ArabicParser", function() {
     expect(jsPDF.API.processArabic("ددد").charCodeAt(2)).toEqual(65193);
   });
 
-  it("resolveLigatures", function() {
+  it("resolveLigatures", function () {
     expect(
       jsPDF.API.__arabicParser__.resolveLigatures("ﻟﺎ").charCodeAt(0)
     ).toEqual(65275);
@@ -150,7 +150,7 @@ describe("Module: ArabicParser", function() {
     ).toEqual(65275);
   });
 
-  it("lam alif", function() {
+  it("lam alif", function () {
     expect(jsPDF.API.processArabic("لا").charCodeAt(0)).toEqual(65275);
 
     expect(jsPDF.API.processArabic("لاا").charCodeAt(0)).toEqual(65275);
@@ -168,19 +168,24 @@ describe("Module: ArabicParser", function() {
     expect(jsPDF.API.processArabic("دلاا").charCodeAt(2)).toEqual(65165);
   });
 
-  it("alif", function() {
+  it("alif", function () {
     expect(jsPDF.API.processArabic("اَ").charCodeAt(0)).toEqual(65165);
   });
 
-  it("ligatures", function() {
+  it("ligatures", function () {
     expect(jsPDF.API.processArabic("الله").charCodeAt(0)).toEqual(65010);
   });
 
-  it("position array passthrough", function() {
+  it("position array passthrough", function () {
     expect(
-      jsPDF.API.processArabic({ text: [["الله", 0, 0]] }).text[0][0].charCodeAt(
-        0
-      )
+      // Minimal payload cast: at runtime processArabic only reads and
+      // rewrites `.text`, so the other payload members can be omitted.
+      (
+        jsPDF.API.processArabic({
+          text: [["الله", 0, 0]]
+        } as unknown as import("../../src/types.js").TextProcessingPayload)
+          .text as unknown as [string, number, number][]
+      )[0][0].charCodeAt(0)
     ).toEqual(65010);
   });
 });

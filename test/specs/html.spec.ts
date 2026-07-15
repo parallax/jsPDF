@@ -1,13 +1,23 @@
 /* global describe, it, jsPDF, comparePdf */
 
-const render = (markup, opts = {}) =>
-  new Promise(resolve => {
+/** Options forwarded to doc.html(); subset of the html plugin's options. */
+interface RenderOptions {
+  width?: number;
+  windowWidth?: number;
+  html2canvas?: { scale?: number };
+  fontFaces?: import("../../src/libs/fontFace.js").FontFaceInput[];
+}
+
+const render = (markup: string, opts: RenderOptions = {}) =>
+  new Promise<ReturnType<jsPDFCtor>>(resolve => {
     const doc = jsPDF({ floatPrecision: 2 });
 
     doc.html(markup, { ...opts, callback: resolve });
   });
 
-function toFontFaceRule(fontFace) {
+function toFontFaceRule(
+  fontFace: import("../../src/libs/fontFace.js").FontFaceInput
+) {
   const srcs = fontFace.src.map(
     src => `url('${src.url}') format('${src.format}')`
   );
@@ -277,7 +287,12 @@ describe("Module: html", () => {
   });
 
   it("page break with image", async () => {
-    const doc = jsPDF({ floatPrecision: 2, unit: "pt", format: [100, 100], lineWidth: 1 });
+    const doc = jsPDF({
+      floatPrecision: 2,
+      unit: "pt",
+      format: [100, 100],
+      lineWidth: 1
+    });
     await new Promise(resolve =>
       doc.html(
         '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==" width="10" height="200">',
@@ -317,9 +332,18 @@ describe("Module: html", () => {
 
   it("is able to render html multiple times", async () => {
     const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 30, y: 10 });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 50, y: 10 });
-    await doc.html("<div style='background: red; width: 10px; height: 10px;'></div>", { x: 10, y: 10 });
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 30, y: 10 }
+    );
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 50, y: 10 }
+    );
+    await doc.html(
+      "<div style='background: red; width: 10px; height: 10px;'></div>",
+      { x: 10, y: 10 }
+    );
     comparePdf(doc.output(), "html-multiple.pdf", "html");
   });
 

@@ -4,12 +4,13 @@ import {
   normalizeFontFace,
   parseFontFamily
 } from "../../../src/libs/fontFace.js";
+import type { FontFaceInput } from "../../../src/libs/fontFace.js";
 
-function fontFace(opts) {
+function fontFace(opts: Partial<FontFaceInput>): FontFaceInput {
   return { family: "TestFont", src: undefined, ...opts };
 }
 
-function merge(...args) {
+function merge(...args: object[]) {
   return Object.assign({}, ...args);
 }
 

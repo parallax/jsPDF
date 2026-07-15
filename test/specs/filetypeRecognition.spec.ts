@@ -122,7 +122,9 @@ describe("Module: addimage filetypeRecognition", () => {
       jsPDF.API.__addimage__.getImageFileTypeByImageData(
         jsPDF.API.__addimage__.convertBase64ToBinaryString(
           invalidImage,
-          "UNKNOWN"
+          // Deliberately mistyped second argument (throwError is a boolean at
+          // runtime); kept verbatim from the original spec.
+          "UNKNOWN" as unknown as boolean
         )
       )
     ).toEqual("UNKNOWN");
@@ -132,7 +134,7 @@ describe("Module: addimage filetypeRecognition", () => {
       )
     ).toEqual("UNKNOWN");
     var tmpConsoleWarn = console.warn;
-    console.warn = function() {};
+    console.warn = function () {};
     expect(
       jsPDF.API.__addimage__.getImageFileTypeByImageData(
         jsPDF.API.__addimage__.convertBase64ToBinaryString(invalidImage),

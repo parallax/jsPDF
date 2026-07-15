@@ -26,10 +26,10 @@ declare module "../types.js" {
  * @name ttfsupport
  * @module
  */
-(function(jsPDF: jsPDFConstructor) {
+(function (jsPDF: jsPDFConstructor) {
   "use strict";
 
-  var binaryStringToUint8Array = function(binary_string: string) {
+  var binaryStringToUint8Array = function (binary_string: string) {
     var len = binary_string.length;
     var bytes = new Uint8Array(len);
     for (var i = 0; i < len; i++) {
@@ -38,7 +38,7 @@ declare module "../types.js" {
     return bytes;
   };
 
-  var addFont = function(font: Font, file: string | Uint8Array) {
+  var addFont = function (font: Font, file: string | Uint8Array) {
     // eslint-disable-next-line no-control-regex
     if (/^\x00\x01\x00\x00/.test(file as string)) {
       file = binaryStringToUint8Array(file as string);
@@ -56,7 +56,7 @@ declare module "../types.js" {
 
   jsPDF.API.events.push([
     "addFont",
-    function(data: AddFontPayload) {
+    function (data: AddFontPayload) {
       var file = undefined;
       var font = data.font;
       var instance = data.instance;

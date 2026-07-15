@@ -8,7 +8,12 @@ describe("Module: Context2D: HTML comparison tests", () => {
   xit("default values like a real 2d-context", () => {
     var doc = new jsPDF();
 
-    var ctx = doc.canvas.getContext("2d");
+    // This skipped wishlist test asserts real-browser CanvasRenderingContext2D
+    // defaults that jsPDF's context2d does not implement (filter, shadows,
+    // image smoothing); type it as the real thing to keep the assertions.
+    var ctx = doc.canvas.getContext(
+      "2d"
+    ) as unknown as CanvasRenderingContext2D;
 
     expect(ctx.fillStyle).toEqual("#000000");
     expect(ctx.filter).toEqual("none");

@@ -44,10 +44,10 @@ interface WebPDecoderConstructor {
  * @name webp_support
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processWEBP = function(
+  jsPDFAPI.processWEBP = function (
     this: jsPDFDocument,
     imageData: Uint8Array,
     index?: number,

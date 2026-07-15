@@ -34,7 +34,7 @@ type StretchSet = { [stretch: string]: StyleSet };
 export type FontFaceMap = { [family: string]: StretchSet };
 
 function toLookup(arr: Array<string | number>): { [key: string]: number } {
-  return arr.reduce(function(
+  return arr.reduce(function (
     lookup: { [key: string]: number },
     name: string | number,
     index: number
@@ -42,8 +42,7 @@ function toLookup(arr: Array<string | number>): { [key: string]: number } {
     lookup[name] = index;
 
     return lookup;
-  },
-  {});
+  }, {});
 }
 
 var fontStyleOrder: { [style: string]: FontStyle[] } = {
@@ -190,7 +189,10 @@ function searchFromPivot<T>(
   }
 }
 
-function resolveFontStretch(stretch: string, matchingSet: StretchSet): StyleSet {
+function resolveFontStretch(
+  stretch: string,
+  matchingSet: StretchSet
+): StyleSet {
   if (matchingSet[stretch]) {
     return matchingSet[stretch];
   }
@@ -213,7 +215,10 @@ function resolveFontStretch(stretch: string, matchingSet: StretchSet): StyleSet 
   return match;
 }
 
-function resolveFontStyle(fontStyle: FontStyle, matchingSet: StyleSet): WeightSet {
+function resolveFontStyle(
+  fontStyle: FontStyle,
+  matchingSet: StyleSet
+): WeightSet {
   if (matchingSet[fontStyle]) {
     return matchingSet[fontStyle];
   }

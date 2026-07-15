@@ -47,7 +47,6 @@ import type {
   Font,
   FontMap,
   FontDictionary,
-  DocumentProperties,
   EncryptionOptions,
   PDFSecurityInterface,
   Encryptor,
@@ -854,9 +853,11 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @param {Object} type
    * @returns {Object}
    */
-  API.getCreationDate = function (type) {
+  // The cast reconciles the single implementation signature with the
+  // `(type: "jsDate") => Date` convenience overload declared in types.ts.
+  API.getCreationDate = function (type?: string) {
     return getCreationDate(type);
-  };
+  } as unknown as jsPDFDocument["getCreationDate"];
 
   var padd2 = (API.__private__.padd2 = function (
     number: number | string
@@ -3834,6 +3835,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     mutex: TextMutex;
   }
 
+  // The trailing cast reconciles the single implementation signature with the
+  // overloads declared in types.ts (including the deprecated pre-2012
+  // `text(x, y, text, ...)` argument order handled by the swap shim below).
   API.__private__.text = API.text = function (
     this: jsPDFDocument,
     text: string | number | TextItem[],
@@ -4512,7 +4516,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     out(result);
     usedFonts[activeFontKey] = true;
     return scope;
-  };
+  } as unknown as jsPDFDocument["text"];
 
   // PDF supports these path painting and clip path operators:
   //

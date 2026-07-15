@@ -557,6 +557,11 @@ export interface OutputOptions {
   pdfObjectUrl?: string;
   /** Only used by "pdfjsnewwindow". */
   pdfJsUrl?: string;
+  /**
+   * "pdfobjectnewwindow" forwards the whole options object to PDFObject.embed,
+   * so arbitrary additional options are allowed and passed through.
+   */
+  [option: string]: unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -703,6 +708,19 @@ export interface jsPDFPrivate {
           precision?: number;
         }
   ): string;
+  /** Redirects PDF stream writes into `destination` (used by specs to capture output). */
+  setCustomOutputDestination(destination: string[]): void;
+  /** Restores the default output destination after setCustomOutputDestination. */
+  resetCustomOutputDestination(): void;
+  /** Sets the /ID of the document; used by specs for deterministic output. */
+  setFileId(value?: string): string;
+  /** Sets the creation date; used by specs for deterministic output. */
+  setCreationDate(date?: Date | string): string;
+  /** Resolves a CSS-style fontStyle/fontWeight pair to a jsPDF style name. */
+  combineFontStyleAndFontWeight(
+    fontStyle?: string,
+    fontWeight?: string | number
+  ): string;
   [member: string]: unknown;
 }
 
@@ -847,6 +865,7 @@ export interface jsPDFDocument extends jsPDFAPI {
   fillStroke(pattern?: PatternData): jsPDFDocument;
   fillStrokeEvenOdd(pattern?: PatternData): jsPDFDocument;
   getCharSpace(): number;
+  getCreationDate(type: "jsDate"): Date;
   getCreationDate(type?: string): Date | string;
   getCurrentPageInfo(): PageInfo;
   getDrawColor(): string;
@@ -997,6 +1016,19 @@ export interface jsPDFDocument extends jsPDFAPI {
     options?: TextOptionsLight,
     transform?: number | Matrix
   ): jsPDFDocument;
+  /**
+   * @deprecated Legacy pre-August-2012 argument order
+   * `text(x, y, text, flags, angle, align)`; still supported by the
+   * implementation in src/jspdf.ts (see the argument-swapping shim there).
+   */
+  text(
+    x: number,
+    y: number,
+    text: string | string[],
+    flags?: TextOptionsLight["flags"] | null,
+    angle?: number | null,
+    align?: string
+  ): jsPDFDocument;
   triangle(
     x1: number,
     y1: number,
@@ -1039,10 +1071,12 @@ export interface TextOptionsLight {
   baseline?:
     "alphabetic" | "ideographic" | "bottom" | "top" | "middle" | "hanging";
   flags?: {
-    noBOM: boolean;
-    autoencode: boolean;
+    noBOM?: boolean;
+    autoencode?: boolean;
   };
   rotationDirection?: 0 | 1;
+  /** @deprecated Legacy alias for `renderingMode` (see text() in src/jspdf.ts). */
+  stroke?: boolean | number | string;
   charSpace?: number;
   horizontalScale?: number;
   lineHeightFactor?: number;

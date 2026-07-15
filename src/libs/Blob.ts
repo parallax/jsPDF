@@ -69,7 +69,7 @@ var BlobBuilder = (global.BlobBuilder ||
 
 global.URL = (global.URL ||
   global.webkitURL ||
-  function(href: string, a?: HTMLAnchorElement) {
+  function (href: string, a?: HTMLAnchorElement) {
     a = document.createElement("a");
     a.href = href;
     return a;
@@ -104,7 +104,7 @@ try {
  * support it in the Blob constructor.
  */
 function mapArrayBufferViews(ary: BlobPart[]): BlobPart[] {
-  return ary.map(function(chunk) {
+  return ary.map(function (chunk) {
     // Structural probe: non-view parts simply fail the instanceof test below.
     var view = chunk as ArrayBufferView;
     if (view.buffer instanceof ArrayBuffer) {
@@ -129,7 +129,7 @@ function BlobBuilderConstructor(ary: BlobPart[], options?: BlobPropertyBag) {
   options = options || {};
 
   var bb = new BlobBuilder();
-  mapArrayBufferViews(ary).forEach(function(part) {
+  mapArrayBufferViews(ary).forEach(function (part) {
     bb.append(part);
   });
 
@@ -268,12 +268,12 @@ function FakeBlobBuilder() {
 
   var create =
     Object.create ||
-    function(a: object) {
+    function (a: object) {
       function c() {}
       c.prototype = a;
       // ES5 constructor-function pattern: a plain function declaration has no
       // construct signature, so cast to a constructor type for `new`.
-      return new ((c as unknown) as { new (): object })();
+      return new (c as unknown as { new (): object })();
     };
 
   if (arrayBufferSupported) {
@@ -291,7 +291,7 @@ function FakeBlobBuilder() {
 
     var isArrayBufferView =
       ArrayBuffer.isView ||
-      function(obj: unknown): boolean {
+      function (obj: unknown): boolean {
         return (
           !!obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
         );
@@ -306,7 +306,7 @@ function FakeBlobBuilder() {
     for (var i = 0, len = chunks.length; i < len; i++) {
       var chunk = chunks[i];
       if (chunk instanceof Blob) {
-        chunks[i] = ((chunk as unknown) as FakeBlob)._buffer;
+        chunks[i] = (chunk as unknown as FakeBlob)._buffer;
       } else if (typeof chunk === "string") {
         chunks[i] = toUTF8Array(chunk);
       } else if (
@@ -331,11 +331,11 @@ function FakeBlobBuilder() {
 
   // The fake constructors below are ES5 constructor functions; plain function
   // declarations have no construct signature, so cast for `new` call sites.
-  var FakeBlobConstructor = (Blob as unknown) as {
+  var FakeBlobConstructor = Blob as unknown as {
     new (chunks?: unknown[], opts?: BlobPropertyBag): FakeBlob;
   };
 
-  Blob.prototype.slice = function(
+  Blob.prototype.slice = function (
     this: FakeBlob,
     start?: number,
     end?: number,
@@ -345,7 +345,7 @@ function FakeBlobBuilder() {
     return new FakeBlobConstructor([slice], { type: type });
   };
 
-  Blob.prototype.toString = function() {
+  Blob.prototype.toString = function () {
     return "[object Blob]";
   };
 
@@ -361,7 +361,7 @@ function FakeBlobBuilder() {
     opts = opts || {};
     // `Blob.call` returns void per its signature but may return an object at
     // runtime; keep the original `|| this` fallback via a cast.
-    var a = ((Blob.call(this, chunks, opts) as unknown) as FakeFile) || this;
+    var a = (Blob.call(this, chunks, opts) as unknown as FakeFile) || this;
     a.name = name;
     a.lastModifiedDate = opts.lastModified
       ? new Date(opts.lastModified)
@@ -378,11 +378,11 @@ function FakeBlobBuilder() {
   else {
     try {
       // Legacy engines without setPrototypeOf; __proto__ is not in lib.dom.
-      ((File as unknown) as { __proto__: unknown }).__proto__ = Blob;
+      (File as unknown as { __proto__: unknown }).__proto__ = Blob;
     } catch (e) {}
   }
 
-  File.prototype.toString = function() {
+  File.prototype.toString = function () {
     return "[object File]";
   };
 
@@ -397,7 +397,7 @@ function FakeBlobBuilder() {
 
     var delegate = document.createDocumentFragment();
     this.addEventListener = delegate.addEventListener;
-    this.dispatchEvent = function(this: FakeFileReader, evt: Event) {
+    this.dispatchEvent = function (this: FakeFileReader, evt: Event) {
       var local = this["on" + evt.type];
       if (typeof local === "function") local(evt);
       delegate.dispatchEvent(evt);
@@ -415,7 +415,7 @@ function FakeBlobBuilder() {
 
     fr.result = "";
 
-    setTimeout(function(this: { readyState?: number }) {
+    setTimeout(function (this: { readyState?: number }) {
       this.readyState = FileReader.LOADING;
       fr.dispatchEvent(new Event("load"));
       fr.dispatchEvent(new Event("loadend"));
@@ -433,7 +433,7 @@ function FakeBlobBuilder() {
   FileReader.prototype.onloadstart = null;
   FileReader.prototype.onprogress = null;
 
-  FileReader.prototype.readAsDataURL = function(
+  FileReader.prototype.readAsDataURL = function (
     this: FakeFileReader,
     blob: FakeBlob
   ) {
@@ -442,7 +442,7 @@ function FakeBlobBuilder() {
       "data:" + blob.type + ";base64," + encodeByteArray(blob._buffer);
   };
 
-  FileReader.prototype.readAsText = function(
+  FileReader.prototype.readAsText = function (
     this: FakeFileReader,
     blob: FakeBlob
   ) {
@@ -450,7 +450,7 @@ function FakeBlobBuilder() {
     this.result = fromUtf8Array(blob._buffer);
   };
 
-  FileReader.prototype.readAsArrayBuffer = function(
+  FileReader.prototype.readAsArrayBuffer = function (
     this: FakeFileReader,
     blob: FakeBlob
   ) {
@@ -458,23 +458,23 @@ function FakeBlobBuilder() {
     this.result = blob._buffer.slice();
   };
 
-  FileReader.prototype.abort = function() {};
+  FileReader.prototype.abort = function () {};
 
   /********************************************************/
   /*                         URL                          */
   /********************************************************/
-  URL.createObjectURL = function(blob: Blob | MediaSource): string {
+  URL.createObjectURL = function (blob: Blob | MediaSource): string {
     return blob instanceof Blob
       ? "data:" +
           // The fake Blob polyfill stores its bytes on `_buffer`; the DOM
           // Blob type has no such member, hence the cast.
-          ((blob as unknown) as FakeBlob).type +
+          (blob as unknown as FakeBlob).type +
           ";base64," +
-          encodeByteArray(((blob as unknown) as FakeBlob)._buffer)
+          encodeByteArray((blob as unknown as FakeBlob)._buffer)
       : createObjectURL.call(URL, blob);
   };
 
-  URL.revokeObjectURL = function(url: string) {
+  URL.revokeObjectURL = function (url: string) {
     revokeObjectURL && revokeObjectURL.call(URL, url);
   };
 
@@ -487,7 +487,7 @@ function FakeBlobBuilder() {
     data?: Document | XMLHttpRequestBodyInit | null
   ) => void;
   if (_send) {
-    XMLHttpRequest.prototype.send = function(
+    XMLHttpRequest.prototype.send = function (
       this: XMLHttpRequest,
       data?: Document | XMLHttpRequestBodyInit | null
     ) {
@@ -496,12 +496,9 @@ function FakeBlobBuilder() {
         // Blob type has no such member, hence the cast.
         this.setRequestHeader(
           "Content-Type",
-          ((data as unknown) as FakeBlob).type
+          (data as unknown as FakeBlob).type
         );
-        _send.call(
-          this,
-          fromUtf8Array(((data as unknown) as FakeBlob)._buffer)
-        );
+        _send.call(this, fromUtf8Array((data as unknown as FakeBlob)._buffer));
       } else {
         _send.call(this, data);
       }
@@ -518,9 +515,9 @@ if (strTag) {
   try {
     // Symbol.toStringTag is not part of the declared Blob/File/FileReader
     // prototype shapes in lib.dom, so widen via a symbol-keyed record.
-    ((File.prototype as unknown) as Record<symbol, string>)[strTag] = "File";
-    ((Blob.prototype as unknown) as Record<symbol, string>)[strTag] = "Blob";
-    ((FileReader.prototype as unknown) as Record<symbol, string>)[strTag] =
+    (File.prototype as unknown as Record<symbol, string>)[strTag] = "File";
+    (Blob.prototype as unknown as Record<symbol, string>)[strTag] = "Blob";
+    (FileReader.prototype as unknown as Record<symbol, string>)[strTag] =
       "FileReader";
   } catch (e) {}
 }
@@ -543,7 +540,7 @@ function fixFileAndXHR() {
       )();
       global.File = klass as unknown as PolyfillCtor;
     } catch (e) {
-      global.File = (function(b: BlobPart[], d: string, c?: FilePropertyBag) {
+      global.File = function (b: BlobPart[], d: string, c?: FilePropertyBag) {
         var blob = new Blob(b, c) as Blob & {
           name?: string;
           lastModifiedDate?: Date;
@@ -558,14 +555,14 @@ function fixFileAndXHR() {
         blob.name = d;
         blob.lastModifiedDate = t;
         blob.lastModified = +t;
-        blob.toString = function() {
+        blob.toString = function () {
           return "[object File]";
         };
 
         if (strTag) blob[strTag] = "File";
 
         return blob;
-      }) as unknown as PolyfillCtor;
+      } as unknown as PolyfillCtor;
     }
   }
 }

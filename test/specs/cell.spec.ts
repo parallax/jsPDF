@@ -27,17 +27,23 @@ describe("Module: Cell", () => {
       doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100 }).w
     ).toEqual(96.64000000000001);
     expect(
-      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).h
+      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", {
+        maxWidth: 100
+      }).h
     ).toEqual(71.19999999999999);
     expect(
-      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).w
+      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", {
+        maxWidth: 100
+      }).w
     ).toEqual(96.64000000000001);
     expect(doc.getTextDimensions("").w).toEqual(0);
     expect(doc.getTextDimensions("").h).toEqual(0);
     expect(doc.getTextDimensions([""]).w).toEqual(0);
     expect(doc.getTextDimensions([""]).h).toEqual(0);
-    expect(function() {
-      doc.getTextDimensions();
+    expect(function () {
+      // Deliberately called without the required text argument to assert the
+      // runtime validation throws.
+      (doc.getTextDimensions as unknown as () => void)();
     }).toThrow(
       new Error(
         "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."
@@ -45,7 +51,7 @@ describe("Module: Cell", () => {
     );
   });
 
-  var generateData = function(amount) {
+  var generateData = function (amount: number) {
     var result = [];
     var data = {
       coin: "100",
@@ -61,7 +67,7 @@ describe("Module: Cell", () => {
     return result;
   };
 
-  function createHeaders(keys) {
+  function createHeaders(keys: string[]) {
     return keys.map(key => ({
       name: key,
       prompt: key,
@@ -129,19 +135,15 @@ describe("Module: Cell", () => {
       floatPrecision: 2
     });
     doc.table(1, 1, generateData(100), header, {
-      rowStart: function(e, docInstance) {
-		// docInstance equal to doc
-        if (17 < e.row && e.row < 36)
-          docInstance.setTextColor(255,0,0);
-        else
-          docInstance.setTextColor(0,0,0);
+      rowStart: function (e, docInstance) {
+        // docInstance equal to doc
+        if (17 < e.row && e.row < 36) docInstance.setTextColor(255, 0, 0);
+        else docInstance.setTextColor(0, 0, 0);
       },
-      cellStart: function(e, docInstance) {
-		// docInstance equal to doc
-        if (e.row === 27 && e.col === 3)
-          docInstance.setFont(undefined, "bold");
-        else
-          docInstance.setFont(undefined, "normal");
+      cellStart: function (e, docInstance) {
+        // docInstance equal to doc
+        if (e.row === 27 && e.col === 3) docInstance.setFont(undefined, "bold");
+        else docInstance.setFont(undefined, "normal");
       }
     });
     comparePdf(doc.output(), "table-formatted.pdf");
@@ -149,10 +151,10 @@ describe("Module: Cell", () => {
 
   it("table error handling", () => {
     var doc = new jsPDF({ putOnlyUsedFonts: true, orientation: "landscape" });
-    expect(function() {
+    expect(function () {
       doc.table(1, 1, undefined, header, { autoSize: true });
     }).toThrow(new Error("No data for PDF table."));
-    expect(function() {
+    expect(function () {
       doc.printHeaderRow(1, false);
     }).toThrow(new Error("Property tableHeaderRow does not exist."));
   });

@@ -62,9 +62,7 @@ function replaceVersion() {
 function licenseBanner() {
   let commit = "00000000";
   try {
-    commit = execSync("git rev-parse --short=10 HEAD")
-      .toString()
-      .trim();
+    commit = execSync("git rev-parse --short=10 HEAD").toString().trim();
   } catch (e) {}
   return license({
     banner: {

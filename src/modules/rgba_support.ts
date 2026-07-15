@@ -43,7 +43,7 @@ declare module "../types.js" {
  * @name rgba_support
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
   /**
@@ -54,7 +54,7 @@ declare module "../types.js" {
    * RGBA array data can be obtained from DOM canvas getImageData.
    * @ignore
    */
-  jsPDFAPI.processRGBA = function(
+  jsPDFAPI.processRGBA = function (
     this: jsPDFDocument,
     imageData: RGBAData,
     index?: number,

@@ -186,14 +186,14 @@ class RGBColor {
       {
         re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
         example: ["rgb(123, 234, 45)", "rgb(255,234,245)"],
-        process: function(bits: RegExpExecArray) {
+        process: function (bits: RegExpExecArray) {
           return [parseInt(bits[1]), parseInt(bits[2]), parseInt(bits[3])];
         }
       },
       {
         re: /^(\w{2})(\w{2})(\w{2})$/,
         example: ["#00ff00", "336699"],
-        process: function(bits: RegExpExecArray) {
+        process: function (bits: RegExpExecArray) {
           return [
             parseInt(bits[1], 16),
             parseInt(bits[2], 16),
@@ -204,7 +204,7 @@ class RGBColor {
       {
         re: /^(\w{1})(\w{1})(\w{1})$/,
         example: ["#fb0", "f0f"],
-        process: function(bits: RegExpExecArray) {
+        process: function (bits: RegExpExecArray) {
           return [
             parseInt(bits[1] + bits[1], 16),
             parseInt(bits[2] + bits[2], 16),

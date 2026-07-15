@@ -26,7 +26,7 @@ define("ace/theme/ambiance", [
   "exports",
   "module",
   "ace/lib/dom"
-], function(require, exports, module) {
+], function (require, exports, module) {
   exports.isDark = true;
   exports.cssClass = "ace-ambiance";
   exports.cssText =

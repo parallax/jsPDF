@@ -53,7 +53,7 @@ describe("Module: addimage", () => {
       }
       ctx.putImageData(image, 0, 0);
 
-      expect(function() {
+      expect(function () {
         doc.addImage(canvas, 10, 10);
       }).not.toThrow();
     });
@@ -64,9 +64,11 @@ describe("Module: addimage", () => {
       canvas.width = 0;
       canvas.height = 100;
 
-      var expectedError = new Error("Given canvas must have data. Canvas width: 0, height: 100");
+      var expectedError = new Error(
+        "Given canvas must have data. Canvas width: 0, height: 100"
+      );
 
-      expect(function() {
+      expect(function () {
         doc.addImage(canvas, 10, 10);
       }).toThrow(expectedError);
     });
@@ -85,9 +87,17 @@ describe("Module: addimage", () => {
       ctx.putImageData(image, 0, 0);
 
       var imageElement = document.createElement("img");
-      imageElement.setAttribute("src", canvas.toDataURL(), canvas.toDataURL());
+      // The stray third argument is ignored by the DOM; kept verbatim, typed via
+      // a widened signature.
+      (
+        imageElement.setAttribute as (
+          name: string,
+          value: string,
+          extra?: string
+        ) => void
+      )("src", canvas.toDataURL(), canvas.toDataURL());
 
-      expect(function() {
+      expect(function () {
         doc.addImage(imageElement, 10, 10);
       }).not.toThrow();
     });

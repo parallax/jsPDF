@@ -35,10 +35,10 @@ declare module "../types.js" {
  * @name gif_support
  * @module
  */
-(function(jsPDFAPI: JsPDFAPI) {
+(function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
-  jsPDFAPI.processGIF89A = function(
+  jsPDFAPI.processGIF89A = function (
     this: jsPDFDocument,
     imageData: Uint8Array,
     index?: number,

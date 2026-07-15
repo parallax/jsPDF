@@ -52,7 +52,9 @@ describe("Core: Standard Encryption", () => {
       PasswordField,
       RadioButton,
       Appearance
-    } = jsPDF.AcroForm;
+      // jsPDF.AcroForm is attached at runtime by the acroform module but is
+      // not declared on the typed constructor.
+    } = (jsPDF as unknown as { AcroForm: typeof AcroForm }).AcroForm;
 
     doc.setFontSize(12);
     doc.text("ComboBox:", 10, 105);

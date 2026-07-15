@@ -27,7 +27,7 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
  * @name utf8
  * @module
  */
-(function(jsPDF: jsPDFConstructor) {
+(function (jsPDF: jsPDFConstructor) {
   "use strict";
   var jsPDFAPI = jsPDF.API;
 
@@ -36,7 +36,7 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
   /* comment : The character id of a 2-byte string is converted to a hexadecimal number by obtaining */
   /*   the corresponding glyph id and width, and then adding padding to the string.                  */
   /***************************************************************************************************/
-  var pdfEscape16 = (jsPDFAPI.pdfEscape16 = function(
+  var pdfEscape16 = (jsPDFAPI.pdfEscape16 = function (
     text: string,
     font: TTFFontEntry
   ) {
@@ -62,11 +62,11 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
     return ar.join("");
   });
 
-  var toUnicodeCmap = function(map: Record<string, number>) {
+  var toUnicodeCmap = function (map: Record<string, number>) {
     var code, codes, range, unicode, unicodeMap, _i, _len;
     unicodeMap =
       "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange";
-    codes = Object.keys(map).sort(function(a, b) {
+    codes = Object.keys(map).sort(function (a, b) {
       // Numeric sort of numeric string keys; subtraction coerces at runtime.
       return (a as unknown as number) - (b as unknown as number);
     });
@@ -108,7 +108,7 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
     return unicodeMap;
   };
 
-  var identityHFunction = function(options: PutFontPayload) {
+  var identityHFunction = function (options: PutFontPayload) {
     var font = options.font;
     var out = options.out;
     var newObject = options.newObject;
@@ -185,12 +185,12 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
 
   jsPDFAPI.events.push([
     "putFont",
-    function(args: PutFontPayload) {
+    function (args: PutFontPayload) {
       identityHFunction(args);
     }
   ]);
 
-  var winAnsiEncodingFunction = function(options: PutFontPayload) {
+  var winAnsiEncodingFunction = function (options: PutFontPayload) {
     var font = options.font;
     var out = options.out;
     var newObject = options.newObject;
@@ -260,12 +260,12 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
 
   jsPDFAPI.events.push([
     "putFont",
-    function(args: PutFontPayload) {
+    function (args: PutFontPayload) {
       winAnsiEncodingFunction(args);
     }
   ]);
 
-  var utf8TextFunction = function(args: TextProcessingPayload) {
+  var utf8TextFunction = function (args: TextProcessingPayload) {
     var text = args.text || "";
     var x = args.x;
     var y = args.y;
@@ -335,7 +335,7 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
       //For the default 13 font
       result = pdfEscape(str, key)
         .split("")
-        .map(function(cv) {
+        .map(function (cv) {
           return cv.charCodeAt(0).toString(16);
         })
         .join("");
@@ -353,7 +353,7 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
     };
   };
 
-  var utf8EscapeFunction = function(parms: TextProcessingPayload) {
+  var utf8EscapeFunction = function (parms: TextProcessingPayload) {
     var text = parms.text || "",
       x = parms.x,
       y = parms.y,
@@ -376,9 +376,8 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
           var entryArray = text[i] as Array<string | number>;
           if (entryArray.length === 3) {
             tmpText.push([
-              utf8TextFunction(
-                Object.assign({}, args, { text: entryArray[0] })
-              ).text as string,
+              utf8TextFunction(Object.assign({}, args, { text: entryArray[0] }))
+                .text as string,
               entryArray[1],
               entryArray[2]
             ]);

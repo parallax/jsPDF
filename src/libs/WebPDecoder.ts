@@ -82,18 +82,18 @@ function WebPDecoder(imageData) {
     J(H, 0, F);
     return H;
   }
-  var _WebPDecoder = function() {
+  var _WebPDecoder = function () {
     var self = this;
     function F() {
       V(55);
     }
     function L(a, b) {
-      for (var c = (1 << (b - 1)) >>> 0; a & c; ) c >>>= 1;
+      for (var c = (1 << (b - 1)) >>> 0; a & c;) c >>>= 1;
       return c ? (a & (c - 1)) + c : a;
     }
     function J(a, b, c, d, e) {
       x(!(d % c));
-      do (d -= c), (a[b + d] = e);
+      do ((d -= c), (a[b + d] = e));
       while (0 < d);
     }
     function H(a, b, c, d, e, f) {
@@ -117,9 +117,15 @@ function WebPDecoder(imageData) {
         if (m[k] > 1 << k) return 0;
         n[k + 1] = n[k] + m[k];
       }
-      for (l = 0; l < e; ++l) (k = d[l]), 0 < d[l] && (f[n[k]++] = l);
+      for (l = 0; l < e; ++l) ((k = d[l]), 0 < d[l] && (f[n[k]++] = l));
       if (1 == n[15])
-        return (d = new O()), (d.g = 0), (d.value = f[0]), J(a, g, 1, h, d), h;
+        return (
+          (d = new O()),
+          (d.g = 0),
+          (d.value = f[0]),
+          J(a, g, 1, h, d),
+          h
+        );
       var r = -1,
         q = h - 1,
         t = 0,
@@ -135,11 +141,11 @@ function WebPDecoder(imageData) {
         p -= m[k];
         if (0 > p) return 0;
         for (; 0 < m[k]; --m[k])
-          (d = new O()),
+          ((d = new O()),
             (d.g = k),
             (d.value = f[l++]),
             J(a, g + t, e, w, d),
-            (t = L(t, k));
+            (t = L(t, k)));
       }
       k = c + 1;
       for (e = 2; 15 >= k; ++k, e <<= 1) {
@@ -152,7 +158,7 @@ function WebPDecoder(imageData) {
           if ((t & q) != r) {
             g += w;
             r = k;
-            for (u = 1 << (r - c); 15 > r; ) {
+            for (u = 1 << (r - c); 15 > r;) {
               u -= m[r];
               if (0 >= u) break;
               ++r;
@@ -207,7 +213,7 @@ function WebPDecoder(imageData) {
       Qa(a);
     }
     function na(a, b) {
-      for (var c = 0; 0 < b--; ) c |= K(a, 128) << b;
+      for (var c = 0; 0 < b--;) c |= K(a, 128) << b;
       return c;
     }
     function ca(a, b) {
@@ -232,11 +238,11 @@ function WebPDecoder(imageData) {
       a.pa = c;
     }
     function Vb(a) {
-      for (; 8 <= a.u && a.bb < a.Sb; )
-        (a.Ra >>>= 8),
+      for (; 8 <= a.u && a.bb < a.Sb;)
+        ((a.Ra >>>= 8),
           (a.Ra += (a.oa[a.pa + a.bb] << (ob - 8)) >>> 0),
           ++a.bb,
-          (a.u -= 8);
+          (a.u -= 8));
       db(a) && ((a.h = 1), (a.u = 0));
     }
     function D(a, b) {
@@ -286,8 +292,8 @@ function WebPDecoder(imageData) {
           a.pa < a.Yc
             ? ((a.b += 8), (a.I = a.oa[a.pa++] | (a.I << 8)))
             : a.Ka
-            ? (a.b = 0)
-            : ((a.I <<= 8), (a.b += 8), (a.Ka = 1)));
+              ? (a.b = 0)
+              : ((a.I <<= 8), (a.b += 8), (a.Ka = 1)));
     }
     function G(a) {
       return na(a, 1);
@@ -300,7 +306,7 @@ function WebPDecoder(imageData) {
         f = (a.I >>> d > e) + 0;
       f ? ((c -= e), (a.I -= ((e + 1) << d) >>> 0)) : (c = e + 1);
       d = c;
-      for (e = 0; 256 <= d; ) (e += 8), (d >>= 8);
+      for (e = 0; 256 <= d;) ((e += 8), (d >>= 8));
       d = 7 ^ (e + Id[d]);
       a.b -= d;
       a.Ca = (c << d) - 1;
@@ -364,7 +370,7 @@ function WebPDecoder(imageData) {
       );
     }
     function X(a, b) {
-      self[b] = function(b, d, e, f, g, h, k) {
+      self[b] = function (b, d, e, f, g, h, k) {
         var c;
         for (c = 0; c < g; ++c) {
           var m = self[a](h[k + c - 1], e, f + c);
@@ -425,11 +431,11 @@ function WebPDecoder(imageData) {
       }
     }
     function ec(a, b, c, d, e) {
-      self[b] = function(a, b, c, k, l, m, n, r, q) {
+      self[b] = function (a, b, c, k, l, m, n, r, q) {
         for (k = n; k < r; ++k)
           for (n = 0; n < q; ++n) l[m++] = e(c[d(a[b++])]);
       };
-      self[a] = function(a, b, h, k, l, m, n) {
+      self[a] = function (a, b, h, k, l, m, n) {
         var f = 8 >> a.b,
           g = a.Ea,
           t = a.K[0],
@@ -439,13 +445,13 @@ function WebPDecoder(imageData) {
             var p = 0,
               u;
             for (u = 0; u < g; ++u)
-              u & a || (p = d(k[l++])), (m[n++] = e(t[p & v])), (p >>= f);
+              (u & a || (p = d(k[l++])), (m[n++] = e(t[p & v])), (p >>= f));
           }
         else self["VP8LMapColor" + c](k, l, t, v, m, n, b, h, g);
       };
     }
     function Md(a, b, c, d, e) {
-      for (c = b + c; b < c; ) {
+      for (c = b + c; b < c;) {
         var f = a[b++];
         d[e++] = (f >> 16) & 255;
         d[e++] = (f >> 8) & 255;
@@ -453,7 +459,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Nd(a, b, c, d, e) {
-      for (c = b + c; b < c; ) {
+      for (c = b + c; b < c;) {
         var f = a[b++];
         d[e++] = (f >> 16) & 255;
         d[e++] = (f >> 8) & 255;
@@ -462,7 +468,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Od(a, b, c, d, e) {
-      for (c = b + c; b < c; ) {
+      for (c = b + c; b < c;) {
         var f = a[b++],
           g = ((f >> 16) & 240) | ((f >> 12) & 15),
           f = ((f >> 0) & 240) | ((f >> 28) & 15);
@@ -471,7 +477,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Pd(a, b, c, d, e) {
-      for (c = b + c; b < c; ) {
+      for (c = b + c; b < c;) {
         var f = a[b++],
           g = ((f >> 16) & 248) | ((f >> 13) & 7),
           f = ((f >> 5) & 224) | ((f >> 3) & 31);
@@ -480,7 +486,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Qd(a, b, c, d, e) {
-      for (c = b + c; b < c; ) {
+      for (c = b + c; b < c;) {
         var f = a[b++];
         d[e++] = (f >> 0) & 255;
         d[e++] = (f >> 8) & 255;
@@ -489,8 +495,8 @@ function WebPDecoder(imageData) {
     }
     function fb(a, b, c, d, e, f) {
       if (0 == f)
-        for (c = b + c; b < c; )
-          (f = a[b++]),
+        for (c = b + c; b < c;)
+          ((f = a[b++]),
             ra(
               d,
               ((f[0] >> 24) |
@@ -499,7 +505,7 @@ function WebPDecoder(imageData) {
                 (f[3] << 24)) >>>
                 0
             ),
-            (e += 32);
+            (e += 32));
       else I(d, e, a, b, c);
     }
     function gb(a, b) {
@@ -532,7 +538,19 @@ function WebPDecoder(imageData) {
       this.f = [];
       this.ea = [];
       this.F = [];
-      this.Tc = this.Ed = this.Cd = this.Fd = this.lb = this.Db = this.Ab = this.fa = this.J = this.W = this.N = this.O = 0;
+      this.Tc =
+        this.Ed =
+        this.Cd =
+        this.Fd =
+        this.lb =
+        this.Db =
+        this.Ab =
+        this.fa =
+        this.J =
+        this.W =
+        this.N =
+        this.O =
+          0;
     }
     function Cb() {
       this.Rd = this.height = this.width = this.S = 0;
@@ -549,7 +567,20 @@ function WebPDecoder(imageData) {
       this.format = [0];
     }
     function Ud() {
-      this.Id = this.fd = this.Md = this.hb = this.ib = this.da = this.bd = this.cd = this.j = this.v = this.Da = this.Sd = this.ob = 0;
+      this.Id =
+        this.fd =
+        this.Md =
+        this.hb =
+        this.ib =
+        this.da =
+        this.bd =
+        this.cd =
+        this.j =
+        this.v =
+        this.Da =
+        this.Sd =
+        this.ob =
+          0;
     }
     function Vd(a) {
       alert("todo:WebPSamplerProcessPlane");
@@ -580,7 +611,7 @@ function WebPDecoder(imageData) {
         : (g(b.ec, b.fc, h, k, q, t, v, p, l, m, n, r, e, f - d.A, e, f, y),
           ++c);
       for (; u + 2 < w; u += 2)
-        (q = l),
+        ((q = l),
           (t = m),
           (v = n),
           (p = r),
@@ -588,7 +619,7 @@ function WebPDecoder(imageData) {
           (r += a.Rc),
           (f += 2 * d.A),
           (k += 2 * a.fa),
-          g(h, k - a.fa, h, k, q, t, v, p, l, m, n, r, e, f - d.A, e, f, y);
+          g(h, k - a.fa, h, k, q, t, v, p, l, m, n, r, e, f - d.A, e, f, y));
       k += a.fa;
       a.j + w < a.o
         ? (I(b.ec, b.fc, h, k, y),
@@ -671,14 +702,14 @@ function WebPDecoder(imageData) {
       }
       if (d && !jc) {
         for (a = 0; 256 > a; ++a)
-          (Yd[a] = (89858 * (a - 128) + Ba) >> Wa),
+          ((Yd[a] = (89858 * (a - 128) + Ba) >> Wa),
             (Zd[a] = -22014 * (a - 128) + Ba),
             ($d[a] = -45773 * (a - 128)),
-            (ae[a] = (113618 * (a - 128) + Ba) >> Wa);
+            (ae[a] = (113618 * (a - 128) + Ba) >> Wa));
         for (a = ta; a < Eb; ++a)
-          (b = (76283 * (a - 16) + Ba) >> Wa),
+          ((b = (76283 * (a - 16) + Ba) >> Wa),
             (be[a - ta] = ga(b, 255)),
-            (ce[a - ta] = ga((b + 8) >> 4, 15));
+            (ce[a - ta] = ga((b + 8) >> 4, 15)));
         jc = 1;
       }
       return 1;
@@ -747,7 +778,7 @@ function WebPDecoder(imageData) {
       var h = c,
         k = d;
       d = a.Ta;
-      for (c = a.Ua; 0 < e--; ) {
+      for (c = a.Ua; 0 < e--;) {
         var l = a.gc[e],
           m = g,
           n = b,
@@ -782,12 +813,11 @@ function WebPDecoder(imageData) {
                 N = v.K,
                 v = v.w + (p >> v.b) * C;
               p < u;
-
             ) {
               var z = N,
                 Q = v,
                 S = 1;
-              for (fe(r, q, w, y - A, 1, w, y); S < A; ) {
+              for (fe(r, q, w, y - A, 1, w, y); S < A;) {
                 var K = qc[(z[Q++] >> 8) & 15],
                   D = (S & ~B) + E;
                 D > A && (D = A);
@@ -811,13 +841,13 @@ function WebPDecoder(imageData) {
             A = r - y;
             p = xa(r, l.b);
             E = l.K;
-            for (l = l.w + (m >> l.b) * p; m < n; ) {
+            for (l = l.w + (m >> l.b) * p; m < n;) {
               B = E;
               C = l;
               N = new Jd();
               v = u + y;
-              for (z = u + r; u < v; )
-                dc(B[C++], N), Fb(N, t, u, q, k, h), (u += q), (h += q);
+              for (z = u + r; u < v;)
+                (dc(B[C++], N), Fb(N, t, u, q, k, h), (u += q), (h += q));
               u < z &&
                 (dc(B[C++], N), Fb(N, t, u, A, k, h), (u += A), (h += A));
               ++m;
@@ -889,7 +919,6 @@ function WebPDecoder(imageData) {
                 r = f,
                 m = m.fb + a.Ma * m.A;
               0 < r--;
-
             ) {
               var q = g,
                 t = h,
@@ -968,7 +997,7 @@ function WebPDecoder(imageData) {
         var g = a.qd,
           h = a.rd;
         for (x(null != ia[a.Z]); b < c; ++b)
-          ia[a.Z](g, h, d, e, d, e, f), (g = d), (h = e), (e += f);
+          (ia[a.Z](g, h, d, e, d, e, f), (g = d), (h = e), (e += f));
         a.qd = g;
         a.rd = h;
       }
@@ -1010,7 +1039,7 @@ function WebPDecoder(imageData) {
       x(q <= e);
       var y = !1;
       a: for (;;) {
-        for (; y || n < q; ) {
+        for (; y || n < q;) {
           var A = 0;
           if (h >= v) {
             var v = a,
@@ -1059,9 +1088,9 @@ function WebPDecoder(imageData) {
               null != g && h <= f && !(h % 16) && g(a, h),
               null != p)
             )
-              for (; r < n; )
-                (A = b[r++]),
-                  (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A);
+              for (; r < n;)
+                ((A = b[r++]),
+                  (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A));
           } else if (280 > A) {
             A = ib(A - 256, l);
             E = ua(w.G[4], w.H[4], l);
@@ -1072,18 +1101,19 @@ function WebPDecoder(imageData) {
             if (n - c < E || e - n < A) break a;
             else for (B = 0; B < A; ++B) b[n + B] = b[n + B - E];
             n += A;
-            for (k += A; k >= d; )
-              (k -= d), ++h, null != g && h <= f && !(h % 16) && g(a, h);
+            for (k += A; k >= d;)
+              ((k -= d), ++h, null != g && h <= f && !(h % 16) && g(a, h));
             x(n <= e);
             k & u && (w = ha(m, k, h));
             if (null != p)
-              for (; r < n; )
-                (A = b[r++]),
-                  (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A);
+              for (; r < n;)
+                ((A = b[r++]),
+                  (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A));
           } else if (A < t) {
             y = A - 280;
-            for (x(null != p); r < n; )
-              (A = b[r++]), (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A);
+            for (x(null != p); r < n;)
+              ((A = b[r++]),
+                (p.X[((506832829 * A) & 4294967295) >>> p.Mb] = A));
             A = n;
             E = p;
             x(!(y >>> E.Xa));
@@ -1093,13 +1123,13 @@ function WebPDecoder(imageData) {
           y || x(l.h == db(l));
         }
         if (a.Pb && l.h && n < e)
-          x(a.m.h),
+          (x(a.m.h),
             (a.a = 5),
             (a.m = a.wd),
             (a.$ = a.xd),
-            0 < a.s.ua && $b(a.s.vb, a.s.Wa);
+            0 < a.s.ua && $b(a.s.vb, a.s.Wa));
         else if (l.h) break a;
-        else null != g && g(a, h > f ? f : h), (a.a = 0), (a.$ = n - c);
+        else (null != g && g(a, h > f ? f : h), (a.a = 0), (a.$ = n - c));
         return 1;
       }
       a.a = 3;
@@ -1145,7 +1175,7 @@ function WebPDecoder(imageData) {
         n = 0;
       a: for (;;) {
         if (c)
-          for (; f && D(k, 1); ) {
+          for (; f && D(k, 1);) {
             var r = g,
               q = h,
               t = d,
@@ -1252,7 +1282,7 @@ function WebPDecoder(imageData) {
               var ua = W,
                 va = wa(ua, Ub);
               if (null == va) var la = null;
-              else x(65536 >= ua), (la = va);
+              else (x(65536 >= ua), (la = va));
               var ha = V(aa);
               if (null == la || null == ha || null == ma) {
                 F.a = 1;
@@ -1315,12 +1345,12 @@ function WebPDecoder(imageData) {
                             Ba = 2 + D(La, kb);
                           if (Ba > Ca) break e;
                         } else Ba = Ca;
-                        for (sb = 0; sb < Ca && Ba--; ) {
+                        for (sb = 0; sb < Ca && Ba--;) {
                           Sa(La);
                           var $a = Za[0 + (pb(La) & 127)];
                           qb(La, La.u + $a.g);
                           var jb = $a.value;
-                          if (16 > jb) (Xa[sb++] = jb), 0 != jb && (Ya = jb);
+                          if (16 > jb) ((Xa[sb++] = jb), 0 != jb && (Ya = jb));
                           else {
                             var lb = 16 == jb,
                               ab = jb - 16,
@@ -1328,7 +1358,7 @@ function WebPDecoder(imageData) {
                               bb = D(La, pe[ab]) + mb;
                             if (sb + bb > Ca) break e;
                             else
-                              for (var nb = lb ? Ya : 0; 0 < bb--; )
+                              for (var nb = lb ? Ya : 0; 0 < bb--;)
                                 Xa[sb++] = nb;
                           }
                         }
@@ -1435,7 +1465,7 @@ function WebPDecoder(imageData) {
         d = c + b + 16 * b;
       x(a.c <= b);
       a.V = V(d);
-      if (null == a.V) return (a.Ta = null), (a.Ua = 0), (a.a = 1), 0;
+      if (null == a.V) return ((a.Ta = null), (a.Ua = 0), (a.a = 1), 0);
       a.Ta = a.V;
       a.Ua = a.Ba + c + b;
       return 1;
@@ -1445,7 +1475,7 @@ function WebPDecoder(imageData) {
         d = b - c,
         e = a.V,
         f = a.Ba + a.c * c;
-      for (x(b <= a.l.o); 0 < d; ) {
+      for (x(b <= a.l.o); 0 < d;) {
         var g = 16 < d ? 16 : d,
           h = a.l.ma,
           k = a.l.width,
@@ -1470,7 +1500,7 @@ function WebPDecoder(imageData) {
         e = [0];
       a: for (;;) {
         if (null == a) return 0;
-        if (null == b) return (a.a = 2), 0;
+        if (null == b) return ((a.a = 2), 0);
         a.l = b;
         a.a = 0;
         cb(a.m, b.data, b.w, b.ha);
@@ -1606,7 +1636,17 @@ function WebPDecoder(imageData) {
       this.bc = "VP8IoTeardownHook";
       this.ha = this.Kb = 0;
       this.data = [];
-      this.hb = this.ib = this.da = this.o = this.j = this.va = this.v = this.Da = this.ob = this.w = 0;
+      this.hb =
+        this.ib =
+        this.da =
+        this.o =
+        this.j =
+        this.va =
+        this.v =
+        this.Da =
+        this.ob =
+        this.w =
+          0;
       this.F = [];
       this.J = 0;
     }
@@ -1765,8 +1805,8 @@ function WebPDecoder(imageData) {
         for (e = 0; 8 > e; ++e)
           for (d = 0; 3 > d; ++d)
             for (h = 0; 11 > h; ++h)
-              (k = K(f, Ee[c][e][d][h]) ? na(f, 8) : Fe[c][e][d][h]),
-                (g.Wc[c][e].Yb[d][h] = k);
+              ((k = K(f, Ee[c][e][d][h]) ? na(f, 8) : Fe[c][e][d][h]),
+                (g.Wc[c][e].Yb[d][h] = k));
         for (e = 0; 17 > e; ++e) g.Xc[c][e] = g.Wc[c][Ge[e]];
       }
       a.kc = G(f);
@@ -1777,7 +1817,7 @@ function WebPDecoder(imageData) {
       var h = b[e].Yb[c];
       for (c = 0; 16 > e; ++e) {
         if (!K(a, h[c + 0])) return e;
-        for (; !K(a, h[c + 1]); )
+        for (; !K(a, h[c + 1]);)
           if (((h = b[++e].Yb[0]), (c = 0), 16 == e)) return 16;
         var k = b[e + 1].Yb;
         if (K(a, h[c + 2])) {
@@ -1800,7 +1840,7 @@ function WebPDecoder(imageData) {
                 : (r = 5 + K(l, 159));
           else K(l, m[n + 4]) ? (r = 3 + K(l, m[n + 5])) : (r = 2);
           h = k[2];
-        } else (r = 1), (h = k[1]);
+        } else ((r = 1), (h = k[1]));
         k = g + Ie[e];
         l = a;
         0 > l.b && Qa(l);
@@ -1850,8 +1890,7 @@ function WebPDecoder(imageData) {
               var v;
               for (v = 0; 4 > v; ++v) {
                 t = Ke[k[l + v]][t];
-                for (var p = Mc[K(g, t[0])]; 0 < p; )
-                  p = Mc[2 * p + K(g, t[p])];
+                for (var p = Mc[K(g, t[0])]; 0 < p;) p = Mc[2 * p + K(g, t[p])];
                 t = -p;
                 k[l + v] = t;
               }
@@ -1860,10 +1899,10 @@ function WebPDecoder(imageData) {
               m[0 + h] = t;
             }
           } else
-            (t = K(g, 156) ? (K(g, 128) ? 1 : 3) : K(g, 163) ? 2 : 0),
+            ((t = K(g, 156) ? (K(g, 128) ? 1 : 3) : K(g, 163) ? 2 : 0),
               (n.Ob[0] = t),
               M(k, l, t, 4),
-              M(m, 0, t, 4);
+              M(m, 0, t, 4));
           n.Dd = K(g, 142) ? (K(g, 114) ? (K(g, 183) ? 1 : 3) : 2) : 0;
         }
         if (e.m.Ka) return T(a, 7, "Premature end-of-partition0 encountered.");
@@ -1874,11 +1913,11 @@ function WebPDecoder(imageData) {
           k = d.rb[d.sb + d.ja];
           f = d.ya[d.aa + d.ja];
           if ((l = d.kc ? f.Ad : 0))
-            (g.la = k.la = 0),
+            ((g.la = k.la = 0),
               f.Za || (g.Na = k.Na = 0),
               (f.Hc = 0),
               (f.Gc = 0),
-              (f.ia = 0);
+              (f.ia = 0));
           else {
             var u,
               w,
@@ -1913,12 +1952,12 @@ function WebPDecoder(imageData) {
             for (p = 0; 4 > p; ++p) {
               var z = N & 1;
               for (B = w = 0; 4 > B; ++B)
-                (E = z + (C & 1)),
+                ((E = z + (C & 1)),
                   (E = oa(k, A, E, n.Sc, y, h, r)),
                   (z = E > y),
                   (C = (C >> 1) | (z << 7)),
                   (w = (w << 2) | (3 < E ? 3 : 1 < E ? 2 : 0 != h[r + 0])),
-                  (r += 16);
+                  (r += 16));
               C >>= 4;
               N = (N >> 1) | (z << 7);
               v = ((v << 8) | w) >>> 0;
@@ -1932,12 +1971,12 @@ function WebPDecoder(imageData) {
               for (p = 0; 2 > p; ++p) {
                 z = N & 1;
                 for (B = 0; 2 > B; ++B)
-                  (E = z + (C & 1)),
+                  ((E = z + (C & 1)),
                     (E = oa(k, l[2], E, n.Qc, 0, h, r)),
                     (z = 0 < E),
                     (C = (C >> 1) | (z << 3)),
                     (w = (w << 2) | (3 < E ? 3 : 1 < E ? 2 : 0 != h[r + 0])),
-                    (r += 16);
+                    (r += 16));
                 C >>= 2;
                 N = (N >> 1) | (z << 5);
               }
@@ -1965,7 +2004,7 @@ function WebPDecoder(imageData) {
         g = 0 < c.L && c.M >= c.zb && c.M <= c.Va;
         if (0 == c.Aa)
           a: {
-            (f.M = c.M), (f.uc = g), Oc(c, f), (e = 1);
+            ((f.M = c.M), (f.uc = g), Oc(c, f), (e = 1));
             w = c.D;
             f = w.Nb;
             t = Ya[c.L];
@@ -1998,10 +2037,10 @@ function WebPDecoder(imageData) {
                   G = S.tc;
                 if (0 != G)
                   if ((x(3 <= G), 1 == Q.L))
-                    0 < y && Pc(F, H, u, G + 4),
+                    (0 < y && Pc(F, H, u, G + 4),
                       S.La && Qc(F, H, u, G),
                       0 < A && Rc(F, H, u, G + 4),
-                      S.La && Sc(F, H, u, G);
+                      S.La && Sc(F, H, u, G));
                   else {
                     var L = Q.B,
                       O = Q.qa,
@@ -2126,7 +2165,7 @@ function WebPDecoder(imageData) {
           }
         }
         c = 0;
-      } else T(a, 6, "Frame setup failed"), (c = a.a);
+      } else (T(a, 6, "Frame setup failed"), (c = a.a));
       if ((c = 0 == c)) {
         if (c) {
           a.$c = 0;
@@ -2304,7 +2343,7 @@ function WebPDecoder(imageData) {
         b++;
       }
       for (f = e = 0; 4 > f; ++f)
-        (a = g[e + 0] + 4),
+        ((a = g[e + 0] + 4),
           (h = a + g[e + 8]),
           (k = a - g[e + 8]),
           (l = ((35468 * g[e + 4]) >> 16) - da(g[e + 12])),
@@ -2314,7 +2353,7 @@ function WebPDecoder(imageData) {
           qa(c, d, 2, 0, k - l),
           qa(c, d, 3, 0, h - m),
           e++,
-          (d += 32);
+          (d += 32));
     }
     function Te(a, b, c, d) {
       var e = a[b + 0] + 4,
@@ -2360,7 +2399,7 @@ function WebPDecoder(imageData) {
         e[12 + f] = l - k;
       }
       for (f = 0; 4 > f; ++f)
-        (a = e[0 + 4 * f] + 3),
+        ((a = e[0 + 4 * f] + 3),
           (g = a + e[3 + 4 * f]),
           (h = e[1 + 4 * f] + e[2 + 4 * f]),
           (k = e[1 + 4 * f] - e[2 + 4 * f]),
@@ -2369,7 +2408,7 @@ function WebPDecoder(imageData) {
           (c[d + 16] = (l + k) >> 3),
           (c[d + 32] = (g - h) >> 3),
           (c[d + 48] = (l - k) >> 3),
-          (d += 64);
+          (d += 64));
     }
     function Pb(a, b, c) {
       var d = b - 32,
@@ -2399,7 +2438,7 @@ function WebPDecoder(imageData) {
     }
     function rf(a, b) {
       var c;
-      for (c = 16; 0 < c; --c) M(a, b, a[b - 1], 16), (b += 32);
+      for (c = 16; 0 < c; --c) (M(a, b, a[b - 1], 16), (b += 32));
     }
     function $a(a, b, c) {
       var d;
@@ -2541,9 +2580,13 @@ function WebPDecoder(imageData) {
       a[b + 1 + 0] = z(c, d, e);
       a[b + 3 + 0] = a[b + 1 + 32] = z(d, e, f);
       a[b + 3 + 32] = a[b + 1 + 64] = z(e, f, f);
-      a[b + 3 + 64] = a[b + 2 + 64] = a[b + 0 + 96] = a[b + 1 + 96] = a[
-        b + 2 + 96
-      ] = a[b + 3 + 96] = f;
+      a[b + 3 + 64] =
+        a[b + 2 + 64] =
+        a[b + 0 + 96] =
+        a[b + 1 + 96] =
+        a[b + 2 + 96] =
+        a[b + 3 + 96] =
+          f;
     }
     function mf(a, b) {
       var c = a[b - 1 + 0],
@@ -2571,7 +2614,7 @@ function WebPDecoder(imageData) {
     }
     function yf(a, b) {
       var c;
-      for (c = 0; 8 > c; ++c) M(a, b, a[b - 1], 8), (b += 32);
+      for (c = 0; 8 > c; ++c) (M(a, b, a[b - 1], 8), (b += 32));
     }
     function lb(a, b, c) {
       var d;
@@ -2643,14 +2686,14 @@ function WebPDecoder(imageData) {
     }
     function bf(a, b, c, d) {
       var e;
-      for (e = 3; 0 < e; --e) (b += 4 * c), gd(a, b, c, d);
+      for (e = 3; 0 < e; --e) ((b += 4 * c), gd(a, b, c, d));
     }
     function cf(a, b, c, d) {
       var e;
-      for (e = 3; 0 < e; --e) (b += 4), hd(a, b, c, d);
+      for (e = 3; 0 < e; --e) ((b += 4), hd(a, b, c, d));
     }
     function ea(a, b, c, d, e, f, g, h) {
-      for (f = 2 * f + 1; 0 < e--; ) {
+      for (f = 2 * f + 1; 0 < e--;) {
         if (ld(a, b, c, f, g))
           if (jd(a, b, c, h)) ab(a, b, c);
           else {
@@ -2677,7 +2720,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Fa(a, b, c, d, e, f, g, h) {
-      for (f = 2 * f + 1; 0 < e--; ) {
+      for (f = 2 * f + 1; 0 < e--;) {
         if (ld(a, b, c, f, g))
           if (jd(a, b, c, h)) ab(a, b, c);
           else {
@@ -2707,11 +2750,11 @@ function WebPDecoder(imageData) {
     }
     function Ye(a, b, c, d, e, f) {
       var g;
-      for (g = 3; 0 < g; --g) (b += 4 * c), Fa(a, b, c, 1, 16, d, e, f);
+      for (g = 3; 0 < g; --g) ((b += 4 * c), Fa(a, b, c, 1, 16, d, e, f));
     }
     function Ze(a, b, c, d, e, f) {
       var g;
-      for (g = 3; 0 < g; --g) (b += 4), Fa(a, b, 1, c, 16, d, e, f);
+      for (g = 3; 0 < g; --g) ((b += 4), Fa(a, b, 1, c, 16, d, e, f));
     }
     function We(a, b, c, d, e, f, g, h) {
       ea(a, b, e, 1, 8, f, g, h);
@@ -2790,7 +2833,8 @@ function WebPDecoder(imageData) {
     }
     function Rb(a, b, c, d, e, f, g) {
       a = null == a ? 0 : a[b + 0];
-      for (b = 0; b < g; ++b) (e[f + b] = (a + c[d + b]) & 255), (a = e[f + b]);
+      for (b = 0; b < g; ++b)
+        ((e[f + b] = (a + c[d + b]) & 255), (a = e[f + b]));
     }
     function Gf(a, b, c, d, e, f, g) {
       if (null == a) Rb(null, null, c, d, e, f, g);
@@ -2807,11 +2851,11 @@ function WebPDecoder(imageData) {
           l = h,
           m;
         for (m = 0; m < g; ++m)
-          (h = a[b + m]),
+          ((h = a[b + m]),
             (k = l + h - k),
             (l = (c[d + m] + (k & -256 ? (0 > k ? 0 : 255) : k)) & 255),
             (k = h),
-            (e[f + m] = l);
+            (e[f + m] = l));
       }
     }
     function Le(a, b, c, d) {
@@ -2876,7 +2920,7 @@ function WebPDecoder(imageData) {
               g.$a)
             )
               b: {
-                x(1 == g.$a), (b = Bc());
+                (x(1 == g.$a), (b = Bc()));
                 c: for (;;) {
                   if (null == b) {
                     b = 0;
@@ -2931,14 +2975,14 @@ function WebPDecoder(imageData) {
             x(k <= a.P + a.qc);
             if (0 != h.Z)
               for (x(null != ia[h.Z]), g = 0; g < d; ++g)
-                ia[h.Z](r, q, t, k, l, m, b),
+                (ia[h.Z](r, q, t, k, l, m, b),
                   (r = l),
                   (q = m),
                   (m += b),
-                  (k += b);
+                  (k += b));
             else
               for (g = 0; g < d; ++g)
-                I(l, m, t, k, b), (r = l), (q = m), (m += b), (k += b);
+                (I(l, m, t, k, b), (r = l), (q = m), (m += b), (k += b));
             a.rc = r;
             a.Vc = q;
           } else {
@@ -2967,16 +3011,17 @@ function WebPDecoder(imageData) {
               x(b <= v);
               x(yc(n));
               c: for (;;) {
-                for (; !m.h && p < w; ) {
+                for (; !m.h && p < w;) {
                   l & y || (A = ha(n, l, k));
                   x(null != A);
                   Sa(m);
                   v = ua(A.G[0], A.H[0], m);
                   if (256 > v)
-                    (h[r + p] = v),
+                    ((h[r + p] = v),
                       ++p,
                       ++l,
-                      l >= q && ((l = 0), ++k, k <= b && !(k % 16) && Ib(g, k));
+                      l >= q &&
+                        ((l = 0), ++k, k <= b && !(k % 16) && Ib(g, k)));
                   else if (280 > v) {
                     var v = ib(v - 256, m);
                     var E = ua(A.G[4], A.H[4], m);
@@ -2991,8 +3036,8 @@ function WebPDecoder(imageData) {
                       break c;
                     }
                     p += v;
-                    for (l += v; l >= q; )
-                      (l -= q), ++k, k <= b && !(k % 16) && Ib(g, k);
+                    for (l += v; l >= q;)
+                      ((l -= q), ++k, k <= b && !(k % 16) && Ib(g, k));
                     p < w && l & y && (A = ha(n, l, k));
                   } else {
                     t = 0;
@@ -3019,12 +3064,12 @@ function WebPDecoder(imageData) {
           a.Cc &&
           ((d = a.ga), null != d && (d.mc = null), (a.ga = null), 0 < a.Ga)
         )
-          return alert("todo:WebPDequantizeLevels"), null;
+          return (alert("todo:WebPDequantizeLevels"), null);
       }
       return a.nb + c * e;
     }
     function If(a, b, c, d, e, f) {
-      for (; 0 < e--; ) {
+      for (; 0 < e--;) {
         var g = a,
           h = b + (c ? 1 : 0),
           k = a,
@@ -3042,7 +3087,7 @@ function WebPDecoder(imageData) {
       }
     }
     function Jf(a, b, c, d, e) {
-      for (; 0 < d--; ) {
+      for (; 0 < d--;) {
         var f;
         for (f = 0; f < c; ++f) {
           var g = a[b + 2 * f + 0],
@@ -3084,7 +3129,7 @@ function WebPDecoder(imageData) {
       Fc = Lf;
     }
     function va(a, b, c) {
-      self[a] = function(a, e, f, g, h, k, l, m, n, r, q, t, v, p, u, w, y) {
+      self[a] = function (a, e, f, g, h, k, l, m, n, r, q, t, v, p, u, w, y) {
         var d,
           E = (y - 1) >> 1;
         var B = h[k + 0] | (l[m + 0] << 16);
@@ -3182,14 +3227,14 @@ function WebPDecoder(imageData) {
       d[e + 3] = 255;
     }
     function la(a, b, c) {
-      self[a] = function(a, e, f, g, h, k, l, m, n) {
-        for (var d = m + (n & -2) * c; m != d; )
-          b(a[e + 0], f[g + 0], h[k + 0], l, m),
+      self[a] = function (a, e, f, g, h, k, l, m, n) {
+        for (var d = m + (n & -2) * c; m != d;)
+          (b(a[e + 0], f[g + 0], h[k + 0], l, m),
             b(a[e + 1], f[g + 0], h[k + 0], l, m + c),
             (e += 2),
             ++g,
             ++k,
-            (m += 2 * c);
+            (m += 2 * c));
         n & 1 && b(a[e + 0], f[g + 0], h[k + 0], l, m);
       };
     }
@@ -3221,7 +3266,7 @@ function WebPDecoder(imageData) {
         n = a.pc + 600;
       for (c = 0; 16 > c; ++c) g[h + 32 * c - 1] = 129;
       for (c = 0; 8 > c; ++c)
-        (k[l + 32 * c - 1] = 129), (m[n + 32 * c - 1] = 129);
+        ((k[l + 32 * c - 1] = 129), (m[n + 32 * c - 1] = 129));
       0 < e
         ? (g[h - 1 - 32] = k[l - 1 - 32] = m[n - 1 - 32] = 129)
         : (M(g, h - 32 - 1, 127, 21),
@@ -3232,8 +3277,8 @@ function WebPDecoder(imageData) {
         if (0 < d) {
           for (c = -1; 16 > c; ++c) I(g, h + 32 * c - 4, g, h + 32 * c + 12, 4);
           for (c = -1; 8 > c; ++c)
-            I(k, l + 32 * c - 4, k, l + 32 * c + 4, 4),
-              I(m, n + 32 * c - 4, m, n + 32 * c + 4, 4);
+            (I(k, l + 32 * c - 4, k, l + 32 * c + 4, 4),
+              I(m, n + 32 * c - 4, m, n + 32 * c + 4, 4));
         }
         var q = a.Gd,
           t = a.Hd + d,
@@ -3253,7 +3298,10 @@ function WebPDecoder(imageData) {
           for (c = 0; 4 > c; c++)
             u[w + 128 + c] = u[w + 256 + c] = u[w + 384 + c] = u[w + 0 + c];
           for (c = 0; 16 > c; ++c, p <<= 2)
-            (u = g), (w = h + zd[c]), W[r.Ob[c]](u, w), yd(p, v, 16 * +c, u, w);
+            ((u = g),
+              (w = h + zd[c]),
+              W[r.Ob[c]](u, w),
+              yd(p, v, 16 * +c, u, w));
         } else if (((u = xd(d, e, r.Ob[0])), Y[u](g, h), 0 != p))
           for (c = 0; 16 > c; ++c, p <<= 2) yd(p, v, 16 * +c, g, h + zd[c]);
         c = r.Gc;
@@ -3282,8 +3330,8 @@ function WebPDecoder(imageData) {
         u = a.Ia + 8 * d + c;
         for (c = 0; 16 > c; ++c) I(q, t + c * a.R, g, h + 32 * c, 16);
         for (c = 0; 8 > c; ++c)
-          I(v, r + c * a.B, k, l + 32 * c, 8),
-            I(p, u + c * a.B, m, n + 32 * c, 8);
+          (I(v, r + c * a.B, k, l + 32 * c, 8),
+            I(p, u + c * a.B, m, n + 32 * c, 8));
       }
     }
     function Ad(a, b, c, d, e, f, g, h, k) {
@@ -3329,7 +3377,7 @@ function WebPDecoder(imageData) {
       }
       if (0 != p) return p;
       u = 0 < q.gb[0];
-      for (c = c[0]; ; ) {
+      for (c = c[0]; ;) {
         t = [0];
         n = [n];
         a: {
@@ -3409,7 +3457,7 @@ function WebPDecoder(imageData) {
             x(null != B);
             A[0] = null;
             z[0] = null;
-            for (B[0] = 0; ; ) {
+            for (B[0] = 0; ;) {
               p[0] = w;
               u[0] = F;
               if (8 > F) {
@@ -3482,8 +3530,8 @@ function WebPDecoder(imageData) {
             u[0] -= 8;
             B[0] = D;
           } else
-            (B[0] = 5 <= u[0] && 47 == y[C + 0] && !(y[C + 4] >> 5)),
-              (z[0] = u[0]);
+            ((B[0] = 5 <= u[0] && 47 == y[C + 0] && !(y[C + 4] >> 5)),
+              (z[0] = u[0]));
           p = 0;
         }
         c = c[0];
@@ -3506,18 +3554,18 @@ function WebPDecoder(imageData) {
           null == a || 5 > c
             ? (a = 0)
             : 5 <= c && 47 == a[b + 0] && !(a[b + 4] >> 5)
-            ? ((u = [0]),
-              (y = [0]),
-              (A = [0]),
-              (z = new Ra()),
-              cb(z, a, b, c),
-              mc(z, u, y, A)
-                ? (null != h && (h[0] = u[0]),
-                  null != r && (r[0] = y[0]),
-                  null != v && (v[0] = A[0]),
-                  (a = 1))
-                : (a = 0))
-            : (a = 0);
+              ? ((u = [0]),
+                (y = [0]),
+                (A = [0]),
+                (z = new Ra()),
+                cb(z, a, b, c),
+                mc(z, u, y, A)
+                  ? (null != h && (h[0] = u[0]),
+                    null != r && (r[0] = y[0]),
+                    null != v && (v[0] = A[0]),
+                    (a = 1))
+                  : (a = 0))
+              : (a = 0);
         } else {
           if (10 > c) {
             p = 7;
@@ -3600,7 +3648,7 @@ function WebPDecoder(imageData) {
         b.fb += (a.height - 1) * b.A;
         b.A = -b.A;
       } else
-        (b = a.f.kb),
+        ((b = a.f.kb),
           (a = a.height),
           (b.O += (a - 1) * b.fa),
           (b.fa = -b.fa),
@@ -3608,7 +3656,7 @@ function WebPDecoder(imageData) {
           (b.Ab = -b.Ab),
           (b.W += ((a - 1) >> 1) * b.Db),
           (b.Db = -b.Db),
-          null != b.F && ((b.J += (a - 1) * b.lb), (b.lb = -b.lb));
+          null != b.F && ((b.J += (a - 1) * b.lb), (b.lb = -b.lb)));
       return 0;
     }
     function Cd(a, b, c, d) {
@@ -3683,11 +3731,11 @@ function WebPDecoder(imageData) {
           g = d.height;
           if (e >= Ca && 13 > e)
             if (11 > e)
-              (a = d.f.RGBA),
+              ((a = d.f.RGBA),
                 (h = Math.abs(a.A)),
                 (b &= h * (g - 1) + f <= a.size),
                 (b &= h >= f * Dd[e]),
-                (b &= null != a.eb);
+                (b &= null != a.eb));
             else {
               a = d.f.kb;
               h = (f + 1) / 2;
@@ -3716,328 +3764,61 @@ function WebPDecoder(imageData) {
     }
     var xb = 64,
       Hd = [
-        0,
-        1,
-        3,
-        7,
-        15,
-        31,
-        63,
-        127,
-        255,
-        511,
-        1023,
-        2047,
-        4095,
-        8191,
-        16383,
-        32767,
-        65535,
-        131071,
-        262143,
-        524287,
-        1048575,
-        2097151,
-        4194303,
-        8388607,
-        16777215
+        0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383,
+        32767, 65535, 131071, 262143, 524287, 1048575, 2097151, 4194303,
+        8388607, 16777215
       ],
       Gd = 24,
       ob = 32,
       Xb = 8,
       Id = [
-        0,
-        0,
-        1,
-        1,
-        2,
-        2,
-        2,
-        2,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7
+        0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+        6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
       ];
     X("Predictor0", "PredictorAdd0");
-    self.Predictor0 = function() {
+    self.Predictor0 = function () {
       return 4278190080;
     };
-    self.Predictor1 = function(a) {
+    self.Predictor1 = function (a) {
       return a;
     };
-    self.Predictor2 = function(a, b, c) {
+    self.Predictor2 = function (a, b, c) {
       return b[c + 0];
     };
-    self.Predictor3 = function(a, b, c) {
+    self.Predictor3 = function (a, b, c) {
       return b[c + 1];
     };
-    self.Predictor4 = function(a, b, c) {
+    self.Predictor4 = function (a, b, c) {
       return b[c - 1];
     };
-    self.Predictor5 = function(a, b, c) {
+    self.Predictor5 = function (a, b, c) {
       return aa(aa(a, b[c + 1]), b[c + 0]);
     };
-    self.Predictor6 = function(a, b, c) {
+    self.Predictor6 = function (a, b, c) {
       return aa(a, b[c - 1]);
     };
-    self.Predictor7 = function(a, b, c) {
+    self.Predictor7 = function (a, b, c) {
       return aa(a, b[c + 0]);
     };
-    self.Predictor8 = function(a, b, c) {
+    self.Predictor8 = function (a, b, c) {
       return aa(b[c - 1], b[c + 0]);
     };
-    self.Predictor9 = function(a, b, c) {
+    self.Predictor9 = function (a, b, c) {
       return aa(b[c + 0], b[c + 1]);
     };
-    self.Predictor10 = function(a, b, c) {
+    self.Predictor10 = function (a, b, c) {
       return aa(aa(a, b[c - 1]), aa(b[c + 0], b[c + 1]));
     };
-    self.Predictor11 = function(a, b, c) {
+    self.Predictor11 = function (a, b, c) {
       var d = b[c + 0];
       b = b[c - 1];
       return 0 >=
@@ -4048,7 +3829,7 @@ function WebPDecoder(imageData) {
         ? d
         : a;
     };
-    self.Predictor12 = function(a, b, c) {
+    self.Predictor12 = function (a, b, c) {
       var d = b[c + 0];
       b = b[c - 1];
       return (
@@ -4060,7 +3841,7 @@ function WebPDecoder(imageData) {
         0
       );
     };
-    self.Predictor13 = function(a, b, c) {
+    self.Predictor13 = function (a, b, c) {
       var d = b[c - 1];
       a = aa(a, b[c + 0]);
       return (
@@ -4090,10 +3871,10 @@ function WebPDecoder(imageData) {
       "ColorIndexInverseTransform",
       "MapARGB",
       "32b",
-      function(a) {
+      function (a) {
         return (a >> 8) & 255;
       },
-      function(a) {
+      function (a) {
         return a;
       }
     );
@@ -4101,10 +3882,10 @@ function WebPDecoder(imageData) {
       "VP8LColorIndexInverseTransformAlpha",
       "MapAlpha",
       "8b",
-      function(a) {
+      function (a) {
         return a;
       },
-      function(a) {
+      function (a) {
         return (a >> 8) & 255;
       }
     );
@@ -4150,401 +3931,37 @@ function WebPDecoder(imageData) {
       qe = [0, 1, 1, 1, 0],
       ne = [17, 18, 0, 1, 2, 3, 4, 5, 16, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
       de = [
-        24,
-        7,
-        23,
-        25,
-        40,
-        6,
-        39,
-        41,
-        22,
-        26,
-        38,
-        42,
-        56,
-        5,
-        55,
-        57,
-        21,
-        27,
-        54,
-        58,
-        37,
-        43,
-        72,
-        4,
-        71,
-        73,
-        20,
-        28,
-        53,
-        59,
-        70,
-        74,
-        36,
-        44,
-        88,
-        69,
-        75,
-        52,
-        60,
-        3,
-        87,
-        89,
-        19,
-        29,
-        86,
-        90,
-        35,
-        45,
-        68,
-        76,
-        85,
-        91,
-        51,
-        61,
-        104,
-        2,
-        103,
-        105,
-        18,
-        30,
-        102,
-        106,
-        34,
-        46,
-        84,
-        92,
-        67,
-        77,
-        101,
-        107,
-        50,
-        62,
-        120,
-        1,
-        119,
-        121,
-        83,
-        93,
-        17,
-        31,
-        100,
-        108,
-        66,
-        78,
-        118,
-        122,
-        33,
-        47,
-        117,
-        123,
-        49,
-        63,
-        99,
-        109,
-        82,
-        94,
-        0,
-        116,
-        124,
-        65,
-        79,
-        16,
-        32,
-        98,
-        110,
-        48,
-        115,
-        125,
-        81,
-        95,
-        64,
-        114,
-        126,
-        97,
-        111,
-        80,
-        113,
-        127,
-        96,
-        112
+        24, 7, 23, 25, 40, 6, 39, 41, 22, 26, 38, 42, 56, 5, 55, 57, 21, 27, 54,
+        58, 37, 43, 72, 4, 71, 73, 20, 28, 53, 59, 70, 74, 36, 44, 88, 69, 75,
+        52, 60, 3, 87, 89, 19, 29, 86, 90, 35, 45, 68, 76, 85, 91, 51, 61, 104,
+        2, 103, 105, 18, 30, 102, 106, 34, 46, 84, 92, 67, 77, 101, 107, 50, 62,
+        120, 1, 119, 121, 83, 93, 17, 31, 100, 108, 66, 78, 118, 122, 33, 47,
+        117, 123, 49, 63, 99, 109, 82, 94, 0, 116, 124, 65, 79, 16, 32, 98, 110,
+        48, 115, 125, 81, 95, 64, 114, 126, 97, 111, 80, 113, 127, 96, 112
       ],
       me = [
-        2954,
-        2956,
-        2958,
-        2962,
-        2970,
-        2986,
-        3018,
-        3082,
-        3212,
-        3468,
-        3980,
-        5004
+        2954, 2956, 2958, 2962, 2970, 2986, 3018, 3082, 3212, 3468, 3980, 5004
       ],
       ie = 8,
       Lb = [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        17,
-        18,
-        19,
-        20,
-        20,
-        21,
-        21,
-        22,
-        22,
-        23,
-        23,
-        24,
-        25,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        91,
-        93,
-        95,
-        96,
-        98,
-        100,
-        101,
-        102,
-        104,
-        106,
-        108,
-        110,
-        112,
-        114,
-        116,
-        118,
-        122,
-        124,
-        126,
-        128,
-        130,
-        132,
-        134,
-        136,
-        138,
-        140,
-        143,
-        145,
-        148,
-        151,
-        154,
-        157
+        4, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17, 17, 18, 19, 20,
+        20, 21, 21, 22, 22, 23, 23, 24, 25, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+        34, 35, 36, 37, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 47, 48, 49,
+        50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
+        68, 69, 70, 71, 72, 73, 74, 75, 76, 76, 77, 78, 79, 80, 81, 82, 83, 84,
+        85, 86, 87, 88, 89, 91, 93, 95, 96, 98, 100, 101, 102, 104, 106, 108,
+        110, 112, 114, 116, 118, 122, 124, 126, 128, 130, 132, 134, 136, 138,
+        140, 143, 145, 148, 151, 154, 157
       ],
       Mb = [
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        60,
-        62,
-        64,
-        66,
-        68,
-        70,
-        72,
-        74,
-        76,
-        78,
-        80,
-        82,
-        84,
-        86,
-        88,
-        90,
-        92,
-        94,
-        96,
-        98,
-        100,
-        102,
-        104,
-        106,
-        108,
-        110,
-        112,
-        114,
-        116,
-        119,
-        122,
-        125,
-        128,
-        131,
-        134,
-        137,
-        140,
-        143,
-        146,
-        149,
-        152,
-        155,
-        158,
-        161,
-        164,
-        167,
-        170,
-        173,
-        177,
-        181,
-        185,
-        189,
-        193,
-        197,
-        201,
-        205,
-        209,
-        213,
-        217,
-        221,
-        225,
-        229,
-        234,
-        239,
-        245,
-        249,
-        254,
-        259,
-        264,
-        269,
-        274,
-        279,
-        284
+        4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
+        60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94,
+        96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 119, 122, 125, 128,
+        131, 134, 137, 140, 143, 146, 149, 152, 155, 158, 161, 164, 167, 170,
+        173, 177, 181, 185, 189, 193, 197, 201, 205, 209, 213, 217, 221, 225,
+        229, 234, 239, 245, 249, 254, 259, 264, 269, 274, 279, 284
       ],
       oa = null,
       He = [
@@ -5082,27 +4499,12 @@ function WebPDecoder(imageData) {
     la("YuvToRgba4444Row", td, 2);
     la("YuvToRgb565Row", sd, 2);
     var zd = [
-        0,
-        4,
-        8,
-        12,
-        128,
-        132,
-        136,
-        140,
-        256,
-        260,
-        264,
-        268,
-        384,
-        388,
-        392,
-        396
+        0, 4, 8, 12, 128, 132, 136, 140, 256, 260, 264, 268, 384, 388, 392, 396
       ],
       Ya = [0, 2, 8],
       Qf = [8, 7, 6, 4, 4, 2, 2, 2, 1, 1, 1, 1],
       Ne = 1;
-    this.WebPDecodeRGBA = function(a, b, c, d, e) {
+    this.WebPDecodeRGBA = function (a, b, c, d, e) {
       var f = Ua;
       var g = new Cf(),
         h = new Cb();
@@ -5115,8 +4517,8 @@ function WebPDecoder(imageData) {
         m = new Td();
       if (null == m || null == a) var n = 2;
       else
-        x(null != m),
-          (n = Ad(a, b, c, m.width, m.height, m.Pd, m.Qd, m.format, null));
+        (x(null != m),
+          (n = Ad(a, b, c, m.width, m.height, m.Pd, m.Qd, m.format, null)));
       0 != n
         ? (k = 0)
         : (null != k && (k[0] = m.width[0]),
@@ -5228,10 +4630,10 @@ function WebPDecoder(imageData) {
                     k = 0 > k ? 0 : 100 < k ? 255 : (255 * k) / 100;
                     if (0 < k) {
                       for (l = m = 0; 4 > l; ++l)
-                        (n = e.pb[l]),
+                        ((n = e.pb[l]),
                           12 > n.lc &&
                             (n.ia = (k * Qf[0 > n.lc ? 0 : n.lc]) >> 3),
-                          (m |= n.ia);
+                          (m |= n.ia));
                       m && (alert("todo:VP8InitRandom"), (e.ia = 1));
                     }
                     e.Ga = c.Id;
@@ -5444,7 +4846,7 @@ WebPRiffParser dominikhlbg@gmail.com
   return this;
 }
 
-WebPDecoder.prototype.getData = function() {
+WebPDecoder.prototype.getData = function () {
   return this.data;
 };
 

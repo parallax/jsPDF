@@ -226,7 +226,7 @@ declare module "../types.js" {
  * @name cell
  * @module
  */
-(function(jsPDFAPI: jsPDFAPIType) {
+(function (jsPDFAPI: jsPDFAPIType) {
   "use strict";
 
   var NO_MARGINS: CellMargins = { left: 0, top: 0, bottom: 0, right: 0 };
@@ -234,7 +234,7 @@ declare module "../types.js" {
   var px2pt = (0.264583 * 72) / 25.4;
   var printingHeaderRow = false;
 
-  var _initialize = function(this: jsPDFDocument) {
+  var _initialize = function (this: jsPDFDocument) {
     if (typeof this.internal.__cell__ === "undefined") {
       this.internal.__cell__ = {};
       this.internal.__cell__.padding = 3;
@@ -245,7 +245,7 @@ declare module "../types.js" {
     }
   };
 
-  var _reset = function(this: jsPDFDocument) {
+  var _reset = function (this: jsPDFDocument) {
     this.internal.__cell__.lastCell = new Cell();
     this.internal.__cell__.pages = 1;
   };
@@ -255,7 +255,7 @@ declare module "../types.js" {
    * @function
    * @param {function} func
    */
-  jsPDFAPI.setHeaderFunction = function(
+  jsPDFAPI.setHeaderFunction = function (
     this: jsPDFDocument,
     func: CellHeaderFunction
   ) {
@@ -271,7 +271,7 @@ declare module "../types.js" {
    * @param {string} txt
    * @returns {Object} dimensions
    */
-  jsPDFAPI.getTextDimensions = function(
+  jsPDFAPI.getTextDimensions = function (
     this: jsPDFDocument,
     text: string | string[] | number,
     options?: GetTextDimensionsOptions
@@ -302,13 +302,12 @@ declare module "../types.js" {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = (text as string[]).reduce(function(
+        text = (text as string[]).reduce(function (
           acc: string[],
           textLine: string
         ) {
           return acc.concat(scope.splitTextToSize(textLine, maxWidth));
-        },
-        []);
+        }, []);
       }
     } else {
       // Without the else clause, it will not work if you do not pass along maxWidth
@@ -340,7 +339,7 @@ declare module "../types.js" {
    * @name cellAddPage
    * @function
    */
-  jsPDFAPI.cellAddPage = function(this: jsPDFDocument) {
+  jsPDFAPI.cellAddPage = function (this: jsPDFDocument) {
     _initialize.call(this);
 
     this.addPage();
@@ -369,7 +368,7 @@ declare module "../types.js" {
    * @param {string} align
    * @return {jsPDF} jsPDF-instance
    */
-  var cell = function(
+  var cell = function (
     this: jsPDFDocument,
     x?: number | Cell,
     y?: number,
@@ -481,7 +480,7 @@ declare module "../types.js" {
      * @returns {jsPDF} jsPDF-instance
      */
 
-  jsPDFAPI.table = function(
+  jsPDFAPI.table = function (
     this: jsPDFDocument,
     x: number,
     y: number,
@@ -535,18 +534,18 @@ declare module "../types.js" {
       // No headers defined so we derive from data
       headerNames = Object.keys(data[0]);
       headerLabels = headerNames;
-      headerAligns = headerNames.map(function() {
+      headerAligns = headerNames.map(function () {
         return "left";
       });
     } else if (Array.isArray(headers) && typeof headers[0] === "object") {
       var headerConfigs = headers as CellConfig[];
-      headerNames = headerConfigs.map(function(header) {
+      headerNames = headerConfigs.map(function (header) {
         return header.name;
       });
-      headerLabels = headerConfigs.map(function(header) {
+      headerLabels = headerConfigs.map(function (header) {
         return header.prompt || header.name || "";
       });
-      headerAligns = headerConfigs.map(function(header) {
+      headerAligns = headerConfigs.map(function (header) {
         return header.align || "left";
       });
       // Split header configs into names and prompts
@@ -556,7 +555,7 @@ declare module "../types.js" {
     } else if (Array.isArray(headers) && typeof headers[0] === "string") {
       headerNames = headers as string[];
       headerLabels = headerNames;
-      headerAligns = headerNames.map(function() {
+      headerAligns = headerNames.map(function () {
         return "left";
       });
     }
@@ -571,7 +570,7 @@ declare module "../types.js" {
 
         // Create a matrix of columns e.g., {column_title: [row1_Record, row2_Record]}
 
-        columnMatrix[headerName] = data.map(function(rec) {
+        columnMatrix[headerName] = data.map(function (rec) {
           return rec[headerName];
         });
 
@@ -618,7 +617,7 @@ declare module "../types.js" {
       var rowHeight = calculateLineHeight.call(this, row, columnWidths);
 
       // Construct the header row
-      tableHeaderConfigs = headerNames.map(function(value) {
+      tableHeaderConfigs = headerNames.map(function (value) {
         return new Cell(
           x,
           y,
@@ -641,14 +640,13 @@ declare module "../types.js" {
 
     // Note: with string[] headers `cv.name` is undefined at runtime, so the
     // lookup below yields undefined aligns — preserved legacy behavior.
-    var align = (headers as CellConfig[]).reduce(function(
+    var align = (headers as CellConfig[]).reduce(function (
       pv: Record<string, string | undefined>,
       cv
     ) {
       pv[cv.name] = cv.align;
       return pv;
-    },
-    {});
+    }, {});
     for (i = 0; i < data.length; i += 1) {
       if ("rowStart" in config && config.rowStart instanceof Function) {
         config.rowStart(
@@ -712,7 +710,7 @@ declare module "../types.js" {
     var scaleFactor = this.internal.scaleFactor;
 
     return Object.keys(model)
-      .map(function(this: jsPDFDocument, key) {
+      .map(function (this: jsPDFDocument, key) {
         var value = model[key];
         return this.splitTextToSize(
           value.hasOwnProperty("text")
@@ -721,14 +719,14 @@ declare module "../types.js" {
           columnWidths[key] - padding - padding
         );
       }, this)
-      .map(function(this: jsPDFDocument, value) {
+      .map(function (this: jsPDFDocument, value) {
         return (
           (this.getLineHeightFactor() * value.length * fontSize) / scaleFactor +
           padding +
           padding
         );
       }, this)
-      .reduce(function(pv, cv) {
+      .reduce(function (pv, cv) {
         return Math.max(pv, cv);
       }, 0);
   };
@@ -742,7 +740,7 @@ declare module "../types.js" {
    * An array of cell configs that would define a header row: Each config matches the config used by jsPDFAPI.cell
    * except the lineNumber parameter is excluded
    */
-  jsPDFAPI.setTableHeaderRow = function(this: jsPDFDocument, config: Cell[]) {
+  jsPDFAPI.setTableHeaderRow = function (this: jsPDFDocument, config: Cell[]) {
     _initialize.call(this);
     this.internal.__cell__.tableHeaderRow = config;
   };
@@ -755,7 +753,7 @@ declare module "../types.js" {
    * @param {number} lineNumber The line number to output the header at
    * @param {boolean} new_page
    */
-  jsPDFAPI.printHeaderRow = function(
+  jsPDFAPI.printHeaderRow = function (
     this: jsPDFDocument,
     lineNumber: number,
     new_page?: boolean

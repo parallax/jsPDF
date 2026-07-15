@@ -55,9 +55,11 @@ describe("Module: Context2D Complex Examples", () => {
     gradient.addColorStop(0, primaryColor);
     gradient.addColorStop(1, secondaryColor);
 
-    // Add a shadow around the object
-    context.shadowBlur = 10;
-    context.shadowColor = "black";
+    // Add a shadow around the object. jsPDF's context2d does not implement
+    // canvas shadows; these writes are runtime no-ops kept verbatim from the
+    // upstream canvas sample, hence the casts.
+    (context as unknown as CanvasRenderingContext2D).shadowBlur = 10;
+    (context as unknown as CanvasRenderingContext2D).shadowColor = "black";
 
     // Stroke the outer outline
     context.lineWidth = lineWidth * 2;
@@ -66,7 +68,8 @@ describe("Module: Context2D Complex Examples", () => {
     context.stroke();
 
     // Turn off the shadow, or all future fills will have shadows
-    context.shadowColor = "transparent";
+    (context as unknown as CanvasRenderingContext2D).shadowColor =
+      "transparent";
 
     // Fill the path
     context.fillStyle = gradient;
@@ -125,7 +128,15 @@ describe("Module: Context2D Complex Examples", () => {
     var y3 = height;
     var depth = 6;
 
-    function sierpinski(x1, y1, x2, y2, x3, y3, depth) {
+    function sierpinski(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      x3: number,
+      y3: number,
+      depth: number
+    ) {
       if (depth == 0) drawTriangle(x1, y1, x2, y2, x3, y3);
       else {
         var x12 = (x1 + x2) / 2;
@@ -141,7 +152,14 @@ describe("Module: Context2D Complex Examples", () => {
       }
     }
 
-    function drawTriangle(x1, y1, x2, y2, x3, y3) {
+    function drawTriangle(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      x3: number,
+      y3: number
+    ) {
       c.beginPath();
       c.moveTo(x1, y1);
       c.lineTo(x2, y2);
@@ -187,7 +205,7 @@ describe("Module: Context2D Complex Examples", () => {
       ctx.restore();
     }
 
-    function drawStar(ctx, r) {
+    function drawStar(ctx: typeof doc.context2d, r: number) {
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(r, 0);

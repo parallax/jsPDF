@@ -12,8 +12,19 @@ type jsPDFModule = typeof import("../src/index.js");
 // `new jsPDF(...)`; the intersection adds the construct signature the
 // inferred function type lacks.
 type jsPDFCtor = jsPDFModule["jsPDF"];
+// Legacy pre-August-2012 positional signature jsPDF(orientation, unit,
+// format, compressPdf); still supported at runtime via the arguments-based
+// shim at the top of the jsPDF constructor in src/jspdf.ts.
+type jsPDFLegacyArgs = [
+  orientation?: string,
+  unit?: import("../src/types.js").Unit | number,
+  format?: import("../src/types.js").PageFormat,
+  compressPdf?: boolean
+];
 declare const jsPDF: jsPDFCtor &
-  (new (...args: Parameters<jsPDFCtor>) => ReturnType<jsPDFCtor>);
+  ((...args: jsPDFLegacyArgs) => ReturnType<jsPDFCtor>) &
+  (new (...args: Parameters<jsPDFCtor>) => ReturnType<jsPDFCtor>) &
+  (new (...args: jsPDFLegacyArgs) => ReturnType<jsPDFCtor>);
 declare const AcroForm: jsPDFModule["AcroForm"];
 declare const ChoiceField: jsPDFModule["AcroFormChoiceField"];
 declare const ListBox: jsPDFModule["AcroFormListBox"];
@@ -39,8 +50,20 @@ declare function loadBinaryResource(url: string, unicode?: boolean): string;
 
 declare function sendReference(filename: string, data: string): void;
 
-declare const isNode: boolean;
+// Declared with `var` so it is visible both as a bare global and as a
+// property of `globalThis`/`global` (specs probe `global.isNode`).
+declare var isNode: boolean;
 
 declare function loadGlobals(): void;
 
-declare const Canvg: unknown;
+/**
+ * canvg's UMD global, loaded by the browser test runner. Minimal surface
+ * used by the context2d specs.
+ */
+declare const Canvg: {
+  fromString(
+    ctx: unknown,
+    svg: string,
+    options?: Record<string, unknown>
+  ): { render(options?: Record<string, unknown>): Promise<void> };
+};
