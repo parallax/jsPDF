@@ -94,10 +94,15 @@ Conventions:
   runtime behavior. Class fields must use the `declare` modifier (type-only);
   a bare initialized field would require babel's class-properties transform,
   which changes own-property layout and is deliberately not enabled.
-- Explicit `any` and `@ts-ignore` are banned repo-wide, enforced by
-  `npm run lint-no-any` (oxlint) in the lint script. Use `unknown` plus
-  narrowing; a documented `as unknown as T` is the escape hatch of last
-  resort at genuine dynamic boundaries.
+- Explicit `any`, `@ts-ignore`, and the double-assertion pattern
+  (`as unknown as T`) are all banned repo-wide, enforced by
+  `npm run lint-no-any` / `lint-no-unsafe-cast` in the lint script. Use
+  `unknown` plus narrowing, honest type declarations, or non-null
+  assertions backed by real invariants. In tests, deliberately-invalid
+  inputs go through the sanctioned `invalidArg<T>()` primitive
+  (test/utils/compare.ts). At genuinely untypeable boundaries (polyfills
+  overwriting DOM globals), use a named `unknown`-typed intermediate with
+  a single assertion and a comment.
 - The internal type system lives in `src/types.ts`. Plugin modules declare
   the members they add via `declare module "../types.js"` interface
   augmentation inside their own file.
