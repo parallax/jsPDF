@@ -121,7 +121,7 @@ describe("Lib: FileSaver", () => {
       expect(anchor.dispatchEvent).toHaveBeenCalledTimes(1);
       // dispatchEvent was replaced with a spy in stubClicks().
       const event: Event = (
-        anchor.dispatchEvent as unknown as jasmine.Spy
+        anchor.dispatchEvent as jasmine.Spy
       ).calls.mostRecent().args[0];
       expect(event.type).toBe("click");
       expect(revokeObjectURLSpy).not.toHaveBeenCalled();

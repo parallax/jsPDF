@@ -309,7 +309,7 @@ declare module "../types.js" {
     var value: boolean | string | number | number[][] | undefined;
 
     function arrayContainsElement(
-      array: ArrayLike<unknown> | null,
+      array: ArrayLike<unknown>,
       element: unknown
     ): boolean {
       var iterator: number;
@@ -330,7 +330,8 @@ declare module "../types.js" {
       );
       this.internal.viewerpreferences.isSubscribed = false;
     }
-    configuration = this.internal.viewerpreferences.configuration;
+    // Initialized in the block above on first use.
+    configuration = this.internal.viewerpreferences.configuration!;
 
     if (options === "reset" || doReset === true) {
       var len = configurationKeys.length;
@@ -356,7 +357,8 @@ declare module "../types.js" {
             configuration[method].value = value;
           } else if (
             configuration[method].type === "name" &&
-            arrayContainsElement(configuration[method].valueSet, value)
+            // Every "name"-typed entry in the template carries a valueSet.
+            arrayContainsElement(configuration[method].valueSet!, value)
           ) {
             // Membership in valueSet (checked above) guarantees a name string.
             configuration[method].value = value as string;
@@ -373,9 +375,11 @@ declare module "../types.js" {
             for (i = 0; i < range.length; i += 1) {
               isValid = true;
               if (range[i].length === 1 && typeof range[i][0] === "number") {
-                // Preserved verbatim: subtracting from the one-element array
-                // relies on JS coercion ([n] - 1 === n - 1).
-                rangeArray.push(String((range[i] as unknown as number) - 1));
+                // Historically this subtracted from the one-element array,
+                // relying on JS coercion ([n] - 1 === n - 1). Number() takes
+                // the exact same ToPrimitive/ToNumber path for an array, so
+                // the result is identical for every input.
+                rangeArray.push(String(Number(range[i]) - 1));
               } else if (range[i].length > 1) {
                 for (j = 0; j < range[i].length; j += 1) {
                   if (typeof range[i][j] !== "number") {

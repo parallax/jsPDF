@@ -187,7 +187,7 @@ break`
     } else {
       PTSans = doc.loadFile("base/test/reference/PTSans.ttf");
     }
-    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFileToVFS("PTSans.ttf", PTSans!);
     doc.addFont("PTSans.ttf", "PTSans", "normal");
     doc.setFont("PTSans");
     doc.setFontSize(10);
@@ -207,7 +207,7 @@ break`
     expect(() => {
       const doc = jsPDF({ floatPrecision: 2 });
       // Deliberately invalid: text must be a string or array (negative test).
-      doc.text(10, 10, 43290943 as unknown as string);
+      doc.text(10, 10, invalidArg<string>(43290943));
     }).toThrow(
       new Error('Type of text must be string or Array. "10" is not recognized.')
     );

@@ -24,8 +24,9 @@ declare const require: ((id: string) => unknown) &
   ((deps: string[], callback: (mod: unknown) => unknown) => unknown);
 declare const module: { exports: unknown } | undefined;
 declare const exports: unknown;
-declare const define:
-  (((...args: unknown[]) => unknown) & { amd?: unknown }) | undefined;
+// Typed non-optional like the other loader globals: the runtime existence
+// check is the `typeof define === "function"` guard in the AMD branches.
+declare const define: ((...args: unknown[]) => unknown) & { amd?: unknown };
 
 /** Minimal call surface of the lazily loaded html2canvas library. */
 type Html2CanvasStatic = (
@@ -274,6 +275,16 @@ type GetPageSizeFn = (
   format?: string | number[]
 ) => HTMLWorkerPageSize;
 
+// `getPageSize` is an expando static this plugin installs on the imported
+// jsPDF constructor function (see the assignment near the end of the IIFE
+// below); declare it via function/namespace merging so both the installation
+// and the call sites type-check without casts.
+declare module "../jspdf.js" {
+  namespace jsPDF {
+    let getPageSize: GetPageSizeFn;
+  }
+}
+
 declare module "../types.js" {
   interface jsPDFAPI {
     /**
@@ -421,12 +432,12 @@ declare module "../types.js" {
     if (opt.innerHTML && opt.dompurify) {
       el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
+    // The style templates use raw numbers for some properties (historical
+    // behavior); CSSStyleDeclaration declares no string index signature, so
+    // write through an opaque view of the (per-spec stable) style object.
+    var elStyle: unknown = el.style;
     for (var key in opt.style) {
-      // The style templates use raw numbers for some properties (historical
-      // behavior); CSSStyleDeclaration declares no string index signature, so
-      // widen at this boundary.
-      (el.style as unknown as Record<string, string | number>)[key] =
-        opt.style[key];
+      (elStyle as Record<string, string | number>)[key] = opt.style[key];
     }
     return el;
   };
@@ -441,7 +452,8 @@ declare module "../types.js" {
     // Recursively clone the node.
     var clone =
       node.nodeType === 3
-        ? document.createTextNode(node.nodeValue)
+        ? // A text node (nodeType 3) always has a nodeValue.
+          document.createTextNode(node.nodeValue!)
         : node.cloneNode(false);
     for (var child = node.firstChild; child; child = child.nextSibling) {
       if (
@@ -460,8 +472,9 @@ declare module "../types.js" {
         (clone as HTMLCanvasElement).height = (
           node as HTMLCanvasElement
         ).height;
+        // A fresh canvas clone always yields a 2d context.
         (clone as HTMLCanvasElement)
-          .getContext("2d")
+          .getContext("2d")!
           .drawImage(node as HTMLCanvasElement, 0, 0);
       } else if (node.nodeName === "TEXTAREA" || node.nodeName === "SELECT") {
         (clone as HTMLTextAreaElement).value = (
@@ -521,6 +534,18 @@ declare module "../types.js" {
       inherit || Worker.prototype;
     return promise as HTMLWorker;
   };
+
+  /**
+   * A Worker's prototype chain is a hijacked Promise
+   * (`Worker.prototype = Object.create(Promise.prototype)` above), so every
+   * Worker is a genuine runtime Promise even though the nominal types
+   * diverge. This is the single sanctioned coercion for handing a Worker (or
+   * a plain object converted onto the Promise prototype) to
+   * `Promise.prototype` methods.
+   */
+  function asPromise(worker: unknown): Promise<unknown> {
+    return worker as Promise<unknown>;
+  }
 
   Worker.template = {
     prop: {
@@ -650,10 +675,11 @@ declare module "../types.js" {
           typeof this.opt.windowWidth === "number" &&
           !isNaN(this.opt.windowWidth)
             ? this.opt.windowWidth
-            : Math.max(
-                this.prop.src.clientWidth,
-                this.prop.src.scrollWidth,
-                this.prop.src.offsetWidth
+            : // The checkSrc prereq guarantees prop.src before this runs.
+              Math.max(
+                this.prop.src!.clientWidth,
+                this.prop.src!.scrollWidth,
+                this.prop.src!.offsetWidth
               )) + "px",
         left: 0,
         right: 0,
@@ -662,8 +688,9 @@ declare module "../types.js" {
         backgroundColor: this.opt.backgroundColor
       }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
+      // The checkSrc prereq guarantees prop.src before this runs.
       var source = cloneNode(
-        this.prop.src,
+        this.prop.src!,
         this.opt.html2canvas.javascriptEnabled
       );
 
@@ -687,7 +714,8 @@ declare module "../types.js" {
         style: containerCSS
       });
       this.prop.container.appendChild(source);
-      this.prop.container.firstChild.appendChild(
+      // The container was given a child (`source`) on the previous line.
+      this.prop.container.firstChild!.appendChild(
         createElement("div", {
           style: {
             clear: "both",
@@ -734,7 +762,8 @@ declare module "../types.js" {
         var options = Object.assign({}, this.opt.html2canvas);
         delete options.onrendered;
 
-        return html2canvas(this.prop.container, options);
+        // The checkContainer prereq guarantees prop.container before this runs.
+        return html2canvas(this.prop.container!, options);
       })
       .then(function toCanvas_post(
         this: HTMLWorker,
@@ -745,7 +774,8 @@ declare module "../types.js" {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        // toContainer (run via the prereq chain) set prop.overlay.
+        document.body.removeChild(this.prop.overlay!);
       });
   };
 
@@ -805,7 +835,11 @@ declare module "../types.js" {
         pdf.context2d.posX = this.opt.x;
         pdf.context2d.posY = this.opt.y;
         pdf.context2d.margin = this.opt.margin;
-        pdf.context2d.fontFaces = fontFaces;
+        // NormalizedFontFace[] is assignable to the FontFaceInput[] the
+        // context2d declares; the assertion only drops null/undefined from
+        // the type — either value still flows through verbatim at runtime,
+        // exactly as before typing.
+        pdf.context2d.fontFaces = fontFaces!;
 
         if (fontFaces) {
           for (var i = 0; i < fontFaces.length; ++i) {
@@ -821,17 +855,18 @@ declare module "../types.js" {
         }
 
         options.windowHeight = options.windowHeight || 0;
+        // The checkContainer prereq guarantees prop.container before this runs.
         options.windowHeight =
           options.windowHeight == 0
             ? Math.max(
-                this.prop.container.clientHeight,
-                this.prop.container.scrollHeight,
-                this.prop.container.offsetHeight
+                this.prop.container!.clientHeight,
+                this.prop.container!.scrollHeight,
+                this.prop.container!.offsetHeight
               )
             : options.windowHeight;
 
         pdf.context2d.save(true);
-        return html2canvas(this.prop.container, options);
+        return html2canvas(this.prop.container!, options);
       })
       .then(function toContext2d_post(
         this: HTMLWorker,
@@ -844,7 +879,8 @@ declare module "../types.js" {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        // toContainer (run via the prereq chain) set prop.overlay.
+        document.body.removeChild(this.prop.overlay!);
       });
   };
 
@@ -858,9 +894,11 @@ declare module "../types.js" {
 
     // Fulfill prereqs then create the image.
     return this.thenList(prereqs).then(function toImg_main(this: HTMLWorker) {
-      var imgData = this.prop.canvas.toDataURL(
-        "image/" + this.opt.image.type,
-        this.opt.image.quality
+      // The checkCanvas prereq guarantees prop.canvas, and opt.image is
+      // seeded by the Worker template.
+      var imgData = this.prop.canvas!.toDataURL(
+        "image/" + this.opt.image!.type,
+        this.opt.image!.quality
       );
       this.prop.img = document.createElement("img");
       this.prop.img.src = imgData;
@@ -924,7 +962,8 @@ declare module "../types.js" {
       // The core `output` is declared as per-literal-type overloads; the
       // dynamic type string is forwarded verbatim at runtime, so pick a
       // representative overload for the type check.
-      return this.prop.pdf.output(type as "datauristring", options);
+      // The checkPdf prereq guarantees prop.pdf before this runs.
+      return this.prop.pdf!.output(type as "datauristring", options);
     });
   };
 
@@ -943,16 +982,17 @@ declare module "../types.js" {
     return this.thenList(prereqs).then(function outputImg_main(
       this: HTMLWorker
     ) {
+      // The checkImg prereq guarantees prop.img before this runs.
       switch (type) {
         case undefined:
         case "img":
           return this.prop.img;
         case "datauristring":
         case "dataurlstring":
-          return this.prop.img.src;
+          return this.prop.img!.src;
         case "datauri":
         case "dataurl":
-          return (document.location.href = this.prop.img.src);
+          return (document.location.href = this.prop.img!.src);
         default:
           throw 'Image output type "' + type + '" is not supported.';
       }
@@ -971,7 +1011,8 @@ declare module "../types.js" {
     return this.thenList(prereqs)
       .set(filename ? { filename: filename } : null)
       .then(function save_main(this: HTMLWorker) {
-        this.prop.pdf.save(this.opt.filename);
+        // The checkPdf prereq guarantees prop.pdf before this runs.
+        this.prop.pdf!.save(this.opt.filename);
       });
   };
 
@@ -987,7 +1028,8 @@ declare module "../types.js" {
     return this.thenList(prereqs).then(function doCallback_main(
       this: HTMLWorker
     ) {
-      this.prop.callback(this.prop.pdf);
+      // The checkPdf prereq guarantees prop.pdf before this runs.
+      this.prop.callback(this.prop.pdf!);
     });
   };
 
@@ -1014,16 +1056,19 @@ declare module "../types.js" {
           )[key];
         };
       } else {
+        // objType(opt) === "object" (checked above) guarantees opt inside
+        // these closures; TS cannot see through the helper, hence the
+        // assertions.
         switch (key) {
           case "margin":
-            return this.setMargin.bind(this, opt.margin);
+            return this.setMargin.bind(this, opt!.margin!);
           case "jsPDF":
             return function set_jsPDF(this: HTMLWorker) {
-              this.opt.jsPDF = opt.jsPDF;
+              this.opt.jsPDF = opt!.jsPDF!;
               return this.setPageSize();
             };
           case "pageSize":
-            return this.setPageSize.bind(this, opt.pageSize);
+            return this.setPageSize.bind(this, opt!.pageSize);
           default:
             // Set any other properties in opt.
             return function set_opt(this: HTMLWorker) {
@@ -1103,13 +1148,7 @@ declare module "../types.js" {
 
     return this.then(function setPageSize_main(this: HTMLWorker) {
       // Retrieve page-size based on jsPDF settings, if not explicitly provided.
-      pageSize =
-        pageSize ||
-        // `getPageSize` is an expando static installed on the imported
-        // constructor function below; it is invisible to jsPDF's own type.
-        (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize(
-          this.opt.jsPDF
-        );
+      pageSize = pageSize || jsPDF.getPageSize(this.opt.jsPDF);
 
       // Add 'inner' field if not present.
       if (!pageSize.hasOwnProperty("inner")) {
@@ -1222,16 +1261,16 @@ declare module "../types.js" {
       : Worker.convert(Object.assign({}, self), Promise.prototype);
 
     // Return the promise, after casting it into a Worker and preserving props.
-    // The Worker hijacks the Promise prototype chain, so the nominal types
-    // diverge at this boundary.
     var returnVal = thenBase.call(
-      selfPromise as unknown as Promise<unknown>,
+      asPromise(selfPromise),
       onFulfilled,
       onRejected
     );
+    // `__proto__` is declared optional purely to satisfy asymmetric type
+    // comparability; every Worker object has a prototype at runtime.
     return Worker.convert(
       returnVal,
-      (self as unknown as { __proto__: object }).__proto__
+      (self as { __proto__?: object }).__proto__
     );
   };
 
@@ -1241,9 +1280,8 @@ declare module "../types.js" {
     onRejected?: (reason: unknown) => unknown
   ) {
     // Call `then` and return a standard promise (exits the Worker chain).
-    // The Worker is a Promise at runtime despite its hijacked prototype.
     return Promise.prototype.then.call(
-      this as unknown as Promise<unknown>,
+      asPromise(this),
       onFulfilled,
       onRejected
     );
@@ -1269,9 +1307,8 @@ declare module "../types.js" {
     if (onRejected) {
       onRejected = onRejected.bind(this);
     }
-    // The Worker is a Promise at runtime despite its hijacked prototype.
     var returnVal = Promise.prototype["catch"].call(
-      this as unknown as Promise<unknown>,
+      asPromise(this),
       onRejected
     );
     return Worker.convert(returnVal, this);
@@ -1282,11 +1319,7 @@ declare module "../types.js" {
     onRejected?: (reason: unknown) => unknown
   ) {
     // Call `catch` and return a standard promise (exits the Worker chain).
-    // The Worker is a Promise at runtime despite its hijacked prototype.
-    return Promise.prototype["catch"].call(
-      this as unknown as Promise<unknown>,
-      onRejected
-    );
+    return Promise.prototype["catch"].call(asPromise(this), onRejected);
   };
 
   Worker.prototype.error = function error(this: HTMLWorker, msg: string) {
@@ -1305,12 +1338,8 @@ declare module "../types.js" {
 
   // Get dimensions of a PDF page, as determined by jsPDF.
   // `getPageSize` is an expando static assigned onto the imported constructor
-  // function, which is invisible to jsPDF's own type.
-  (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize = function (
-    orientation,
-    unit,
-    format
-  ) {
+  // function (declared via the module augmentation near the top of the file).
+  jsPDF.getPageSize = function (orientation, unit, format) {
     // Decode options object
     if (typeof orientation === "object") {
       var options = orientation;
@@ -1528,10 +1557,9 @@ declare module "../types.js" {
     options.html2canvas = options.html2canvas || {};
     options.html2canvas.canvas =
       options.html2canvas.canvas ||
-      // The canvas plugin (src/modules/canvas.ts) installs `canvas` as an
-      // expando on the document instance; it is not part of the typed core
-      // surface yet.
-      (this as unknown as { canvas?: unknown }).canvas;
+      // `canvas` is installed on every document instance by the canvas
+      // plugin, which declares it on jsPDFDocument (src/modules/canvas.ts).
+      this.canvas;
     options.jsPDF = options.jsPDF || this;
     options.fontFaces = options.fontFaces
       ? options.fontFaces.map(normalizeFontFace)

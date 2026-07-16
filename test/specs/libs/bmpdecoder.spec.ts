@@ -1,22 +1,5 @@
 import { BmpDecoder } from "../../../src/libs/BMPDecoder.js";
 
-interface BmpDecoderInstance {
-  flag: string;
-  width: number;
-  height: number;
-  bitPP: number;
-  bottom_up: boolean;
-  data: Uint8Array;
-  getData(): Uint8Array;
-}
-
-// BmpDecoder is a legacy function-style constructor without a construct
-// signature, so cast it to a typed constructor for the tests.
-const BmpDecoderCtor = BmpDecoder as unknown as new (
-  buffer: Uint8Array,
-  isWithAlpha: boolean
-) => BmpDecoderInstance;
-
 describe("Lib: BMPDecoder", () => {
   function u32(value: number): number[] {
     return [
@@ -61,13 +44,13 @@ describe("Lib: BMPDecoder", () => {
   }
 
   it("throws 'Invalid BMP File' for wrong magic bytes", () => {
-    expect(function() {
-      new BmpDecoderCtor(new Uint8Array([0x00, 0x01, 0x02, 0x03]), false);
+    expect(function () {
+      new BmpDecoder(new Uint8Array([0x00, 0x01, 0x02, 0x03]), false);
     }).toThrowError("Invalid BMP File");
   });
 
   it("parses the header of a 2x2 24-bit BMP", () => {
-    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
+    var decoder = new BmpDecoder(create2x2Bmp24(), false);
 
     expect(decoder.flag).toBe("BM");
     expect(decoder.width).toBe(2);
@@ -77,30 +60,16 @@ describe("Lib: BMPDecoder", () => {
   });
 
   it("decodes a 2x2 24-bit BMP to top-down RGBA pixel data", () => {
-    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
+    var decoder = new BmpDecoder(create2x2Bmp24(), false);
     var data = decoder.getData();
 
     expect(data instanceof Uint8Array).toBe(true);
     expect(data.length).toBe(2 * 2 * 4);
     expect(Array.from(data)).toEqual([
       // top row: red, green
-      255,
-      0,
-      0,
-      255,
-      0,
-      255,
-      0,
-      255,
+      255, 0, 0, 255, 0, 255, 0, 255,
       // bottom row: blue, white
-      0,
-      0,
-      255,
-      255,
-      255,
-      255,
-      255,
-      255
+      0, 0, 255, 255, 255, 255, 255, 255
     ]);
   });
 
@@ -111,51 +80,22 @@ describe("Lib: BMPDecoder", () => {
     // rows are now stored top-first: red/green first, then blue/white
     bytes.set(
       [
-        0x00,
-        0x00,
-        0xff,
-        0x00,
-        0xff,
-        0x00,
-        0x00,
-        0x00,
-        0xff,
-        0x00,
-        0x00,
-        0xff,
-        0xff,
-        0xff,
-        0x00,
-        0x00
+        0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff,
+        0xff, 0xff, 0x00, 0x00
       ],
       54
     );
-    var decoder = new BmpDecoderCtor(bytes, false);
+    var decoder = new BmpDecoder(bytes, false);
 
     expect(decoder.height).toBe(2);
     expect(decoder.bottom_up).toBe(false);
     expect(Array.from(decoder.getData())).toEqual([
-      255,
-      0,
-      0,
-      255,
-      0,
-      255,
-      0,
-      255,
-      0,
-      0,
-      255,
-      255,
-      255,
-      255,
-      255,
-      255
+      255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255
     ]);
   });
 
   it("getData returns the decoded data property", () => {
-    var decoder = new BmpDecoderCtor(create2x2Bmp24(), false);
+    var decoder = new BmpDecoder(create2x2Bmp24(), false);
 
     expect(decoder.getData()).toBe(decoder.data);
   });

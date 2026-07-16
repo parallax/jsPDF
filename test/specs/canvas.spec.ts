@@ -26,7 +26,7 @@ describe("Context2D: standard tests", () => {
   it("getContext", () => {
     var doc = new jsPDF();
     expect(doc.canvas.getContext("fantasy")).toEqual(null);
-    expect(doc.canvas.getContext("2d")).toEqual(doc.context2d);
+    expect(doc.canvas.getContext("2d")!).toEqual(doc.context2d);
     expect(doc.canvas.getContext()).toEqual(doc.context2d);
   });
 

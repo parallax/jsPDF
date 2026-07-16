@@ -260,7 +260,14 @@ export interface GState extends GStateOptions {
   id: string;
   /** Set by putGState(); -1 until then. */
   objectNumber: number;
-  equals(other: GState): boolean;
+  /** Handles a null comparand (e.g. no active graphics state). */
+  equals(other: GState | null): boolean;
+  /**
+   * Graphics-state parameters are attached dynamically by the constructor
+   * (see the GState class in src/jspdf.ts), so instances honestly carry
+   * arbitrary extra entries; `equals` compares them reflectively.
+   */
+  [parameter: string]: unknown;
 }
 
 /** Constructor exposed as `doc.GState` (an ES class; requires `new`). */
@@ -339,7 +346,8 @@ export interface Font {
   postScriptName: string;
   fontName: string;
   fontStyle: string;
-  encoding: string;
+  /** Honestly nullable: the ZapfDingbats and Symbol standard fonts have no encoding. */
+  encoding: string | null;
   isStandardFont: boolean;
   metadata: FontMetadata;
   /** Assigned while the font dictionary is written (putFont); absent before. */
@@ -625,7 +633,7 @@ export interface jsPDFInternal {
     text: string,
     flags?: { autoencode?: boolean; noBOM?: boolean }
   ): string;
-  getStyle(style: string): string;
+  getStyle(style?: string): string;
   /** Resolves a font entry; without arguments returns the active font. */
   getFont(
     fontName?: string,
@@ -655,7 +663,10 @@ export interface jsPDFInternal {
   newObject(): number;
   newAdditionalObject(): AdditionalObject;
   newObjectDeferred(): number;
-  newObjectDeferredBegin(oid: number, doOutput?: boolean): number;
+  // `oid` honestly admits strings: the outline plugin re-begins objects using
+  // ids captured from rendered "<n> 0 obj" lines, and the implementation only
+  // uses the id as an offsets key / for string concatenation.
+  newObjectDeferredBegin(oid: number | string, doOutput?: boolean): number;
   getFilters(): string[];
   putStream(options?: PutStreamOptions): void;
   events: PubSubInterface;
@@ -689,11 +700,227 @@ export interface jsPDFInternal {
 
 /**
  * The `__private__` helper surface (`jsPDF.API.__private__`, copied onto every
- * document instance). It exists for tests and internal plugin use; only the
- * members consumed by typed plugin modules are declared, everything else is
+ * document instance). It exists for tests and internal plugin use; the members
+ * consumed by typed plugin modules and by the specs are declared (mirroring
+ * the `API.__private__` assignments in src/jspdf.ts), everything else is
  * reachable through the index signature.
  */
 export interface jsPDFPrivate {
+  /** The internal PubSub implementation (an ES class; requires `new`). */
+  PubSub: new (context: unknown) => PubSubInterface;
+  getPdfVersion(): string;
+  setPdfVersion(value: string): void;
+  getPageFormats(): PageFormats;
+  getPageFormat(value: string): [number, number];
+  roundToPrecision(number: number, parmPrecision?: number): string;
+  /** Formats a number with two decimals. */
+  f2(number: number): string;
+  /** Formats a number with three decimals. */
+  f3(number: number): string;
+  scale(number: number): number;
+  getFileId(): string;
+  /** Returns a Date for type "jsDate", the PDF date string otherwise. */
+  getCreationDate(type?: string): Date | string;
+  padd2(number: number | string): string;
+  padd2Hex(hexString: string): string;
+  /** Appends a single line to the current output destination and returns it. */
+  out(string: string | number): string[];
+  /** Appends one or more strings (joined by spaces) to the current page stream. */
+  write(value: string | number, ...rest: Array<string | number>): string[];
+  getArrayBuffer(data: string): ArrayBuffer;
+  /** The 14 standard fonts as [PostScript name, encoding, style, alias]. */
+  getStandardFonts(): Array<[string, string, string, string | null]>;
+  getFontList(): Record<string, string[]>;
+  getCharSpace(): number;
+  setCharSpace(charSpace: number): jsPDFDocument;
+  getLineWidth(): number;
+  setLineWidth(width: number): jsPDFDocument;
+  setLineDash(dashArray?: number[], dashPhase?: number): jsPDFDocument;
+  getLineHeight(): number;
+  /** An omitted/falsy value falls back to the default of 1.15. */
+  setLineHeightFactor(value?: number): jsPDFDocument;
+  getHorizontalCoordinateString(value: number): string;
+  getVerticalCoordinateString(value: number): string;
+  getR2L(): boolean;
+  /** null/undefined are valid zoom modes (putCatalog defaults to "fullwidth"). */
+  setZoomMode(zoom?: string | number | null): void;
+  getZoomMode(): string | number | null | undefined;
+  /** null/undefined are valid page modes (no /PageMode written). */
+  setPageMode(pmode?: string | null): void;
+  getPageMode(): string | null | undefined;
+  /** null/undefined are valid (default) layout modes. */
+  setLayoutMode(layout?: string | null): void;
+  getLayoutMode(): string | null | undefined;
+  setDisplayMode(
+    zoom?:
+      | number
+      | "fullheight"
+      | "fullwidth"
+      | "fullpage"
+      | "original"
+      | string
+      | null,
+    layout?: "continuous" | "single" | "twoleft" | "tworight" | "two" | null,
+    pmode?: "UseNone" | "UseOutlines" | "UseThumbs" | "FullScreen" | null
+  ): jsPDFDocument;
+  getTextColor(): string;
+  setTextColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
+  getFillColor(): string;
+  setFillColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
+  getStrokeColor(): string;
+  setStrokeColor(
+    ch1: string | number,
+    ch2?: number,
+    ch3?: number,
+    ch4?: number
+  ): jsPDFDocument;
+  decodeColorString(color: string): string;
+  getDocumentProperty(key: string): string;
+  setDocumentProperty(key: string, value: string): string;
+  getDocumentProperties(): Record<string, string>;
+  setDocumentProperties(properties: DocumentProperties): jsPDFDocument;
+  isValidStyle(style?: string | null): boolean;
+  /** An unset style resolves to the default path operation. */
+  getStyle(style?: string): string;
+  newObject(): number;
+  newObjectDeferred(): number;
+  newAdditionalObject(): AdditionalObject;
+  pdfEscape(
+    text: string,
+    flags?: { autoencode?: boolean; noBOM?: boolean } | null
+  ): string;
+  getNumberOfPages(): number;
+  getCurrentPageInfo(): PageInfo;
+  getFilters(): string[];
+  putStream(options?: PutStreamOptions): void;
+  /** Writes a page dictionary; mirrors the PageDescriptor shape in src/jspdf.ts. */
+  putPage(page: {
+    number: number;
+    data: string[];
+    objId: number;
+    contentsObjId: number;
+    mediaBox: PageBox;
+    cropBox: PageBox | null;
+    bleedBox: PageBox | null;
+    trimBox: PageBox | null;
+    artBox: PageBox | null;
+    userUnit: number;
+    rootDictionaryObjId: number;
+    resourceDictionaryObjId: number;
+  }): number;
+  putCatalog(options?: { rootDictionaryObjId?: number }): void;
+  putInfo(): void;
+  putTrailer(): void;
+  putHeader(): void;
+  putXRef(): void;
+  buildDocument(): string;
+  getBlob(data: string): Blob;
+  output(
+    type?: OutputType,
+    options?: OutputOptions | string
+  ): string | ArrayBuffer | Blob | Window | null | undefined;
+  clip(rule?: string): jsPDFDocument;
+  discardPath(): jsPDFDocument;
+  /**
+   * Mirrors the implementation signature in src/jspdf.ts, whose swap shim
+   * also supports the legacy pre-August-2012 argument order
+   * `text(x, y, text, options)` (hence the widened first and third
+   * parameters).
+   */
+  text(
+    text: string | number | Array<string | number | Array<string | number>>,
+    x: number,
+    y: number | string | Array<string | number | Array<string | number>>,
+    options?: Omit<TextOptionsLight, "renderingMode"> & {
+      /**
+       * The runtime also accepts the numeric (0-7) and boolean spellings of
+       * the rendering mode (see the renderingMode switch in text()).
+       */
+      renderingMode?:
+        | TextOptionsLight["renderingMode"]
+        | 0
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5
+        | 6
+        | 7
+        | boolean;
+      scope?: jsPDFDocument;
+      TabLen?: number;
+      R2L?: boolean;
+      lang?: string;
+    },
+    transform?: number | Matrix
+  ): jsPDFDocument;
+  line(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    style?: string | null
+  ): jsPDFDocument;
+  /**
+   * Mirrors the implementation signature in src/jspdf.ts, whose swap shim
+   * also supports the legacy pre-August-2012 argument order
+   * `lines(x, y, lines, scale, style, closed)` (hence the widened first and
+   * third parameters).
+   */
+  lines(
+    lines: Array<number[]> | number,
+    x: number,
+    y: number | Array<number[]>,
+    scale?: number[],
+    style?: string | null,
+    closed?: boolean
+  ): jsPDFDocument;
+  rect(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    style?: string | null
+  ): jsPDFDocument;
+  triangle(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    x3: number,
+    y3: number,
+    style?: string | null
+  ): jsPDFDocument;
+  roundedRect(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    rx: number,
+    ry: number,
+    style?: string | null
+  ): jsPDFDocument;
+  ellipse(
+    x: number,
+    y: number,
+    rx: number,
+    ry: number,
+    style?: string | null
+  ): jsPDFDocument;
+  circle(x: number, y: number, r: number, style?: string | null): jsPDFDocument;
+  setLineCap(style: string | number): jsPDFDocument;
+  setLineJoin(style: string | number): jsPDFDocument;
+  setLineMiterLimit(length: number): jsPDFDocument;
   encodeColorString(
     options:
       | string
@@ -720,7 +947,8 @@ export interface jsPDFPrivate {
   combineFontStyleAndFontWeight(
     fontStyle?: string,
     fontWeight?: string | number
-  ): string;
+    // Undefined when fontStyle is undefined and no fontWeight is given.
+  ): string | undefined;
   [member: string]: unknown;
 }
 
@@ -884,7 +1112,7 @@ export interface jsPDFDocument extends jsPDFAPI {
   getPageWidth(pageNumber?: number): number;
   getPageHeight(pageNumber?: number): number;
   getR2L(): boolean;
-  getStyle(style: string): string;
+  getStyle(style?: string): string;
   getTextColor(): string;
   getVerticalCoordinateString(value: number): string;
   hpf(value: number): string;
@@ -922,7 +1150,8 @@ export interface jsPDFDocument extends jsPDFAPI {
   output(type: "dataurl" | "datauri", options?: OutputOptions | string): string;
   output(type: "save", options?: OutputOptions | string): void;
   path(
-    lines?: Array<{ op: string; c: number[] }>,
+    // Required: the implementation iterates it unconditionally.
+    lines: Array<{ op: string; c: number[] }>,
     style?: string
   ): jsPDFDocument;
   pdfEscape(
@@ -994,7 +1223,8 @@ export interface jsPDFDocument extends jsPDFAPI {
   setGState(gState: string | GState): void;
   setLineCap(style: string | number): jsPDFDocument;
   setLineDashPattern(dashArray?: number[], dashPhase?: number): jsPDFDocument;
-  setLineHeightFactor(value: number): jsPDFDocument;
+  /** An omitted/falsy value falls back to the default of 1.15. */
+  setLineHeightFactor(value?: number): jsPDFDocument;
   setLineJoin(style: string | number): jsPDFDocument;
   setLineMiterLimit(length: number): jsPDFDocument;
   setLineWidth(width: number): jsPDFDocument;

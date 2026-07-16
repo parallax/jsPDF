@@ -255,7 +255,8 @@ declare module "../types.js" {
           "putCatalog",
           function (this: jsPDFDocument) {
             this.internal.write(
-              "/Lang (" + this.internal.languageSettings.languageCode + ")"
+              // languageSettings is initialized before this subscription runs.
+              "/Lang (" + this.internal.languageSettings!.languageCode + ")"
             );
           }
         );

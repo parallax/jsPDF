@@ -312,8 +312,8 @@ export function resolveFontFace(
     opts.genericFontFamilies || {}
   );
 
-  var rule: NormalizedFontFace = null;
-  var matches: StretchSet = null;
+  var rule: NormalizedFontFace | null = null;
+  var matches: StretchSet | null = null;
 
   for (var i = 0; i < rules.length; ++i) {
     rule = normalizeFontFace(rules[i]);
@@ -337,21 +337,25 @@ export function resolveFontFace(
     // don't there is something wrong with our configuration
     throw new Error(
       "Could not find a font-family for the rule '" +
-        ruleToString(rule) +
+        // rule is null only when `rules` is empty; the original code would
+        // crash identically inside ruleToString in that case.
+        ruleToString(rule!) +
         "' and default family '" +
         defaultFontFamily +
         "'."
     );
   }
 
-  var styleSet = resolveFontStretch(rule.stretch, matches);
-  var weightSet = resolveFontStyle(rule.style, styleSet);
-  var font = resolveFontWeight(rule.weight, weightSet);
+  // rule is null only when `rules` is empty; the original code dereferenced
+  // it here regardless.
+  var styleSet = resolveFontStretch(rule!.stretch, matches);
+  var weightSet = resolveFontStyle(rule!.style, styleSet);
+  var font = resolveFontWeight(rule!.weight, weightSet);
 
   if (!font) {
     // We should've fount
     throw new Error(
-      "Failed to resolve a font for the rule '" + ruleToString(rule) + "'."
+      "Failed to resolve a font for the rule '" + ruleToString(rule!) + "'."
     );
   }
 

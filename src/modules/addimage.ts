@@ -96,7 +96,8 @@ export interface ImageProperties {
   palette?: number[] | Uint8Array;
   sMask?: string;
   sMaskBitsPerComponent?: number;
-  predictor?: number;
+  /** null when the PNG is stored uncompressed. */
+  predictor?: number | null;
   index?: number;
   data: string;
   fileType?: string;
@@ -114,7 +115,7 @@ export type ImageFormatProcessor = (
   alias?: number | string,
   compression?: ImageCompression,
   dataAsBinaryString?: string
-) => ImageProperties;
+) => ImageProperties | undefined;
 
 /** The helper namespace this plugin exposes as `jsPDF.API.__addimage__`. */
 export interface AddImageNamespace {
@@ -159,7 +160,10 @@ declare module "../types.js" {
       w?: number,
       h?: number,
       alias?: string,
-      compression?: ImageCompression,
+      // `number` admitted honestly: addSvgAsImage (src/modules/svg.ts) has
+      // always passed its arguments one slot early (latent bug preserved for
+      // parity), so its numeric `rotation` arrives in this parameter.
+      compression?: ImageCompression | number,
       rotation?: number
     ): jsPDFDocument;
     addImage(options: ImageOptions): jsPDFDocument;
@@ -170,8 +174,8 @@ declare module "../types.js" {
     loadFile(
       url: string,
       sync?: boolean,
-      callback?: (data: string) => string
-    ): string;
+      callback?: (data?: string) => unknown
+    ): string | undefined;
   }
 }
 
@@ -370,7 +374,8 @@ declare module "../types.js" {
         value:
           "[/Indexed /DeviceRGB " +
           // if an indexed png defines more than one colour with transparency, we've created a sMask
-          (image.palette.length / 3 - 1) +
+          // An INDEXED image always carries a palette.
+          (image.palette!.length / 3 - 1) +
           " " +
           ("sMask" in image && typeof image.sMask !== "undefined"
             ? image.objectId + 2
@@ -459,7 +464,8 @@ declare module "../types.js" {
       //out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
       //putStream(zlib.compress(img['pal']));
       putStream({
-        data: arrayBufferToBinaryString(new Uint8Array(image.palette)),
+        // An INDEXED image always carries a palette.
+        data: arrayBufferToBinaryString(new Uint8Array(image.palette!)),
         objectId: objId
       });
       out("endobj");
@@ -483,11 +489,15 @@ declare module "../types.js" {
       image;
     for (var i in images) {
       image = images[i];
-      out("/I" + image.index, image.objectId, "0", "R");
+      // objectId is assigned by putImage() during putResources, which runs
+      // before putXobjectDict.
+      out("/I" + image.index, image.objectId!, "0", "R");
     }
   };
 
-  var checkCompressValue = function (value?: string): ImageCompression {
+  var checkCompressValue = function (
+    value?: string | number | null
+  ): ImageCompression {
     if (value && typeof value === "string") value = value.toUpperCase();
     return typeof value === "string" && value in jsPDFAPI.image_compression
       ? (value as ImageCompression)
@@ -511,7 +521,12 @@ declare module "../types.js" {
     return images;
   };
   var getImageIndex = function (this: jsPDFDocument) {
-    return Object.keys(this.internal.collections[namespace + "images"]).length;
+    return Object.keys(
+      this.internal.collections[namespace + "images"] as Record<
+        string,
+        ImageProperties
+      >
+    ).length;
   };
   var notDefined = function (value?: string | number | null) {
     return (
@@ -533,10 +548,12 @@ declare module "../types.js" {
   };
 
   var isImageTypeSupported = function (type: string) {
+    // Dynamic plugin dispatch: the processXXX methods are contributed by
+    // the individual image-format plugins, so look them up reflectively
+    // through an opaque view of the API object.
+    var api: unknown = jsPDFAPI;
     return (
-      // Dynamic plugin dispatch: the processXXX methods are contributed by
-      // the individual image-format plugins.
-      typeof (jsPDFAPI as unknown as Record<string, unknown>)[
+      typeof (api as Record<string, unknown>)[
         "process" + type.toUpperCase()
       ] === "function"
     );
@@ -549,14 +566,18 @@ declare module "../types.js" {
   var getImageDataFromElement = function (
     element: HTMLElement,
     format?: string
-  ): string {
+    // Latent bug preserved for parity: an IMG element whose src could not be
+    // loaded (or a non-IMG/CANVAS element) falls off the end and yields
+    // undefined; callers assert it away below.
+  ): string | undefined {
     //if element is an image which uses data url definition, just return the dataurl
     if (element.nodeName === "IMG" && element.hasAttribute("src")) {
       var src = "" + element.getAttribute("src");
 
       //is base64 encoded dataUrl, directly process it
       if (src.indexOf("data:image/") === 0) {
-        return atob(unescape(src).split("base64,").pop());
+        // split() always yields at least one element.
+        return atob(unescape(src).split("base64,").pop()!);
       }
 
       //it is probably an url, try to load it
@@ -590,13 +611,14 @@ declare module "../types.js" {
           mimeType = "image/jpeg";
           break;
       }
-      return atob(canvas.toDataURL(mimeType, 1.0).split("base64,").pop());
+      // split() always yields at least one element.
+      return atob(canvas.toDataURL(mimeType, 1.0).split("base64,").pop()!);
     }
   };
 
   var checkImagesForAlias = function (
     this: jsPDFDocument,
-    alias: number | string
+    alias?: number | string
   ): ImageProperties | undefined {
     var images = this.internal.collections[namespace + "images"] as Record<
       string,
@@ -654,8 +676,12 @@ declare module "../types.js" {
 
     width = dims[0];
     height = dims[1];
-    images[image.index] = image;
+    // Format processors always stamp an index on the images they produce.
+    images[image.index!] = image;
 
+    // Definite-assignment assertion: assigned below whenever `rotation` is
+    // truthy, which is also the only condition under which it is read.
+    var rotationTransformationMatrix!: Array<string | number>;
     if (rotation) {
       rotation *= Math.PI / 180;
       var c = Math.cos(rotation);
@@ -664,7 +690,7 @@ declare module "../types.js" {
       var f4 = function (number: number) {
         return number.toFixed(4);
       };
-      var rotationTransformationMatrix: Array<string | number> = [
+      rotationTransformationMatrix = [
         f4(c),
         f4(s),
         f4(s * -1),
@@ -937,12 +963,10 @@ declare module "../types.js" {
         // Limit the amount of characters being parsed to prevent overflow.
         // Note that while TextDecoder would be faster, it does not have the same
         // functionality as fromCharCode with any provided encodings as of 3/2021.
-        out += String.fromCharCode.apply(
-          null,
-          // fromCharCode is declared to take number[], but accepts any
-          // array-like of char codes at runtime.
-          buf.subarray(i, i + ARRAY_APPLY_BATCH) as unknown as number[]
-        );
+        // fromCharCode is declared to take number[], but accepts any
+        // array-like of char codes at runtime; assert the opaque batch once.
+        var batch: unknown = buf.subarray(i, i + ARRAY_APPLY_BATCH);
+        out += String.fromCharCode.apply(null, batch as number[]);
       }
       return out;
     });
@@ -984,8 +1008,15 @@ declare module "../types.js" {
     arg3?: number,
     arg4?: number,
     arg5?: number | string,
-    arg6?: string,
-    arg7?: string | number,
+    // `number` admitted honestly: in the no-format overload this slot is the
+    // compression parameter, which addSvgAsImage passes its numeric rotation
+    // into (latent arg-shift bug preserved for parity; see the overload
+    // declaration above). `null` admitted for parity with the context2d
+    // drawImage() overload, which declares alias as string | null.
+    arg6?: string | number | null,
+    // null admitted for parity with the context2d drawImage() overload of
+    // addImage, which declares alias/compression as string | null.
+    arg7?: string | number | null,
     arg8?: number
   ) {
     var imageData, format, x, y, w, h, alias, compression, rotation;
@@ -1006,7 +1037,9 @@ declare module "../types.js" {
       y = arg3;
       w = arg4;
       h = arg5 as number;
-      alias = arg6;
+      // The assertion only satisfies the declared signature; the svg.ts
+      // number / context2d null call shapes flow on unchanged, as ever.
+      alias = arg6 as string;
       compression = arg7 as string;
       rotation = arg8;
     }
@@ -1035,7 +1068,9 @@ declare module "../types.js" {
       compression = "SLOW";
     }
 
-    if (isNaN(x) || isNaN(y)) {
+    // isNaN() coerces at runtime, so undefined yields true and throws here,
+    // exactly as before; the assertions only satisfy the declared signature.
+    if (isNaN(x as number) || isNaN(y as number)) {
       throw new Error("Invalid coordinates passed to jsPDF.addImage");
     }
 
@@ -1049,7 +1084,18 @@ declare module "../types.js" {
       compression
     );
 
-    writeImageToPDF.call(this, x, y, w, h, image, rotation);
+    // Latent parity: w/h (and x/y for the non-throwing NaN paths) may be
+    // undefined at runtime; determineWidthAndHeight only defaults them when
+    // both are falsy, exactly as the untyped code did.
+    writeImageToPDF.call(
+      this,
+      x as number,
+      y as number,
+      w as number,
+      h as number,
+      image,
+      rotation
+    );
 
     return this;
   };
@@ -1057,9 +1103,12 @@ declare module "../types.js" {
   var processImageData = function (
     this: jsPDFDocument,
     imageData: ImageInput,
-    format: string,
+    format: string | undefined,
     alias?: number | string,
-    compression?: string
+    // `number` honestly admitted for the svg.ts arg-shift call shape and
+    // `null` for the context2d drawImage() call shape; checkCompressValue
+    // maps every non-string to NONE, as it always has.
+    compression?: string | number | null
   ) {
     var result, dataAsBinaryString;
 
@@ -1068,7 +1117,10 @@ declare module "../types.js" {
       getImageFileTypeByImageData(imageData) === UNKNOWN
     ) {
       imageData = unescape(imageData);
-      var tmpImageData = convertBase64ToBinaryString(imageData, false);
+      var tmpImageData: string | undefined = convertBase64ToBinaryString(
+        imageData,
+        false
+      );
 
       if (tmpImageData !== "") {
         imageData = tmpImageData;
@@ -1081,7 +1133,9 @@ declare module "../types.js" {
     }
 
     if (isDOMElement(imageData)) {
-      imageData = getImageDataFromElement(imageData, format);
+      // Latent parity: may be undefined for an unloadable IMG; downstream
+      // code then fails just as it did before typing.
+      imageData = getImageDataFromElement(imageData, format)!;
     }
 
     format = getImageFileTypeByImageData(imageData, format);
@@ -1098,7 +1152,9 @@ declare module "../types.js" {
     // now do the heavy lifting
 
     if (notDefined(alias)) {
-      alias = generateAliasFromImageData(imageData);
+      // Latent parity: null is possible for exotic input and flows on
+      // unchanged; the assertion only fits the declared parameter type.
+      alias = generateAliasFromImageData(imageData)!;
     }
     result = checkImagesForAlias.call(this, alias);
 
@@ -1110,8 +1166,10 @@ declare module "../types.js" {
       }
 
       // Dynamic plugin dispatch: the processXXX methods are contributed by
-      // the individual image-format plugins.
-      result = (this as unknown as Record<string, ImageFormatProcessor>)[
+      // the individual image-format plugins; invoke through an opaque view
+      // of the document so `this` binding is preserved.
+      var host: unknown = this;
+      result = (host as Record<string, ImageFormatProcessor>)[
         "process" + format.toUpperCase()
       ](
         imageData,
@@ -1181,7 +1239,9 @@ declare module "../types.js" {
     var format;
 
     if (isDOMElement(imageData)) {
-      imageData = getImageDataFromElement(imageData);
+      // Latent parity: may be undefined for an unloadable IMG; downstream
+      // code then fails just as it did before typing.
+      imageData = getImageDataFromElement(imageData)!;
     }
 
     if (
@@ -1212,8 +1272,10 @@ declare module "../types.js" {
     }
 
     // Dynamic plugin dispatch: the processXXX methods are contributed by
-    // the individual image-format plugins.
-    image = (this as unknown as Record<string, ImageFormatProcessor>)[
+    // the individual image-format plugins; invoke through an opaque view
+    // of the document so `this` binding is preserved.
+    var host: unknown = this;
+    image = (host as Record<string, ImageFormatProcessor>)[
       "process" + format.toUpperCase()
     ](imageData);
 

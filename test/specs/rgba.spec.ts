@@ -49,7 +49,7 @@ describe("Module: RGBASupport", () => {
   ) {
     it("from canvas", () => {
       const c = document.createElement("canvas");
-      const ctx = c.getContext("2d");
+      const ctx = c.getContext("2d")!;
       ctx.fillStyle = "#FF6600";
       ctx.fillRect(0, 0, 150, 75);
       const dataFromCanvas = ctx.getImageData(0, 0, 150, 75);
@@ -75,7 +75,7 @@ describe("Module: RGBASupport", () => {
 
     it("with alpha", () => {
       const c = document.createElement("canvas");
-      const ctx = c.getContext("2d");
+      const ctx = c.getContext("2d")!;
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, 150, 60);
       ctx.fillStyle = "#AA00FF77";

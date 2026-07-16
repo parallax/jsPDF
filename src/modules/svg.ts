@@ -152,7 +152,8 @@ declare module "../types.js" {
     var canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
-    var ctx = canvas.getContext("2d");
+    // A fresh canvas always yields a 2d context.
+    var ctx = canvas.getContext("2d")!;
     ctx.fillStyle = "#fff"; /// set white fill style
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -183,10 +184,11 @@ declare module "../types.js" {
           h,
           // Latent bug preserved for parity: compression and rotation are
           // passed one parameter slot early (into addImage's alias and
-          // compression parameters); `alias` itself is never forwarded. The
-          // assertion keeps the historical call shape verbatim.
+          // compression parameters); `alias` itself is never forwarded.
+          // addImage's compression parameter honestly admits `number` for
+          // exactly this call shape.
           compression,
-          rotation as unknown as ImageCompression
+          rotation
         );
       });
   };

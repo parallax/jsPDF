@@ -19,13 +19,13 @@ declare module "../types.js" {
       index?: number,
       alias?: number | string,
       compression?: ImageCompression
-    ): ImageProperties;
+    ): ImageProperties | null;
     processGIF87A(
       imageData?: unknown,
       index?: number,
       alias?: number | string,
       compression?: ImageCompression
-    ): ImageProperties;
+    ): ImageProperties | null;
   }
 }
 

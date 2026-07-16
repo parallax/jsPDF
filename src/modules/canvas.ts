@@ -12,8 +12,12 @@ import type { jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
 /** The canvas-like wrapper installed on every document as `doc.canvas`. */
 export interface CanvasShim {
   pdf: jsPDFDocument;
-  width: number;
-  height: number;
+  // The setters accept and sanitize any input (isNaN branch);
+  // reading always yields a number.
+  get width(): number;
+  set width(value: number | undefined);
+  get height(): number;
+  set height(value: number | undefined);
   childNodes: unknown[];
   style: Record<string, unknown>;
   parentNode: undefined;
@@ -53,8 +57,8 @@ declare module "../types.js" {
    * @classdesc A Canvas Wrapper for jsPDF
    */
   // A classic constructor function carries no construct signature in its
-  // inferred type; the assertion reinstates the `new`-able shape.
-  var Canvas = function (this: CanvasShim) {
+  // inferred type; keep it opaque and assert the `new`-able shape once below.
+  var CanvasImpl: unknown = function (this: CanvasShim) {
     var jsPdfInstance: jsPDFDocument | undefined = undefined;
     Object.defineProperty(this, "pdf", {
       get: function () {
@@ -76,14 +80,20 @@ declare module "../types.js" {
       get: function () {
         return _width;
       },
-      set: function (this: CanvasShim, value: number) {
-        if (isNaN(value) || Number.isInteger(value) === false || value < 0) {
+      set: function (this: CanvasShim, value: number | undefined) {
+        if (
+          isNaN(value as number) ||
+          Number.isInteger(value) === false ||
+          value! < 0
+        ) {
           _width = 150;
         } else {
-          _width = value;
+          // isNaN guard above proves value is a number here
+          _width = value!;
         }
-        if (this.getContext("2d").pageWrapXEnabled) {
-          this.getContext("2d").pageWrapX = _width + 1;
+        // getContext("2d") never returns null for the "2d" context type.
+        if (this.getContext("2d")!.pageWrapXEnabled) {
+          this.getContext("2d")!.pageWrapX = _width + 1;
         }
       }
     });
@@ -99,14 +109,20 @@ declare module "../types.js" {
       get: function () {
         return _height;
       },
-      set: function (this: CanvasShim, value: number) {
-        if (isNaN(value) || Number.isInteger(value) === false || value < 0) {
+      set: function (this: CanvasShim, value: number | undefined) {
+        if (
+          isNaN(value as number) ||
+          Number.isInteger(value) === false ||
+          value! < 0
+        ) {
           _height = 300;
         } else {
-          _height = value;
+          // isNaN guard above proves value is a number here
+          _height = value!;
         }
-        if (this.getContext("2d").pageWrapYEnabled) {
-          this.getContext("2d").pageWrapY = _height + 1;
+        // getContext("2d") never returns null for the "2d" context type.
+        if (this.getContext("2d")!.pageWrapYEnabled) {
+          this.getContext("2d")!.pageWrapY = _height + 1;
         }
       }
     });
@@ -132,7 +148,8 @@ declare module "../types.js" {
     });
 
     Object.defineProperty(this, "parentNode", {});
-  } as unknown as CanvasShimConstructor;
+  };
+  var Canvas = CanvasImpl as CanvasShimConstructor;
 
   /**
    * The getContext() method returns a drawing context on the canvas, or null if the context identifier is not supported.
@@ -153,17 +170,17 @@ declare module "../types.js" {
     if (contextType !== "2d") {
       return null;
     }
+    // The class surface of the context is opaque here: arbitrary
+    // caller-provided attributes are copied onto it (dynamic by design), and
+    // `_canvas` is an expando this plugin stashes on it.
+    var context2d: unknown = this.pdf.context2d;
     for (key in contextAttributes) {
       if (this.pdf.context2d.hasOwnProperty(key)) {
-        // Copies arbitrary, caller-provided attributes onto the context;
-        // dynamic by design, hence the indexable view of the instance.
-        (this.pdf.context2d as unknown as Record<string, unknown>)[key] =
-          contextAttributes[key];
+        // The for-in loop body only runs when contextAttributes is defined.
+        (context2d as Record<string, unknown>)[key] = contextAttributes![key];
       }
     }
-    // `_canvas` is an expando the canvas plugin stashes on the context; it is
-    // not part of the Context2D class surface.
-    (this.pdf.context2d as unknown as { _canvas: CanvasShim })._canvas = this;
+    (context2d as { _canvas: CanvasShim })._canvas = this;
     return this.pdf.context2d;
   };
 

@@ -18,7 +18,8 @@ const render = (markup: string, opts: RenderOptions = {}) =>
 function toFontFaceRule(
   fontFace: import("../../src/libs/fontFace.js").FontFaceInput
 ) {
-  const srcs = fontFace.src.map(
+  // every fixture in this spec provides src
+  const srcs = fontFace.src!.map(
     src => `url('${src.url}') format('${src.format}')`
   );
 

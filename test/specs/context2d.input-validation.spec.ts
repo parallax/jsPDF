@@ -6,7 +6,7 @@ describe("Module: Context2D Input Validation", () => {
   var global: { console: Console } =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
+    (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
     Function("return this")();
 
@@ -20,7 +20,7 @@ describe("Module: Context2D Input Validation", () => {
   });
   it("context2d: moveTo", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.moveTo(1, 1);
@@ -28,16 +28,16 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.moveTo")
     );
     expect(function () {
-      doc.context2d.moveTo("invalid" as unknown as number, 1);
+      doc.context2d.moveTo(invalidArg<number>("invalid"), 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.moveTo"));
     expect(function () {
-      doc.context2d.moveTo(1, "invalid" as unknown as number);
+      doc.context2d.moveTo(1, invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.moveTo"));
   });
 
   it("context2d: lineTo ", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.lineTo(1, 1);
@@ -45,16 +45,16 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.lineTo")
     );
     expect(function () {
-      doc.context2d.lineTo("invalid" as unknown as number, 1);
+      doc.context2d.lineTo(invalidArg<number>("invalid"), 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.lineTo"));
     expect(function () {
-      doc.context2d.lineTo(1, "invalid" as unknown as number);
+      doc.context2d.lineTo(1, invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.lineTo"));
   });
 
   it("context2d: quadraticCurveTo", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.quadraticCurveTo(1, 1, 1, 1);
@@ -62,22 +62,22 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo")
     );
     expect(function () {
-      doc.context2d.quadraticCurveTo("invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.quadraticCurveTo(invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo")
     );
     expect(function () {
-      doc.context2d.quadraticCurveTo(1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.quadraticCurveTo(1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo")
     );
     expect(function () {
-      doc.context2d.quadraticCurveTo(1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.quadraticCurveTo(1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo")
     );
     expect(function () {
-      doc.context2d.quadraticCurveTo(1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.quadraticCurveTo(1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.quadraticCurveTo")
     );
@@ -85,7 +85,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: bezierCurveTo", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.bezierCurveTo(1, 1, 1, 1, 1, 1);
@@ -93,74 +93,32 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        "invalid" as unknown as number,
-        1,
-        1,
-        1,
-        1,
-        1
-      );
+      doc.context2d.bezierCurveTo(invalidArg<number>("invalid"), 1, 1, 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        1,
-        "invalid" as unknown as number,
-        1,
-        1,
-        1,
-        1
-      );
+      doc.context2d.bezierCurveTo(1, invalidArg<number>("invalid"), 1, 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        1,
-        1,
-        "invalid" as unknown as number,
-        1,
-        1,
-        1
-      );
+      doc.context2d.bezierCurveTo(1, 1, invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        1,
-        1,
-        1,
-        "invalid" as unknown as number,
-        1,
-        1
-      );
+      doc.context2d.bezierCurveTo(1, 1, 1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        1,
-        1,
-        1,
-        1,
-        "invalid" as unknown as number,
-        1
-      );
+      doc.context2d.bezierCurveTo(1, 1, 1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
     expect(function () {
-      doc.context2d.bezierCurveTo(
-        1,
-        1,
-        1,
-        1,
-        1,
-        "invalid" as unknown as number
-      );
+      doc.context2d.bezierCurveTo(1, 1, 1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.bezierCurveTo")
     );
@@ -168,51 +126,41 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: arc", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
-      doc.context2d.arc(1, 1, 1, 1, 1, 1 as unknown as boolean);
+      doc.context2d.arc(1, 1, 1, 1, 1, invalidArg<boolean>(1));
     }).not.toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.arc")
     );
     expect(function () {
       doc.context2d.arc(
-        "invalid" as unknown as number,
+        invalidArg<number>("invalid"),
         1,
         1,
         1,
         1,
-        1 as unknown as boolean
+        invalidArg<boolean>(1)
       );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
     expect(function () {
       doc.context2d.arc(
         1,
-        "invalid" as unknown as number,
+        invalidArg<number>("invalid"),
         1,
         1,
         1,
-        1 as unknown as boolean
-      );
-    }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
-    expect(function () {
-      doc.context2d.arc(
-        1,
-        1,
-        "invalid" as unknown as number,
-        1,
-        1,
-        1 as unknown as boolean
+        invalidArg<boolean>(1)
       );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
     expect(function () {
       doc.context2d.arc(
         1,
         1,
+        invalidArg<number>("invalid"),
         1,
-        "invalid" as unknown as number,
         1,
-        1 as unknown as boolean
+        invalidArg<boolean>(1)
       );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
     expect(function () {
@@ -220,13 +168,23 @@ describe("Module: Context2D Input Validation", () => {
         1,
         1,
         1,
+        invalidArg<number>("invalid"),
         1,
-        "invalid" as unknown as number,
-        1 as unknown as boolean
+        invalidArg<boolean>(1)
       );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
     expect(function () {
-      doc.context2d.arc(1, 1, 1, 1, 1, "invalid" as unknown as boolean);
+      doc.context2d.arc(
+        1,
+        1,
+        1,
+        1,
+        invalidArg<number>("invalid"),
+        invalidArg<boolean>(1)
+      );
+    }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.arc"));
+    expect(function () {
+      doc.context2d.arc(1, 1, 1, 1, 1, invalidArg<boolean>("invalid"));
     }).not.toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.arc")
     );
@@ -234,7 +192,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: rect", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.rect(1, 1, 1, 1);
@@ -242,22 +200,22 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.rect")
     );
     expect(function () {
-      doc.context2d.rect("invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.rect(invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.rect"));
     expect(function () {
-      doc.context2d.rect(1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.rect(1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.rect"));
     expect(function () {
-      doc.context2d.rect(1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.rect(1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.rect"));
     expect(function () {
-      doc.context2d.rect(1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.rect(1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.rect"));
   });
 
   it("context2d: fillRect", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.fillRect(1, 1, 1, 1);
@@ -265,22 +223,22 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.fillRect")
     );
     expect(function () {
-      doc.context2d.fillRect("invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.fillRect(invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillRect")
     );
     expect(function () {
-      doc.context2d.fillRect(1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.fillRect(1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillRect")
     );
     expect(function () {
-      doc.context2d.fillRect(1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.fillRect(1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillRect")
     );
     expect(function () {
-      doc.context2d.fillRect(1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.fillRect(1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillRect")
     );
@@ -288,7 +246,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: strokeRect", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.strokeRect(1, 1, 1, 1);
@@ -296,22 +254,22 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.strokeRect")
     );
     expect(function () {
-      doc.context2d.strokeRect("invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.strokeRect(invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeRect")
     );
     expect(function () {
-      doc.context2d.strokeRect(1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.strokeRect(1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeRect")
     );
     expect(function () {
-      doc.context2d.strokeRect(1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.strokeRect(1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeRect")
     );
     expect(function () {
-      doc.context2d.strokeRect(1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.strokeRect(1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeRect")
     );
@@ -319,7 +277,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: clearRect", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.clearRect(1, 1, 1, 1);
@@ -327,22 +285,22 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.clearRect")
     );
     expect(function () {
-      doc.context2d.clearRect("invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.clearRect(invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.clearRect")
     );
     expect(function () {
-      doc.context2d.clearRect(1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.clearRect(1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.clearRect")
     );
     expect(function () {
-      doc.context2d.clearRect(1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.clearRect(1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.clearRect")
     );
     expect(function () {
-      doc.context2d.clearRect(1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.clearRect(1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.clearRect")
     );
@@ -353,7 +311,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: fillText", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.fillText("valid", 1, 1, 1);
@@ -361,17 +319,17 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.fillText")
     );
     expect(function () {
-      doc.context2d.fillText(false as unknown as string, 1, 1, 1);
+      doc.context2d.fillText(invalidArg<string>(false), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillText")
     );
     expect(function () {
-      doc.context2d.fillText("valid", "invalid" as unknown as number, 1, 1);
+      doc.context2d.fillText("valid", invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillText")
     );
     expect(function () {
-      doc.context2d.fillText("valid", 1, "invalid" as unknown as number, 1);
+      doc.context2d.fillText("valid", 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.fillText")
     );
@@ -379,7 +337,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: strokeText", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.strokeText("valid", 1, 1, 1);
@@ -387,17 +345,17 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.strokeText")
     );
     expect(function () {
-      doc.context2d.strokeText(false as unknown as string, 1, 1, 1);
+      doc.context2d.strokeText(invalidArg<string>(false), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeText")
     );
     expect(function () {
-      doc.context2d.strokeText("valid", "invalid" as unknown as number, 1, 1);
+      doc.context2d.strokeText("valid", invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeText")
     );
     expect(function () {
-      doc.context2d.strokeText("valid", 1, "invalid" as unknown as number, 1);
+      doc.context2d.strokeText("valid", 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.strokeText")
     );
@@ -405,7 +363,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: measureText", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.measureText("valid");
@@ -413,7 +371,7 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.measureText")
     );
     expect(function () {
-      doc.context2d.measureText(false as unknown as string);
+      doc.context2d.measureText(invalidArg<string>(false));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.measureText")
     );
@@ -421,7 +379,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: scale", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.scale(1, 1);
@@ -429,16 +387,16 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.scale")
     );
     expect(function () {
-      doc.context2d.scale("invalid" as unknown as number, 1);
+      doc.context2d.scale(invalidArg<number>("invalid"), 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.scale"));
     expect(function () {
-      doc.context2d.scale(1, "invalid" as unknown as number);
+      doc.context2d.scale(1, invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.scale"));
   });
 
   it("context2d: rotate", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.rotate(1);
@@ -446,13 +404,13 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.rotate")
     );
     expect(function () {
-      doc.context2d.rotate("invalid" as unknown as number);
+      doc.context2d.rotate(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.context2d.rotate"));
   });
 
   it("context2d: translate", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.translate(1, 1);
@@ -460,12 +418,12 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.translate")
     );
     expect(function () {
-      doc.context2d.translate("invalid" as unknown as number, 1);
+      doc.context2d.translate(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.translate")
     );
     expect(function () {
-      doc.context2d.translate(1, "invalid" as unknown as number);
+      doc.context2d.translate(1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.translate")
     );
@@ -473,7 +431,7 @@ describe("Module: Context2D Input Validation", () => {
 
   it("context2d: transform", () => {
     var doc = new jsPDF();
-    // Deliberately mistyped arguments (cast through unknown) to assert the
+    // Deliberately mistyped arguments (via invalidArg) to assert the
     // runtime input validation throws.
     expect(function () {
       doc.context2d.transform(1, 1, 1, 1, 1, 1);
@@ -481,32 +439,32 @@ describe("Module: Context2D Input Validation", () => {
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform("invalid" as unknown as number, 1, 1, 1, 1, 1);
+      doc.context2d.transform(invalidArg<number>("invalid"), 1, 1, 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform(1, "invalid" as unknown as number, 1, 1, 1, 1);
+      doc.context2d.transform(1, invalidArg<number>("invalid"), 1, 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform(1, 1, "invalid" as unknown as number, 1, 1, 1);
+      doc.context2d.transform(1, 1, invalidArg<number>("invalid"), 1, 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform(1, 1, 1, "invalid" as unknown as number, 1, 1);
+      doc.context2d.transform(1, 1, 1, invalidArg<number>("invalid"), 1, 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform(1, 1, 1, 1, "invalid" as unknown as number, 1);
+      doc.context2d.transform(1, 1, 1, 1, invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );
     expect(function () {
-      doc.context2d.transform(1, 1, 1, 1, 1, "invalid" as unknown as number);
+      doc.context2d.transform(1, 1, 1, 1, 1, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.context2d.transform")
     );

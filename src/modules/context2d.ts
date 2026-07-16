@@ -59,6 +59,17 @@ declare module "../types.js" {
     setLineDash(dashArray?: number[], dashPhase?: number): jsPDFDocument;
     /** Core alias of setLineMiterLimit (see src/jspdf.ts). */
     setMiterLimit(length: number): jsPDFDocument;
+    // The core lines() defaults both scale and style when passed null
+    // (`scale = scale || [1, 1]`, isValidStyle accepts null); context2d
+    // calls it that way (see drawLines below).
+    lines(
+      lines: Array<number[]>,
+      x: number,
+      y: number,
+      scale?: [number, number] | number[] | null,
+      style?: string | null,
+      closed?: boolean
+    ): jsPDFDocument;
     // encodeColorString in src/jspdf.ts accepts an alpha descriptor object as
     // the fourth channel argument; context2d relies on that.
     setFillColor(
@@ -777,7 +788,9 @@ class Context2D {
         var fontFamily = matches[6];
 
         var rxFontSize = /^([.\d]+)((?:%|in|[cem]m|ex|p[ctx]))$/i;
-        var fontSizeUnit = rxFontSize.exec(fontSize)[2];
+        // Keyword sizes ("medium", "smaller", ...) make exec return null and
+        // this line throw — faithful to the untyped implementation.
+        var fontSizeUnit = rxFontSize.exec(fontSize)![2];
         var fontSizeNumber: number;
 
         if ("px" === fontSizeUnit) {
@@ -1316,10 +1329,10 @@ class Context2D {
     this.fill();
 
     if (tmp.hasOwnProperty("lineCap")) {
-      this.lineCap = tmp.lineCap;
+      this.lineCap = tmp.lineCap!;
     }
     if (tmp.hasOwnProperty("lineJoin")) {
-      this.lineJoin = tmp.lineJoin;
+      this.lineJoin = tmp.lineJoin!;
     }
   }
 
@@ -1414,7 +1427,8 @@ class Context2D {
     this.pdf.setPage(tmpPageNumber);
 
     if (doStackPop && this.ctxStack.length !== 0) {
-      this.ctx = this.ctxStack.pop();
+      // Non-empty stack checked above, so pop() cannot return undefined.
+      this.ctx = this.ctxStack.pop()!;
       this.fillStyle = this.ctx.fillStyle;
       this.strokeStyle = this.ctx.strokeStyle;
       this.font = this.ctx.font;
@@ -1450,7 +1464,9 @@ class Context2D {
       console.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.fillText");
     }
-    maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
+    // Same effective condition as the historic `isNaN(maxWidth)` (which is
+    // true for undefined), spelled out for the benefit of narrowing.
+    maxWidth = maxWidth === undefined || isNaN(maxWidth) ? undefined : maxWidth;
     if (isFillTransparent.call(this)) {
       return;
     }
@@ -1491,7 +1507,9 @@ class Context2D {
       return;
     }
 
-    maxWidth = isNaN(maxWidth) ? undefined : maxWidth;
+    // Same effective condition as the historic `isNaN(maxWidth)` (which is
+    // true for undefined), spelled out for the benefit of narrowing.
+    maxWidth = maxWidth === undefined || isNaN(maxWidth) ? undefined : maxWidth;
 
     var degs = rad2deg(this.ctx.transform.rotation);
     var scale = this.ctx.transform.scaleX;
@@ -1651,12 +1669,14 @@ class Context2D {
     e?: number,
     f?: number
   ): void {
-    a = isNaN(a) ? 1 : a;
-    b = isNaN(b) ? 0 : b;
-    c = isNaN(c) ? 0 : c;
-    d = isNaN(d) ? 1 : d;
-    e = isNaN(e) ? 0 : e;
-    f = isNaN(f) ? 0 : f;
+    // Same effective conditions as the historic `isNaN(...)` checks (which
+    // are true for undefined), spelled out for the benefit of narrowing.
+    a = a === undefined || isNaN(a) ? 1 : a;
+    b = b === undefined || isNaN(b) ? 0 : b;
+    c = c === undefined || isNaN(c) ? 0 : c;
+    d = d === undefined || isNaN(d) ? 1 : d;
+    e = e === undefined || isNaN(e) ? 0 : e;
+    f = f === undefined || isNaN(f) ? 0 : f;
     this.ctx.transform = new Matrix(a, b, c, d, e, f);
   }
 
@@ -1696,9 +1716,12 @@ class Context2D {
     if (typeof swidth !== "undefined" && typeof width !== "undefined") {
       isClip = true;
       clipFactorX = width / swidth;
-      clipFactorY = height / sheight;
+      // swidth and width are only both set for the 9-argument overload, so
+      // sheight/height are present here (a caller omitting them gets the
+      // same NaN propagation as before).
+      clipFactorY = height! / sheight!;
       factorX = ((imageProperties.width / swidth) * width) / swidth;
-      factorY = ((imageProperties.height / sheight) * height) / sheight;
+      factorY = ((imageProperties.height / sheight!) * height!) / sheight!;
     }
 
     //is sx and sy are set and x and y not, set x and y with values of sx and sy
@@ -1724,12 +1747,14 @@ class Context2D {
     matrix = matrix.multiply(decomposedTransformationMatrix.translate);
     matrix = matrix.multiply(decomposedTransformationMatrix.skew);
     matrix = matrix.multiply(decomposedTransformationMatrix.scale);
+    // y/swidth/sheight can genuinely be absent for the short overloads; the
+    // assertions are type-level only and keep the historic NaN propagation.
     var xRect = matrix.applyToRectangle(
       new Rectangle(
         x - sx * clipFactorX,
-        y - sy * clipFactorY,
-        swidth * factorX,
-        sheight * factorY
+        y! - sy * clipFactorY,
+        swidth! * factorX,
+        sheight! * factorY
       )
     );
 
@@ -1796,13 +1821,15 @@ class Context2D {
             .clip()
             .discardPath();
         }
+        // tmpRect is a JSON copy of xRect (a Rectangle), so x/y/w/h are
+        // always present.
         this.pdf.addImage(
           img,
           "JPEG",
-          tmpRect.x,
-          tmpRect.y,
-          tmpRect.w,
-          tmpRect.h,
+          tmpRect.x!,
+          tmpRect.y!,
+          tmpRect.w!,
+          tmpRect.h!,
           null,
           null,
           angle
@@ -2034,24 +2061,31 @@ var getPagesByPath = function (
     this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
   var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
 
+  // The assertions on path members below are type-level only: every entry
+  // type carries the members read for it (see the push sites), and a missing
+  // one would NaN-propagate exactly as in the untyped implementation.
   switch (path.type) {
     default:
     case "mt":
     case "lt":
-      result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+      result.push(Math.floor((path.y! + yOffset) / pageWrapY) + 1);
       break;
     case "arc":
-      result.push(Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1);
-      result.push(Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1);
+      result.push(
+        Math.floor((path.y! + yOffset - path.radius!) / pageWrapY) + 1
+      );
+      result.push(
+        Math.floor((path.y! + yOffset + path.radius!) / pageWrapY) + 1
+      );
       break;
     case "qct":
       var rectOfQuadraticCurve = getQuadraticCurveBoundary(
         this.ctx.lastPoint.x,
         this.ctx.lastPoint.y,
-        path.x1,
-        path.y1,
-        path.x,
-        path.y
+        path.x1!,
+        path.y1!,
+        path.x!,
+        path.y!
       );
       result.push(
         Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
@@ -2067,12 +2101,12 @@ var getPagesByPath = function (
       var rectOfBezierCurve = getBezierCurveBoundary(
         this.ctx.lastPoint.x,
         this.ctx.lastPoint.y,
-        path.x1,
-        path.y1,
-        path.x2,
-        path.y2,
-        path.x,
-        path.y
+        path.x1!,
+        path.y1!,
+        path.x2!,
+        path.y2!,
+        path.x!,
+        path.y!
       );
       result.push(Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1);
       result.push(
@@ -2082,8 +2116,8 @@ var getPagesByPath = function (
       );
       break;
     case "rect":
-      result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
-      result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
+      result.push(Math.floor((path.y! + yOffset) / pageWrapY) + 1);
+      result.push(Math.floor((path.y! + path.h! + yOffset) / pageWrapY) + 1);
   }
 
   for (var i = 0; i < result.length; i += 1) {
@@ -2115,20 +2149,23 @@ var pathPositionRedo = function (
   x: number,
   y: number
 ): PathEntry[] {
+  // Every entry type carries the members shifted for it (see the push
+  // sites); the assertions are type-level only — a missing member would
+  // NaN-propagate exactly as `undefined += x` always did.
   for (var i = 0; i < paths.length; i++) {
     switch (paths[i].type) {
       case "bct":
-        paths[i].x2 += x;
-        paths[i].y2 += y;
+        paths[i].x2 = paths[i].x2! + x;
+        paths[i].y2 = paths[i].y2! + y;
       case "qct":
-        paths[i].x1 += x;
-        paths[i].y1 += y;
+        paths[i].x1 = paths[i].x1! + x;
+        paths[i].y1 = paths[i].y1! + y;
       case "mt":
       case "lt":
       case "arc":
       default:
-        paths[i].x += x;
-        paths[i].y += y;
+        paths[i].x = paths[i].x! + x;
+        paths[i].y = paths[i].y! + y;
     }
   }
   return paths;
@@ -2302,16 +2339,19 @@ var drawPaths = function (
 
       case "lt":
         var iii = moves.length;
-        if (xPath[i - 1] && !isNaN(xPath[i - 1].x)) {
-          delta = [pt.x - xPath[i - 1].x, pt.y - xPath[i - 1].y];
+        if (xPath[i - 1] && !isNaN(xPath[i - 1].x!)) {
+          // Coordinate members are present on mt/lt entries (see the push
+          // sites); moves that are neither close nor begin always carry
+          // deltas/abs arrays. Assertions are type-level only.
+          delta = [pt.x! - xPath[i - 1].x!, pt.y! - xPath[i - 1].y!];
           if (iii > 0) {
             for (iii; iii >= 0; iii--) {
               if (
                 moves[iii - 1].close !== true &&
                 moves[iii - 1].begin !== true
               ) {
-                moves[iii - 1].deltas.push(delta);
-                moves[iii - 1].abs.push(pt);
+                moves[iii - 1].deltas!.push(delta);
+                moves[iii - 1].abs!.push(pt);
                 break;
               }
             }
@@ -2321,32 +2361,32 @@ var drawPaths = function (
 
       case "bct":
         delta = [
-          pt.x1 - xPath[i - 1].x,
-          pt.y1 - xPath[i - 1].y,
-          pt.x2 - xPath[i - 1].x,
-          pt.y2 - xPath[i - 1].y,
-          pt.x - xPath[i - 1].x,
-          pt.y - xPath[i - 1].y
+          pt.x1! - xPath[i - 1].x!,
+          pt.y1! - xPath[i - 1].y!,
+          pt.x2! - xPath[i - 1].x!,
+          pt.y2! - xPath[i - 1].y!,
+          pt.x! - xPath[i - 1].x!,
+          pt.y! - xPath[i - 1].y!
         ];
-        moves[moves.length - 1].deltas.push(delta);
+        moves[moves.length - 1].deltas!.push(delta);
         break;
 
       case "qct":
-        var x1 = xPath[i - 1].x + (2.0 / 3.0) * (pt.x1 - xPath[i - 1].x);
-        var y1 = xPath[i - 1].y + (2.0 / 3.0) * (pt.y1 - xPath[i - 1].y);
-        var x2 = pt.x + (2.0 / 3.0) * (pt.x1 - pt.x);
-        var y2 = pt.y + (2.0 / 3.0) * (pt.y1 - pt.y);
-        var x3 = pt.x;
-        var y3 = pt.y;
+        var x1 = xPath[i - 1].x! + (2.0 / 3.0) * (pt.x1! - xPath[i - 1].x!);
+        var y1 = xPath[i - 1].y! + (2.0 / 3.0) * (pt.y1! - xPath[i - 1].y!);
+        var x2 = pt.x! + (2.0 / 3.0) * (pt.x1! - pt.x!);
+        var y2 = pt.y! + (2.0 / 3.0) * (pt.y1! - pt.y!);
+        var x3 = pt.x!;
+        var y3 = pt.y!;
         delta = [
-          x1 - xPath[i - 1].x,
-          y1 - xPath[i - 1].y,
-          x2 - xPath[i - 1].x,
-          y2 - xPath[i - 1].y,
-          x3 - xPath[i - 1].x,
-          y3 - xPath[i - 1].y
+          x1 - xPath[i - 1].x!,
+          y1 - xPath[i - 1].y!,
+          x2 - xPath[i - 1].x!,
+          y2 - xPath[i - 1].y!,
+          x3 - xPath[i - 1].x!,
+          y3 - xPath[i - 1].y!
         ];
-        moves[moves.length - 1].deltas.push(delta);
+        moves[moves.length - 1].deltas!.push(delta);
         break;
 
       case "arc":
@@ -2357,7 +2397,9 @@ var drawPaths = function (
         });
 
         if (Array.isArray(moves[moves.length - 1].abs)) {
-          moves[moves.length - 1].abs.push(pt);
+          // Guarded by the Array.isArray check just above (element-access
+          // narrowing does not carry over).
+          moves[moves.length - 1].abs!.push(pt);
         }
         break;
     }
@@ -2376,7 +2418,9 @@ var drawPaths = function (
   var began = false;
   for (var k = 0; k < moves.length; k++) {
     if (moves[k].arc) {
-      var arcs = moves[k].abs;
+      // Arc moves are always created with an abs array, and arc entries
+      // carry the full set of arc members (see the push sites above).
+      var arcs = moves[k].abs!;
 
       for (var ii = 0; ii < arcs.length; ii++) {
         var arc = arcs[ii];
@@ -2384,18 +2428,18 @@ var drawPaths = function (
         if (arc.type === "arc") {
           drawArc.call(
             this,
-            arc.x,
-            arc.y,
-            arc.radius,
-            arc.startAngle,
-            arc.endAngle,
+            arc.x!,
+            arc.y!,
+            arc.radius!,
+            arc.startAngle!,
+            arc.endAngle!,
             arc.counterclockwise,
             undefined,
             isClip,
             !began
           );
         } else {
-          drawLine.call(this, arc.x, arc.y);
+          drawLine.call(this, arc.x!, arc.y!);
         }
         began = true;
       }
@@ -2403,9 +2447,11 @@ var drawPaths = function (
       this.pdf.internal.out("h");
       began = false;
     } else if (moves[k].begin !== true) {
-      var x = moves[k].start.x;
-      var y = moves[k].start.y;
-      drawLines.call(this, moves[k].deltas, x, y);
+      // Non-begin/close/arc moves come from "mt" entries: start and its
+      // coordinates as well as deltas are always present.
+      var x = moves[k].start!.x!;
+      var y = moves[k].start!.y!;
+      drawLines.call(this, moves[k].deltas!, x, y);
       began = true;
     }
   }
@@ -2550,8 +2596,10 @@ var putText = function (this: Context2D, options: PutTextOptions): void {
   var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
 
   var clipPath: PathEntry[];
-  var oldSize: number;
-  var oldLineWidth: number;
+  // Definite-assignment assertions: both are assigned and read under the
+  // same `options.scale >= 0.01` condition.
+  var oldSize!: number;
+  var oldLineWidth!: number;
 
   if (this.autoPaging) {
     var decomposedTransformationMatrix = this.ctx.transform.decompose();
@@ -2607,6 +2655,8 @@ var putText = function (this: Context2D, options: PutTextOptions): void {
         drawPaths.call(this, "fill", true);
         this.path = tmpPaths;
       }
+      // textBoundsOnPage/baseLineRectOnPage are JSON copies of Rectangles,
+      // so their x/y/w/h members (asserted below) are always present.
       var textBoundsOnPage = pathPositionRedo(
         [JSON.parse(JSON.stringify(textBounds))],
         this.posX + this.margin[3],
@@ -2624,19 +2674,19 @@ var putText = function (this: Context2D, options: PutTextOptions): void {
 
       if (
         doSlice ||
-        textBoundsOnPage.y + textBoundsOnPage.h <= pageHeightMinusBottomMargin
+        textBoundsOnPage.y! + textBoundsOnPage.h! <= pageHeightMinusBottomMargin
       ) {
         if (
           doSlice ||
-          (textBoundsOnPage.y >= topMargin &&
-            textBoundsOnPage.x <= pageWidthMinusRightMargin)
+          (textBoundsOnPage.y! >= topMargin &&
+            textBoundsOnPage.x! <= pageWidthMinusRightMargin)
         ) {
           var croppedText = doSlice
             ? options.text
             : this.pdf.splitTextToSize(
                 options.text,
                 options.maxWidth ||
-                  pageWidthMinusRightMargin - textBoundsOnPage.x
+                  pageWidthMinusRightMargin - textBoundsOnPage.x!
               )[0];
           var baseLineRectOnPage = pathPositionRedo(
             [JSON.parse(JSON.stringify(baselineRect))],
@@ -2663,8 +2713,8 @@ var putText = function (this: Context2D, options: PutTextOptions): void {
 
           this.pdf.text(
             croppedText,
-            baseLineRectOnPage.x,
-            baseLineRectOnPage.y,
+            baseLineRectOnPage.x!,
+            baseLineRectOnPage.y!,
             {
               angle: options.angle,
               align: textAlign,
@@ -2680,10 +2730,10 @@ var putText = function (this: Context2D, options: PutTextOptions): void {
         // This text is the last element of the page, but it got cut off due to the margin
         // so we render it in the next page
 
-        if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
+        if (textBoundsOnPage.y! < pageHeightMinusBottomMargin) {
           // As a result, all other elements have their y offset increased
           this.ctx.prevPageLastElemOffset +=
-            pageHeightMinusBottomMargin - textBoundsOnPage.y;
+            pageHeightMinusBottomMargin - textBoundsOnPage.y!;
         }
       }
 
@@ -2908,10 +2958,12 @@ var getBezierCurveBoundary = function (
     sy: number,
     x: number,
     y: number,
-    minx: number,
-    miny: number,
-    maxx: number,
-    maxy: number,
+    // Definite-assignment assertions: the loop's first iteration (i === 0)
+    // assigns all four before they are read.
+    minx!: number,
+    miny!: number,
+    maxx!: number,
+    maxy!: number,
     toqx: number,
     toqy: number,
     torx: number,

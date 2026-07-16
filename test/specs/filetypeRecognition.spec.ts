@@ -124,7 +124,7 @@ describe("Module: addimage filetypeRecognition", () => {
           invalidImage,
           // Deliberately mistyped second argument (throwError is a boolean at
           // runtime); kept verbatim from the original spec.
-          "UNKNOWN" as unknown as boolean
+          invalidArg<boolean>("UNKNOWN")
         )
       )
     ).toEqual("UNKNOWN");

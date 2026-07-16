@@ -177,15 +177,15 @@ describe("Module: ArabicParser", function () {
   });
 
   it("position array passthrough", function () {
-    expect(
-      // Minimal payload cast: at runtime processArabic only reads and
-      // rewrites `.text`, so the other payload members can be omitted.
-      (
-        jsPDF.API.processArabic({
-          text: [["الله", 0, 0]]
-        } as unknown as import("../../src/types.js").TextProcessingPayload)
-          .text as unknown as [string, number, number][]
-      )[0][0].charCodeAt(0)
-    ).toEqual(65010);
+    // Minimal payload: at runtime processArabic only reads and rewrites
+    // `.text`, so the other payload members can be omitted.
+    const payload: Partial<import("../../src/types.js").TextProcessingPayload> =
+      {
+        text: [["الله", 0, 0]]
+      };
+    const processed = jsPDF.API.processArabic(
+      payload as import("../../src/types.js").TextProcessingPayload
+    ).text as [string, number, number][];
+    expect(processed[0][0].charCodeAt(0)).toEqual(65010);
   });
 });

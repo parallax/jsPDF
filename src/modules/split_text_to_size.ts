@@ -25,7 +25,12 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import type { Font, jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type {
+  Font,
+  FontMetadata,
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument
+} from "../types.js";
 
 /** Character widths table: char code -> width, plus the `fof` fraction. */
 export interface FontWidthsTable {
@@ -41,7 +46,12 @@ export interface FontKerningTable {
 
 /** Options consumed by getCharWidthsArray()/getStringUnitWidth(). */
 export interface CharWidthsOptions {
-  font?: Font;
+  /**
+   * Honestly admits FontMetadata as well: splitTextToSize has always passed
+   * the raw TTF metadata object through this slot (a latent quirk preserved
+   * for parity; the consumers only ever read `.metadata` off this value).
+   */
+  font?: Font | FontMetadata;
   fontSize?: number;
   charSpace?: number;
   widths?: FontWidthsTable;
@@ -114,9 +124,14 @@ declare module "../types.js" {
     // members this plugin consults (see SplitFontMetadataView above).
     var metadata = activeFont.metadata as SplitFontMetadataView;
 
-    var widths = options.widths ? options.widths : metadata.Unicode.widths;
+    // Latent parity: when no explicit tables are passed, the font is assumed
+    // to carry Unicode metric tables (standard fonts do); a font without them
+    // crashed here before typing, too.
+    var widths = (options.widths ? options.widths : metadata.Unicode!.widths)!;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
-    var kerning = options.kerning ? options.kerning : metadata.Unicode.kerning;
+    var kerning = (
+      options.kerning ? options.kerning : metadata.Unicode!.kerning
+    )!;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
     var doKerning = options.doKerning === false ? false : true;
     var kerningValue = 0;
@@ -133,21 +148,20 @@ declare module "../types.js" {
 
       if (typeof metadata.widthOfString === "function") {
         output.push(
-          (metadata.widthOfGlyph(metadata.characterToGlyph(char_code)) +
+          // A TTF metadata object with widthOfString always carries the
+          // companion glyph helpers as well.
+          (metadata.widthOfGlyph!(metadata.characterToGlyph!(char_code)) +
             charSpace * (1000 / fontSize) || 0) / 1000
         );
       } else {
         if (
           doKerning &&
           typeof kerning[char_code] === "object" &&
-          // parseInt applies ToString to its argument at runtime, so the
-          // numeric kerning value is accepted; the assertion keeps that.
-          !isNaN(
-            parseInt(
-              kerning[char_code][prior_char_code] as unknown as string,
-              10
-            )
-          )
+          // parseInt applies ToString to its argument at runtime; String()
+          // performs that exact conversion up front, so the result is
+          // identical for every input (including a missing entry:
+          // parseInt("undefined") is NaN either way).
+          !isNaN(parseInt(String(kerning[char_code][prior_char_code]), 10))
         ) {
           kerningValue =
             kerning[char_code][prior_char_code] / kerningFractionOf;
@@ -203,10 +217,12 @@ declare module "../types.js" {
     if (typeof metadata.widthOfString === "function") {
       result = metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
+      // The raw arguments object is forwarded verbatim (in strict mode it
+      // still holds the original, pre-defaulting values); it always carries
+      // (text, options?), which is exactly what getCharWidthsArray takes.
+      var rawArgs: unknown = arguments;
       result = getCharWidthsArray
-        // The raw arguments object is forwarded verbatim; it always holds
-        // (text, options), which is exactly what getCharWidthsArray takes.
-        .apply(this, arguments as unknown as [string, CharWidthsOptions])
+        .apply(this, rawArgs as [string, CharWidthsOptions])
         .reduce(function (pv, cv) {
           return pv + cv;
         }, 0);
@@ -336,13 +352,15 @@ declare module "../types.js" {
             maxlen - (line_length + separator_length),
             maxlen
           ]);
+          // splitLongWord always returns at least one fragment; the
+          // assertions mirror the historical trust in that invariant.
           // first line we add to existing line object
-          line.push(tmp.shift()); // it's ok to have extra space indicator there
+          line.push(tmp.shift()!); // it's ok to have extra space indicator there
           // last line we make into new line object
-          line = [tmp.pop()];
+          line = [tmp.pop()!];
           // lines in the middle we apped to lines object as whole lines
           while (tmp.length) {
-            lines.push([tmp.shift()]); // single fragment occupies whole line
+            lines.push([tmp.shift()!]); // single fragment occupies whole line
           }
           current_word_length = widths_array
             .slice(word.length - (line[0] ? line[0].length : 0))
@@ -429,18 +447,25 @@ declare module "../types.js" {
               // font.metadata values are opaque to the core; the assertions
               // name the metric-table entry consulted here.
               widths:
-                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
-                  .widths || widths,
+                (
+                  f.metadata[encoding] as NonNullable<
+                    SplitFontMetadataView["Unicode"]
+                  >
+                ).widths || widths,
               kerning:
-                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
-                  .kerning || kerning
+                (
+                  f.metadata[encoding] as NonNullable<
+                    SplitFontMetadataView["Unicode"]
+                  >
+                ).kerning || kerning
             };
           } else {
             return {
               // Latent quirk preserved for parity: the TTF metadata object is
               // passed through the `font` option slot (getCharWidthsArray and
-              // getStringUnitWidth then look up `.metadata` on it).
-              font: f.metadata as unknown as Font,
+              // getStringUnitWidth then look up `.metadata` on it), which the
+              // CharWidthsOptions.font type admits honestly.
+              font: f.metadata,
               fontSize: this.internal.getFontSize(),
               charSpace: this.internal.getCharSpace()
             };

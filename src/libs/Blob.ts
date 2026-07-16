@@ -16,25 +16,24 @@ import { globalObject } from "./globalObject.js";
 // including vendor-prefixed and pre-standard slots the DOM lib does not
 // declare, and deliberately overwrites standard slots with fakes. A loose
 // writable view at this single boundary keeps the rest of the file typed.
-type PolyfillCtor = {
-  // Loose constructable/callable shape shared by the native constructors and
-  // the polyfill replacements this file installs.
-  new (...args: never[]): unknown;
-  prototype: Record<string | symbol, unknown>;
-} & Record<string, unknown>;
-
-const global = globalObject as unknown as Record<string, unknown> & {
+// The Blob/File/FileReader slots are typed `unknown` because they hold
+// either the natives or the differently-shaped fakes this file installs;
+// each read site asserts the shape it relies on.
+const globalAsUnknown: unknown = globalObject;
+const global = globalAsUnknown as Record<string, unknown> & {
   URL: {
     createObjectURL(obj: unknown): string;
     revokeObjectURL(url: string): void;
   } & Record<string, unknown>;
   webkitURL?: unknown;
-  Blob: PolyfillCtor;
-  File: PolyfillCtor;
-  FileReader: PolyfillCtor;
+  Blob: unknown;
+  File: unknown;
+  FileReader: unknown;
   Symbol?: { toStringTag?: symbol } & Record<string, unknown>;
   ArrayBuffer?: unknown;
-  XMLHttpRequest?: PolyfillCtor;
+  XMLHttpRequest?: {
+    prototype: Record<string | symbol, unknown>;
+  } & Record<string, unknown>;
 };
 
 /** Internal shape of the polyfilled Blob: raw bytes plus Blob metadata. */
@@ -62,7 +61,7 @@ interface FakeFileReader {
 var BlobBuilder = (global.BlobBuilder ||
   global.WebKitBlobBuilder ||
   global.MSBlobBuilder ||
-  global.MozBlobBuilder) as unknown as {
+  global.MozBlobBuilder) as {
   new (): { append(part: unknown): void; getBlob(type?: string): Blob };
   prototype: Record<string, unknown>;
 };
@@ -77,7 +76,7 @@ global.URL = (global.URL ||
   }) as typeof global.URL;
 
 // The native constructor captured before this file installs replacements.
-var origBlob = global.Blob as unknown as {
+var origBlob = global.Blob as {
   new (parts: unknown[], options?: BlobPropertyBag): Blob;
 };
 var createObjectURL = URL.createObjectURL;
@@ -272,8 +271,10 @@ function FakeBlobBuilder() {
       function c() {}
       c.prototype = a;
       // ES5 constructor-function pattern: a plain function declaration has no
-      // construct signature, so cast to a constructor type for `new`.
-      return new (c as unknown as { new (): object })();
+      // construct signature, so widen to unknown and assert a constructor
+      // type for `new`.
+      const cAsUnknown: unknown = c;
+      return new (cAsUnknown as { new (): object })();
     };
 
   if (arrayBufferSupported) {
@@ -306,7 +307,8 @@ function FakeBlobBuilder() {
     for (var i = 0, len = chunks.length; i < len; i++) {
       var chunk = chunks[i];
       if (chunk instanceof Blob) {
-        chunks[i] = (chunk as unknown as FakeBlob)._buffer;
+        const chunkAsUnknown: unknown = chunk;
+        chunks[i] = (chunkAsUnknown as FakeBlob)._buffer;
       } else if (typeof chunk === "string") {
         chunks[i] = toUTF8Array(chunk);
       } else if (
@@ -330,8 +332,10 @@ function FakeBlobBuilder() {
   }
 
   // The fake constructors below are ES5 constructor functions; plain function
-  // declarations have no construct signature, so cast for `new` call sites.
-  var FakeBlobConstructor = Blob as unknown as {
+  // declarations have no construct signature, so widen to unknown and assert
+  // a constructor type for `new` call sites.
+  const BlobAsUnknown: unknown = Blob;
+  var FakeBlobConstructor = BlobAsUnknown as {
     new (chunks?: unknown[], opts?: BlobPropertyBag): FakeBlob;
   };
 
@@ -360,8 +364,10 @@ function FakeBlobBuilder() {
   ) {
     opts = opts || {};
     // `Blob.call` returns void per its signature but may return an object at
-    // runtime; keep the original `|| this` fallback via a cast.
-    var a = (Blob.call(this, chunks, opts) as unknown as FakeFile) || this;
+    // runtime; keep the original `|| this` fallback by widening the void
+    // result to unknown and asserting the file shape.
+    var callResult: unknown = Blob.call(this, chunks, opts);
+    var a = (callResult as FakeFile) || this;
     a.name = name;
     a.lastModifiedDate = opts.lastModified
       ? new Date(opts.lastModified)
@@ -378,7 +384,8 @@ function FakeBlobBuilder() {
   else {
     try {
       // Legacy engines without setPrototypeOf; __proto__ is not in lib.dom.
-      (File as unknown as { __proto__: unknown }).__proto__ = Blob;
+      const FileAsUnknown: unknown = File;
+      (FileAsUnknown as { __proto__: unknown }).__proto__ = Blob;
     } catch (e) {}
   }
 
@@ -464,14 +471,16 @@ function FakeBlobBuilder() {
   /*                         URL                          */
   /********************************************************/
   URL.createObjectURL = function (blob: Blob | MediaSource): string {
-    return blob instanceof Blob
-      ? "data:" +
-          // The fake Blob polyfill stores its bytes on `_buffer`; the DOM
-          // Blob type has no such member, hence the cast.
-          (blob as unknown as FakeBlob).type +
-          ";base64," +
-          encodeByteArray((blob as unknown as FakeBlob)._buffer)
-      : createObjectURL.call(URL, blob);
+    if (blob instanceof Blob) {
+      // The fake Blob polyfill stores its bytes on `_buffer`; the DOM
+      // Blob type has no such member, hence the widening assertion.
+      const blobAsUnknown: unknown = blob;
+      const fakeBlob = blobAsUnknown as FakeBlob;
+      return (
+        "data:" + fakeBlob.type + ";base64," + encodeByteArray(fakeBlob._buffer)
+      );
+    }
+    return createObjectURL.call(URL, blob);
   };
 
   URL.revokeObjectURL = function (url: string) {
@@ -482,7 +491,7 @@ function FakeBlobBuilder() {
   /*                         XHR                          */
   /********************************************************/
   var _send = (global.XMLHttpRequest &&
-    global.XMLHttpRequest.prototype.send) as unknown as (
+    global.XMLHttpRequest.prototype.send) as (
     this: XMLHttpRequest,
     data?: Document | XMLHttpRequestBodyInit | null
   ) => void;
@@ -493,32 +502,35 @@ function FakeBlobBuilder() {
     ) {
       if (data instanceof Blob) {
         // The fake Blob polyfill stores its bytes on `_buffer`; the DOM
-        // Blob type has no such member, hence the cast.
-        this.setRequestHeader(
-          "Content-Type",
-          (data as unknown as FakeBlob).type
-        );
-        _send.call(this, fromUtf8Array((data as unknown as FakeBlob)._buffer));
+        // Blob type has no such member, hence the widening assertion.
+        const dataAsUnknown: unknown = data;
+        const fakeData = dataAsUnknown as FakeBlob;
+        this.setRequestHeader("Content-Type", fakeData.type);
+        _send.call(this, fromUtf8Array(fakeData._buffer));
       } else {
         _send.call(this, data);
       }
     };
   }
 
-  // Installing the fakes over the (differently-shaped) native slots.
-  global.FileReader = FileReader as unknown as PolyfillCtor;
-  global.File = File as unknown as PolyfillCtor;
-  global.Blob = Blob as unknown as PolyfillCtor;
+  // Installing the fakes over the (differently-shaped) native slots; the
+  // slots are typed `unknown`, so no assertion is needed.
+  global.FileReader = FileReader;
+  global.File = File;
+  global.Blob = Blob;
 }
 
 if (strTag) {
   try {
     // Symbol.toStringTag is not part of the declared Blob/File/FileReader
-    // prototype shapes in lib.dom, so widen via a symbol-keyed record.
-    (File.prototype as unknown as Record<symbol, string>)[strTag] = "File";
-    (Blob.prototype as unknown as Record<symbol, string>)[strTag] = "Blob";
-    (FileReader.prototype as unknown as Record<symbol, string>)[strTag] =
-      "FileReader";
+    // prototype shapes in lib.dom, so widen each prototype to unknown and
+    // assert a symbol-keyed record.
+    const filePrototype: unknown = File.prototype;
+    (filePrototype as Record<symbol, string>)[strTag] = "File";
+    const blobPrototype: unknown = Blob.prototype;
+    (blobPrototype as Record<symbol, string>)[strTag] = "Blob";
+    const fileReaderPrototype: unknown = FileReader.prototype;
+    (fileReaderPrototype as Record<symbol, string>)[strTag] = "FileReader";
   } catch (e) {}
 }
 
@@ -538,7 +550,7 @@ function fixFileAndXHR() {
           "}};" +
           'return new File([], ""), File'
       )();
-      global.File = klass as unknown as PolyfillCtor;
+      global.File = klass;
     } catch (e) {
       global.File = function (b: BlobPart[], d: string, c?: FilePropertyBag) {
         var blob = new Blob(b, c) as Blob & {
@@ -562,19 +574,17 @@ function fixFileAndXHR() {
         if (strTag) blob[strTag] = "File";
 
         return blob;
-      } as unknown as PolyfillCtor;
+      };
     }
   }
 }
 
 if (blobSupported) {
   fixFileAndXHR();
-  global.Blob = (blobSupportsArrayBufferView
-    ? global.Blob
-    : BlobConstructor) as unknown as PolyfillCtor;
+  global.Blob = blobSupportsArrayBufferView ? global.Blob : BlobConstructor;
 } else if (blobBuilderSupported) {
   fixFileAndXHR();
-  global.Blob = BlobBuilderConstructor as unknown as PolyfillCtor;
+  global.Blob = BlobBuilderConstructor;
 } else {
   FakeBlobBuilder();
 }

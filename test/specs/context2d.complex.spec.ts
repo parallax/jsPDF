@@ -57,9 +57,11 @@ describe("Module: Context2D Complex Examples", () => {
 
     // Add a shadow around the object. jsPDF's context2d does not implement
     // canvas shadows; these writes are runtime no-ops kept verbatim from the
-    // upstream canvas sample, hence the casts.
-    (context as unknown as CanvasRenderingContext2D).shadowBlur = 10;
-    (context as unknown as CanvasRenderingContext2D).shadowColor = "black";
+    // upstream canvas sample, hence the widened local.
+    const shadowContext = context as typeof context &
+      Pick<CanvasRenderingContext2D, "shadowBlur" | "shadowColor">;
+    shadowContext.shadowBlur = 10;
+    shadowContext.shadowColor = "black";
 
     // Stroke the outer outline
     context.lineWidth = lineWidth * 2;
@@ -68,8 +70,7 @@ describe("Module: Context2D Complex Examples", () => {
     context.stroke();
 
     // Turn off the shadow, or all future fills will have shadows
-    (context as unknown as CanvasRenderingContext2D).shadowColor =
-      "transparent";
+    shadowContext.shadowColor = "transparent";
 
     // Fill the path
     context.fillStyle = gradient;

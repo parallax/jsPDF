@@ -310,7 +310,9 @@ declare module "../types.js" {
             break;
           case "link":
             if (anno.options.name) {
-              var loc = this.annotations._nameMap[anno.options.name];
+              // Latent parity: named links assume the consumer populated
+              // this.annotations._nameMap; a missing map crashed before too.
+              var loc = this.annotations!._nameMap[anno.options.name];
               anno.options.pageNumber = loc.page;
               anno.options.top = loc.y;
             } else {
@@ -413,9 +415,10 @@ declare module "../types.js" {
       case "text":
       case "freetext":
         // The options object doubles as the stored text/freetext annotation
-        // entry (its `type` was checked above); the assertion names that.
+        // entry (its `type` was checked above); the assertion names that
+        // shape (both members are subtypes of CreateAnnotationOptions).
         (pageInfo.pageContext as PageContextWithAnnotations).annotations.push(
-          options as unknown as PageAnnotation
+          options as TextAnnotation | FreeTextAnnotation
         );
         break;
     }

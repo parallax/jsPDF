@@ -725,8 +725,10 @@ function JPEGEncoder(this: JPEGEncoderInstance, quality?: number) {
 }
 
 // ES5 constructor function: a plain function declaration carries no construct
-// signature, so export it typed as a constructor for `new JPEGEncoder(...)`.
-const JPEGEncoderConstructor = JPEGEncoder as unknown as {
+// signature, so widen it to unknown and export it typed as a constructor for
+// `new JPEGEncoder(...)`.
+const JPEGEncoderAsUnknown: unknown = JPEGEncoder;
+const JPEGEncoderConstructor = JPEGEncoderAsUnknown as {
   new (quality?: number): JPEGEncoderInstance;
 };
 

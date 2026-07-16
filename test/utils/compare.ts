@@ -12,6 +12,7 @@ interface CompareGlobals {
   sendReference(filename: string, data: string): void;
   loadBinaryResource(url: string, unicodeCleanUp?: boolean): string;
   comparePdf(actual: string, expectedFile: string, suite?: string): void;
+  invalidArg<T>(value: unknown): T;
 }
 
 const globalVar: CompareGlobals & typeof globalThis =
@@ -20,8 +21,18 @@ const globalVar: CompareGlobals & typeof globalThis =
   (typeof window !== "undefined" && window) ||
   Function("return this")();
 
-globalVar.sendReference = function() {};
-globalVar.loadBinaryResource = function() {
+globalVar.sendReference = function () {};
+
+/**
+ * Deliberately defeats the type system for negative tests that feed invalid
+ * values to an API and assert the resulting error. This is the ONLY sanctioned
+ * type-laundering primitive in the test suite; the double-assertion-through-unknown
+ * pattern is banned by lint. Runtime identity.
+ */
+globalVar.invalidArg = function <T>(value: unknown): T {
+  return value as T;
+};
+globalVar.loadBinaryResource = function () {
   return "";
 };
 
@@ -30,7 +41,7 @@ const prefix = globalVar.isNode ? "/../" : "/base/test/";
 if (globalVar.isNode === true) {
   const fs = require("fs");
   const path = require("path");
-  globalVar.loadBinaryResource = function(url: string): string {
+  globalVar.loadBinaryResource = function (url: string): string {
     let result = "";
     try {
       result = fs.readFileSync(path.resolve(__dirname + prefix + url), {
@@ -42,7 +53,7 @@ if (globalVar.isNode === true) {
     return result;
   };
 } else {
-  globalVar.sendReference = function(filename: string, data: string): void {
+  globalVar.sendReference = function (filename: string, data: string): void {
     const req = new XMLHttpRequest();
     req.open("POST", `http://localhost:9090${filename}`, true);
     req.setRequestHeader("Content-Type", "text/plain; charset=x-user-defined");
@@ -61,7 +72,7 @@ if (globalVar.isNode === true) {
     req.send(blob);
   };
 
-  globalVar.loadBinaryResource = function(
+  globalVar.loadBinaryResource = function (
     url: string,
     unicodeCleanUp?: boolean
   ): string {
@@ -102,7 +113,7 @@ function resetFile(pdfFile: string): string {
   return pdfFile;
 }
 
-globalVar.comparePdf = function(
+globalVar.comparePdf = function (
   actual: string,
   expectedFile: string,
   _suite?: string

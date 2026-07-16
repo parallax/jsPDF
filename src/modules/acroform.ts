@@ -325,7 +325,7 @@ var calculateCoordinates = function (
 
 var calculateAppearanceStream = function (
   formObject: AcroFormField
-): AppearanceStreamContent {
+): AppearanceStreamContent | undefined {
   if (formObject.appearanceStreamContent) {
     return formObject.appearanceStreamContent;
   }
@@ -622,9 +622,11 @@ var acroformPluginTemplate: AcroFormPluginData = {
 };
 
 var annotReferenceCallback = function (scope: jsPDFDocument): void {
+  // The root dictionary is created in initializeAcroForm before this
+  // event callback can run.
   //set objId to undefined and force it to get a new objId on buildDocument
-  scope.internal.acroformPlugin.acroFormDictionaryRoot.objId = undefined;
-  var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields;
+  scope.internal.acroformPlugin.acroFormDictionaryRoot!.objId = undefined;
+  var fields = scope.internal.acroformPlugin.acroFormDictionaryRoot!.Fields;
   for (var i in fields) {
     if (fields.hasOwnProperty(i)) {
       var formObject = fields[Number(i)];
@@ -645,7 +647,9 @@ var putForm = function (formObject: AcroFormField): void {
     formObject.scope.internal.acroformPlugin.printedOut = false;
     formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot = null;
   }
-  formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot.Fields.push(
+  // Latent parity: after a printedOut reset the root is null until the
+  // next initializeAcroForm; pushing then crashed before typing, too.
+  formObject.scope.internal.acroformPlugin.acroFormDictionaryRoot!.Fields.push(
     formObject
   );
 };
@@ -687,7 +691,9 @@ var putCatalogCallback = function (scope: jsPDFDocument): void {
     // for safety, shouldn't normally be the case
     scope.internal.write(
       "/AcroForm " +
-        scope.internal.acroformPlugin.acroFormDictionaryRoot.objId +
+        // The typeof guard above only rules out undefined; null was (and
+        // still is) trusted not to occur here.
+        scope.internal.acroformPlugin.acroFormDictionaryRoot!.objId +
         " " +
         0 +
         " R"
@@ -703,10 +709,12 @@ var putCatalogCallback = function (scope: jsPDFDocument): void {
  */
 var AcroFormDictionaryCallback = function (scope: jsPDFDocument): void {
   // Remove event
+  // The root dictionary (and its _eventID) is created alongside the
+  // subscription this callback serves.
   scope.internal.events.unsubscribe(
-    scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID
+    scope.internal.acroformPlugin.acroFormDictionaryRoot!._eventID!
   );
-  delete scope.internal.acroformPlugin.acroFormDictionaryRoot._eventID;
+  delete scope.internal.acroformPlugin.acroFormDictionaryRoot!._eventID;
   scope.internal.acroformPlugin.printedOut = true;
 };
 
@@ -726,15 +734,17 @@ var createFieldCallback = function (
     // in case there is no fieldArray specified, we want to print out
     // the Fields of the AcroForm
     // Print out Root
+    // The root dictionary exists whenever fields have been put (see
+    // initializeAcroForm); its objId getter allocates lazily.
     scope.internal.newObjectDeferredBegin(
-      scope.internal.acroformPlugin.acroFormDictionaryRoot.objId,
+      scope.internal.acroformPlugin.acroFormDictionaryRoot!.objId!,
       true
     );
-    scope.internal.acroformPlugin.acroFormDictionaryRoot.putStream();
+    scope.internal.acroformPlugin.acroFormDictionaryRoot!.putStream();
   }
 
   fieldArray =
-    fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot.Kids;
+    fieldArray || scope.internal.acroformPlugin.acroFormDictionaryRoot!.Kids;
 
   for (var i in fieldArray) {
     if (fieldArray.hasOwnProperty(i)) {
@@ -747,7 +757,7 @@ var createFieldCallback = function (
       }
 
       // Start Writing the Object
-      scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
+      scope.internal.newObjectDeferredBegin(fieldObject.objId!, true);
 
       fieldObject.DA =
         AcroFormAppearance.createDefaultAppearanceStream(fieldObject);
@@ -766,7 +776,9 @@ var createFieldCallback = function (
         !fieldObject.appearanceStreamContent
       ) {
         // Calculate Appearance
-        var appearance = calculateAppearanceStream(fieldObject);
+        // Latent parity: undefined (a field without V/DV) is stringified
+        // into the AP entry and pushed to xForms verbatim, as before typing.
+        var appearance = calculateAppearanceStream(fieldObject)!;
         keyValueList.push({ key: "AP", value: "<</N " + appearance + ">>" });
 
         scope.internal.acroformPlugin.xForms.push(appearance);
@@ -854,7 +866,7 @@ var createXFormObjectCallback = function (
       // Only FormXObjects are stored in the xForms list.
       var fieldObject = fieldArray[Number(i)] as AcroFormXObject;
       // Start Writing the Object
-      scope.internal.newObjectDeferredBegin(fieldObject.objId, true);
+      scope.internal.newObjectDeferredBegin(fieldObject.objId!, true);
 
       if (
         typeof fieldObject === "object" &&
@@ -939,7 +951,8 @@ var arrayToPdfArray = function (
         case "boolean":
         case "number":
         case "object":
-          content += element.toString();
+          // Latent parity: a null element crashed here before typing, too.
+          content += element!.toString();
           break;
         case "string":
           if (element.substr(0, 1) === "/") {
@@ -1004,9 +1017,14 @@ var toPdfString = function (
 class AcroFormPDFObject {
   declare _objId: number | undefined;
   declare _scope: jsPDFDocument | undefined;
-  declare objId: number;
+  /** undefined until a scope is attached; the getter then allocates lazily. */
+  declare objId: number | undefined;
   declare scope: jsPDFDocument;
-  declare stream: string | null;
+  /**
+   * Never assigned null anywhere; objects that never receive a stream
+   * (e.g. the AcroForm dictionary itself) simply leave it undefined.
+   */
+  declare stream: string | undefined;
 
   constructor() {
     this._objId = undefined;
@@ -1073,7 +1091,8 @@ class AcroFormPDFObject {
 
     for (var i in keys) {
       if (
-        Object.getOwnPropertyDescriptor(this, keys[Number(i)]).configurable ===
+        // keys are own property names of `this`, so a descriptor exists.
+        Object.getOwnPropertyDescriptor(this, keys[Number(i)])!.configurable ===
         false
       ) {
         var key = keys[Number(i)];
@@ -1167,7 +1186,8 @@ class AcroFormDictionary extends AcroFormPDFObject {
   declare Kids: AcroFormField[];
   declare Fields: AcroFormField[];
   declare DA: string;
-  declare _eventID: string;
+  /** Deleted again in AcroFormDictionaryCallback, hence optional. */
+  declare _eventID?: string;
 
   constructor() {
     super();
@@ -1206,7 +1226,7 @@ class AcroFormDictionary extends AcroFormPDFObject {
           return data;
         };
         if (this.scope)
-          encryptor = this.scope.internal.getEncryptor(this.objId);
+          encryptor = this.scope.internal.getEncryptor(this.objId!);
         return "(" + pdfEscape(encryptor(_DA)) + ")";
       },
       set: function (value: string) {
@@ -1228,7 +1248,7 @@ class AcroFormField extends AcroFormPDFObject {
   declare F: number;
   declare showWhenPrinted: boolean;
   declare Ff: number;
-  declare Rect: number[];
+  declare Rect: number[] | undefined;
   declare x: number;
   declare y: number;
   declare width: number;
@@ -1255,7 +1275,7 @@ class AcroFormField extends AcroFormPDFObject {
   declare readOnly: boolean;
   declare required: boolean;
   declare noExport: boolean;
-  declare Q: number;
+  declare Q: number | undefined;
   declare textAlign: string;
   declare appearanceStreamContent?: AppearanceStreamContent;
 
@@ -1448,7 +1468,7 @@ class AcroFormField extends AcroFormPDFObject {
       }
     });
 
-    var _T: string = null;
+    var _T: string | null = null;
 
     Object.defineProperty(this, "T", {
       enumerable: true,
@@ -1465,7 +1485,7 @@ class AcroFormField extends AcroFormPDFObject {
           return data;
         };
         if (this.scope)
-          encryptor = this.scope.internal.getEncryptor(this.objId);
+          encryptor = this.scope.internal.getEncryptor(this.objId!);
         return "(" + pdfEscape(encryptor(_T)) + ")";
       },
       set: function (value: string) {
@@ -1548,7 +1568,7 @@ class AcroFormField extends AcroFormPDFObject {
       }
     });
 
-    var _maxFontSize: number = undefined;
+    var _maxFontSize: number | undefined = undefined;
     /**
      * The maximum fontSize of the font to be used.
      *
@@ -1613,7 +1633,7 @@ class AcroFormField extends AcroFormPDFObject {
       }
     });
 
-    var _DV: string = null;
+    var _DV: string | null = null;
     Object.defineProperty(this, "DV", {
       enumerable: false,
       configurable: false,
@@ -1652,7 +1672,9 @@ class AcroFormField extends AcroFormPDFObject {
       configurable: true,
       get: function (this: AcroFormField) {
         if (this instanceof AcroFormButton === true) {
-          return pdfUnescape(_DV.substr(1, _DV.length - 1));
+          // Latent parity: a button field with no default value set crashed
+          // here before typing, too.
+          return pdfUnescape(_DV!.substr(1, _DV!.length - 1));
         } else {
           return _DV;
         }
@@ -1667,7 +1689,7 @@ class AcroFormField extends AcroFormPDFObject {
       }
     });
 
-    var _V: string = null;
+    var _V: string | null = null;
     Object.defineProperty(this, "_V", {
       enumerable: false,
       configurable: false,
@@ -1719,7 +1741,9 @@ class AcroFormField extends AcroFormPDFObject {
       configurable: true,
       get: function (this: AcroFormField) {
         if (this instanceof AcroFormButton === true) {
-          return pdfUnescape(_V.substr(1, _V.length - 1));
+          // Latent parity: a button field with no value set crashed here
+          // before typing, too.
+          return pdfUnescape(_V!.substr(1, _V!.length - 1));
         } else {
           return _V;
         }
@@ -1872,7 +1896,7 @@ class AcroFormField extends AcroFormPDFObject {
       }
     });
 
-    var _Q: number = null;
+    var _Q: number | null = null;
     Object.defineProperty(this, "Q", {
       enumerable: true,
       configurable: false,
@@ -2376,7 +2400,7 @@ class AcroFormButton extends AcroFormField {
           return data;
         };
         if (this.scope)
-          encryptor = this.scope.internal.getEncryptor(this.objId);
+          encryptor = this.scope.internal.getEncryptor(this.objId!);
         if (Object.keys(_MK).length !== 0) {
           var result = [];
           result.push("<<");
@@ -2583,7 +2607,7 @@ class AcroFormChildClass extends AcroFormField {
           return data;
         };
         if (this.scope)
-          encryptor = this.scope.internal.getEncryptor(this.objId);
+          encryptor = this.scope.internal.getEncryptor(this.objId!);
         var result = [];
         result.push("<<");
         var key;
@@ -2837,7 +2861,7 @@ class AcroFormTextField extends AcroFormField {
       }
     });
 
-    var _MaxLen: number = null;
+    var _MaxLen: number | null = null;
     Object.defineProperty(this, "MaxLen", {
       enumerable: true,
       configurable: false,
@@ -3444,7 +3468,7 @@ var AcroFormAppearance: AcroFormAppearanceType = {
     getWidth: function (formObject: AcroFormField): number {
       var result = 0;
       if (typeof formObject === "object") {
-        result = scale(formObject.Rect[2]);
+        result = scale(formObject.Rect![2]);
       }
       return result;
     },
@@ -3452,7 +3476,7 @@ var AcroFormAppearance: AcroFormAppearanceType = {
     getHeight: function (formObject: AcroFormField): number {
       var result = 0;
       if (typeof formObject === "object") {
-        result = scale(formObject.Rect[3]);
+        result = scale(formObject.Rect![3]);
       }
       return result;
     }

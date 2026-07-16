@@ -21,7 +21,11 @@ function repeat(str: string, num: number): string {
  * @returns {string} Encrypted string
  */
 function rc4(key: string, data: string): string {
-  var lastKey: string, lastState: number[];
+  // Definite-assignment assertions: `lastKey` is compared before assignment
+  // (matching the original untyped memoization pattern) and `lastState` is
+  // only read when `key === lastKey`, which implies it was assigned.
+  let lastKey!: string;
+  let lastState!: number[];
   if (key !== lastKey) {
     // "k" is reused below as a numeric state lookup; the union type plus
     // narrowing matches the original untyped implementation.

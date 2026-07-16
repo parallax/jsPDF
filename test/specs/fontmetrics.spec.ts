@@ -12,15 +12,17 @@ describe("Module: Standard Font Metrics", () => {
   it("uncompress fail", () => {
     expect(function () {
       // Deliberately invalid: uncompress expects a string (negative test).
-      jsPDF.API.__fontmetrics__.uncompress({
-        widths: { 0: 60, fof: 100 },
-        kerning: { fof: -100 }
-      } as unknown as string);
+      jsPDF.API.__fontmetrics__.uncompress(
+        invalidArg<string>({
+          widths: { 0: 60, fof: 100 },
+          kerning: { fof: -100 }
+        })
+      );
     }).toThrow(new Error("Invalid argument passed to uncompress."));
     expect(function () {
       jsPDF.API.__fontmetrics__.compress({
         // Deliberately invalid value type (negative test).
-        widths: "invalid" as unknown as number,
+        widths: invalidArg<number>("invalid"),
         kerning: { fof: -100 }
       });
     }).toThrow(new Error("Don't know what to do with value type string."));

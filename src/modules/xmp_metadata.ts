@@ -48,10 +48,10 @@ declare module "../types.js" {
 }
 
 function postPutResources(this: jsPDFDocument) {
-  const metadata = this.internal.__metadata__.metadata;
+  const metadata = this.internal.__metadata__!.metadata;
   const utf8Metadata = unescape(encodeURIComponent(metadata));
 
-  const rawXml = this.internal.__metadata__.rawXml;
+  const rawXml = this.internal.__metadata__!.rawXml;
   let content: string;
   if (rawXml) {
     content = utf8Metadata;
@@ -59,7 +59,7 @@ function postPutResources(this: jsPDFDocument) {
     const xmpmetaBeginning = '<x:xmpmeta xmlns:x="adobe:ns:meta/">';
     const rdfBeginning =
       '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:jspdf="' +
-      this.internal.__metadata__.namespaceUri +
+      this.internal.__metadata__!.namespaceUri +
       '"><jspdf:metadata>';
     const rdfEnding = "</jspdf:metadata></rdf:Description></rdf:RDF>";
     const xmpmetaEnding = "</x:xmpmeta>";
@@ -72,7 +72,7 @@ function postPutResources(this: jsPDFDocument) {
       xmpmetaEnding;
   }
 
-  this.internal.__metadata__.metadataObjectNumber = this.internal.newObject();
+  this.internal.__metadata__!.metadataObjectNumber = this.internal.newObject();
   this.internal.write(
     "<< /Type /Metadata /Subtype /XML /Length " + content.length + " >>"
   );
@@ -83,9 +83,9 @@ function postPutResources(this: jsPDFDocument) {
 }
 
 function putCatalog(this: jsPDFDocument) {
-  if (this.internal.__metadata__.metadataObjectNumber) {
+  if (this.internal.__metadata__!.metadataObjectNumber) {
     this.internal.write(
-      "/Metadata " + this.internal.__metadata__.metadataObjectNumber + " 0 R"
+      "/Metadata " + this.internal.__metadata__!.metadataObjectNumber + " 0 R"
     );
   }
 }

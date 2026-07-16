@@ -160,7 +160,7 @@ describe("Module: Context2D W3School", () => {
       format: "a4",
       floatPrecision: 2
     });
-    var ctx = doc.canvas.getContext("2d");
+    var ctx = doc.canvas.getContext("2d")!;
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(300, 150);
@@ -175,7 +175,7 @@ describe("Module: Context2D W3School", () => {
       format: "a4",
       floatPrecision: 2
     });
-    var ctx = doc.canvas.getContext("2d");
+    var ctx = doc.canvas.getContext("2d")!;
     ctx.beginPath();
     ctx.arc(100, 75, 50, 0, 2 * Math.PI);
     ctx.stroke();
@@ -189,7 +189,7 @@ describe("Module: Context2D W3School", () => {
       format: "a4",
       floatPrecision: 2
     });
-    var ctx = doc.canvas.getContext("2d");
+    var ctx = doc.canvas.getContext("2d")!;
     ctx.beginPath();
     ctx.moveTo(20, 20);
     ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);

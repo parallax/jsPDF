@@ -19,7 +19,7 @@ declare module "../types.js" {
       index?: number,
       alias?: number | string,
       compression?: ImageCompression
-    ): ImageProperties;
+    ): ImageProperties | null;
   }
 }
 
@@ -47,6 +47,12 @@ interface WebPDecoderConstructor {
 (function (jsPDFAPI: JsPDFAPI) {
   "use strict";
 
+  // The vendored decoder is an untyped constructor function (@ts-nocheck
+  // source); treat it as an opaque value and assert the local boundary
+  // interface once instead of using `any`.
+  var WebPDecoderOpaque: unknown = WebPDecoder;
+  var TypedWebPDecoder = WebPDecoderOpaque as WebPDecoderConstructor;
+
   jsPDFAPI.processWEBP = function (
     this: jsPDFDocument,
     imageData: Uint8Array,
@@ -54,12 +60,7 @@ interface WebPDecoderConstructor {
     alias?: number | string,
     compression?: ImageCompression
   ) {
-    // The vendored decoder is an untyped constructor function; go through
-    // the local boundary interface instead of `any`.
-    var reader = new (WebPDecoder as unknown as WebPDecoderConstructor)(
-      imageData,
-      false
-    );
+    var reader = new TypedWebPDecoder(imageData, false);
     var width = reader.width,
       height = reader.height;
     var qu = 100;

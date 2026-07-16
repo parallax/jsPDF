@@ -57,6 +57,13 @@ declare var isNode: boolean;
 declare function loadGlobals(): void;
 
 /**
+ * Deliberately defeats the type system for negative tests (defined in
+ * test/utils/compare.ts). The only sanctioned type-laundering primitive;
+ * the double-assertion-through-unknown pattern is banned by lint.
+ */
+declare function invalidArg<T>(value: unknown): T;
+
+/**
  * canvg's UMD global, loaded by the browser test runner. Minimal surface
  * used by the context2d specs.
  */
