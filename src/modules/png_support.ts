@@ -154,12 +154,16 @@ jsPDF.API.processPNG = function (
       compression
     );
     if (needSMask) {
-      const sMaskRowByteLength = Math.ceil((width * sMaskBitsPerComponent) / 8);
+      // The process*PNG helpers set sMaskBitsPerComponent and alphaBytes
+      // whenever they report needSMask.
+      const sMaskRowByteLength = Math.ceil(
+        (width * sMaskBitsPerComponent!) / 8
+      );
       sMask = compressBytes(
-        alphaBytes,
+        alphaBytes!,
         sMaskRowByteLength,
         1,
-        sMaskBitsPerComponent,
+        sMaskBitsPerComponent!,
         compression
       );
     }
@@ -444,8 +448,9 @@ function processIndexedPNG(decodedPng: DecodedPng): ProcessedPNGResult {
   const maxMaskLength = 1;
   let maskLength = 0;
 
-  for (let i = 0; i < decodedPalette.length; i++) {
-    const [r, g, b, a] = decodedPalette[i];
+  // processIndexedPNG is only invoked when the decoded PNG has a palette.
+  for (let i = 0; i < decodedPalette!.length; i++) {
+    const [r, g, b, a] = decodedPalette![i];
     palette.push(r, g, b);
     if (a != null) {
       if (a === 0) {
@@ -469,7 +474,7 @@ function processIndexedPNG(decodedPng: DecodedPng): ProcessedPNGResult {
     const dataView = new DataView(data.buffer);
     for (let p = 0; p < totalPixels; p++) {
       const paletteIndex = readSample(dataView, p, depth);
-      const [, , , alpha] = decodedPalette[paletteIndex];
+      const [, , , alpha] = decodedPalette![paletteIndex];
       alphaBytes[p] = alpha;
     }
   } else if (maskLength === 0) {

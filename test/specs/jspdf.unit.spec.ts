@@ -10,7 +10,7 @@ describe("Core: Unit Tests", () => {
   beforeAll(loadGlobals);
   var global = ((typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
+    (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
     Function("return this")()) as unknown as typeof globalThis & {
     isNode?: boolean;

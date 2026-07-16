@@ -260,7 +260,8 @@ export interface GState extends GStateOptions {
   id: string;
   /** Set by putGState(); -1 until then. */
   objectNumber: number;
-  equals(other: GState): boolean;
+  /** Handles a null comparand (e.g. no active graphics state). */
+  equals(other: GState | null): boolean;
 }
 
 /** Constructor exposed as `doc.GState` (an ES class; requires `new`). */
@@ -339,7 +340,8 @@ export interface Font {
   postScriptName: string;
   fontName: string;
   fontStyle: string;
-  encoding: string;
+  /** Honestly nullable: the ZapfDingbats and Symbol standard fonts have no encoding. */
+  encoding: string | null;
   isStandardFont: boolean;
   metadata: FontMetadata;
   /** Assigned while the font dictionary is written (putFont); absent before. */
@@ -625,7 +627,7 @@ export interface jsPDFInternal {
     text: string,
     flags?: { autoencode?: boolean; noBOM?: boolean }
   ): string;
-  getStyle(style: string): string;
+  getStyle(style?: string): string;
   /** Resolves a font entry; without arguments returns the active font. */
   getFont(
     fontName?: string,
@@ -720,7 +722,8 @@ export interface jsPDFPrivate {
   combineFontStyleAndFontWeight(
     fontStyle?: string,
     fontWeight?: string | number
-  ): string;
+    // Undefined when fontStyle is undefined and no fontWeight is given.
+  ): string | undefined;
   [member: string]: unknown;
 }
 
@@ -884,7 +887,7 @@ export interface jsPDFDocument extends jsPDFAPI {
   getPageWidth(pageNumber?: number): number;
   getPageHeight(pageNumber?: number): number;
   getR2L(): boolean;
-  getStyle(style: string): string;
+  getStyle(style?: string): string;
   getTextColor(): string;
   getVerticalCoordinateString(value: number): string;
   hpf(value: number): string;
@@ -922,7 +925,8 @@ export interface jsPDFDocument extends jsPDFAPI {
   output(type: "dataurl" | "datauri", options?: OutputOptions | string): string;
   output(type: "save", options?: OutputOptions | string): void;
   path(
-    lines?: Array<{ op: string; c: number[] }>,
+    // Required: the implementation iterates it unconditionally.
+    lines: Array<{ op: string; c: number[] }>,
     style?: string
   ): jsPDFDocument;
   pdfEscape(
@@ -994,7 +998,8 @@ export interface jsPDFDocument extends jsPDFAPI {
   setGState(gState: string | GState): void;
   setLineCap(style: string | number): jsPDFDocument;
   setLineDashPattern(dashArray?: number[], dashPhase?: number): jsPDFDocument;
-  setLineHeightFactor(value: number): jsPDFDocument;
+  /** An omitted/falsy value falls back to the default of 1.15. */
+  setLineHeightFactor(value?: number): jsPDFDocument;
   setLineJoin(style: string | number): jsPDFDocument;
   setLineMiterLimit(length: number): jsPDFDocument;
   setLineWidth(width: number): jsPDFDocument;

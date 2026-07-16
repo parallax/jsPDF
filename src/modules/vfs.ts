@@ -48,7 +48,7 @@ declare module "../types.js" {
    */
   jsPDFAPI.existsFileInVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
-    return typeof this.internal.vFS[filename] !== "undefined";
+    return typeof this.internal.vFS![filename] !== "undefined";
   };
 
   /**
@@ -68,7 +68,7 @@ declare module "../types.js" {
     filecontent: string
   ) {
     _initializeVFS.call(this);
-    this.internal.vFS[filename] = filecontent;
+    this.internal.vFS![filename] = filecontent;
     return this;
   };
 
@@ -85,8 +85,8 @@ declare module "../types.js" {
   jsPDFAPI.getFileFromVFS = function (this: jsPDFDocument, filename: string) {
     _initializeVFS.call(this);
 
-    if (typeof this.internal.vFS[filename] !== "undefined") {
-      return this.internal.vFS[filename];
+    if (typeof this.internal.vFS![filename] !== "undefined") {
+      return this.internal.vFS![filename];
     }
     return null;
   };

@@ -195,12 +195,14 @@ declare module "../types.js" {
         stringparts.push(ch);
       } else if (ch == "{") {
         // start of object
-        parentchain.push([activeobject, key]);
+        // In well-formed compressed data a key always precedes "{".
+        parentchain.push([activeobject, key!]);
         activeobject = {};
         key = undefined;
       } else if (ch == "}") {
         // end of object
-        parent_key_pair = parentchain.pop();
+        // Balanced braces guarantee a matching push for every "}".
+        parent_key_pair = parentchain.pop()!;
         parent_key_pair[0][parent_key_pair[1]] = activeobject;
         key = undefined;
         activeobject = parent_key_pair[0];

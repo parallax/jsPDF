@@ -6,7 +6,7 @@ describe("Module: Context2D Input Validation", () => {
   var global: { console: Console } =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
+    (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
     Function("return this")();
 

@@ -187,7 +187,7 @@ break`
     } else {
       PTSans = doc.loadFile("base/test/reference/PTSans.ttf");
     }
-    doc.addFileToVFS("PTSans.ttf", PTSans);
+    doc.addFileToVFS("PTSans.ttf", PTSans!);
     doc.addFont("PTSans.ttf", "PTSans", "normal");
     doc.setFont("PTSans");
     doc.setFontSize(10);

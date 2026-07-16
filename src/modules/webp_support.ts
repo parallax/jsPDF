@@ -19,7 +19,7 @@ declare module "../types.js" {
       index?: number,
       alias?: number | string,
       compression?: ImageCompression
-    ): ImageProperties;
+    ): ImageProperties | null;
   }
 }
 

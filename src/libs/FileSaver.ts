@@ -29,7 +29,7 @@ interface BomOptions {
 type SaveAsOptions = BomOptions | boolean;
 
 type SaveAsFunction = (
-  blob?: Blob | string,
+  blob: Blob | string,
   name?: string,
   opts?: SaveAsOptions,
   popup?: Window | null
@@ -55,7 +55,7 @@ function bom(blob: Blob, opts?: SaveAsOptions): Blob {
   return blob;
 }
 
-function download(url: string, name: string, opts?: SaveAsOptions) {
+function download(url: string, name?: string, opts?: SaveAsOptions) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url);
   xhr.responseType = "blob";
@@ -121,7 +121,9 @@ var saveAs: SaveAsFunction =
           name?: string,
           opts?: SaveAsOptions
         ) {
-          var URL = _global.URL || _global.webkitURL;
+          // The original code assumes some URL implementation exists in any
+          // environment that reaches this branch.
+          var URL = (_global.URL || _global.webkitURL)!;
           var a = document.createElement("a");
           // `name` is only present on File instances, but the original code
           // probes every Blob for it; string blobs simply yield undefined.
@@ -234,7 +236,9 @@ var saveAs: SaveAsFunction =
               };
               reader.readAsDataURL(blob);
             } else {
-              var URL = _global.URL || _global.webkitURL;
+              // The original code assumes some URL implementation exists in
+              // any environment that reaches this branch.
+              var URL = (_global.URL || _global.webkitURL)!;
               var url = URL.createObjectURL(blob);
               if (popup) popup.location = url;
               else location.href = url;

@@ -10,7 +10,7 @@ describe("Module: addimage bas64Validation", () => {
   var global: { isNode?: boolean } =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
+    (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
     Function("return this")();
 
@@ -20,7 +20,7 @@ describe("Module: addimage bas64Validation", () => {
       var canvas = document.createElement("canvas");
       canvas.width = 100;
       canvas.height = 100;
-      var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d")!;
       var image = ctx.getImageData(0, 0, canvas.width, canvas.height);
       var data = image.data;
       for (var i = 0; i < data.length; i++) {

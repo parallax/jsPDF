@@ -2255,11 +2255,14 @@ interface BidiEnginePostProcessTextArgs {
         _hasUbatS: boolean,
         DIR_LTR = 0,
         DIR_RTL = 1,
-        _isInVisual: boolean,
-        _isInRtl: boolean,
-        _isOutVisual: boolean,
-        _isOutRtl: boolean,
-        _isSymmetricSwapping: boolean,
+        // These honestly include undefined: setOptions copies optional flags
+        // verbatim, and _init treats undefined _isInRtl/_isOutRtl as
+        // "contextual direction".
+        _isInVisual: boolean | undefined,
+        _isInRtl: boolean | undefined,
+        _isOutVisual: boolean | undefined,
+        _isOutRtl: boolean | undefined,
+        _isSymmetricSwapping: boolean | undefined,
         _dir = DIR_LTR;
 
       this.__bidiEngine__ = {} as BidiEngineInstance;
@@ -2319,9 +2322,12 @@ interface BidiEnginePostProcessTextArgs {
         resolvedTypes: (string | number)[],
         index: number
       ): string | number {
+        // Definite-assignment assertions: in the "CS" case the original code
+        // reads wType/nType even on the short-circuited paths that skip their
+        // assignment (they compare as undefined there, matching the old JS).
         var cType: string | number = types[index],
-          wType: string | number,
-          nType: string | number,
+          wType!: string | number,
+          nType!: string | number,
           i,
           len;
         switch (cType) {

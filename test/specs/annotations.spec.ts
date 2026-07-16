@@ -73,7 +73,8 @@ describe("Module: Annotations", () => {
     const dsMatch = output.match(/\/DS\((.*)\) \/Border \[0 0 0\]/);
 
     expect(dsMatch).not.toBeNull();
-    expect(dsMatch[1]).toContain(
+    // non-null asserted: the line above asserts the match exists
+    expect(dsMatch![1]).toContain(
       'color:#000000\\) /AA <</E <</S /JavaScript /JS \\(alert\\("x"\\)\\)>>>> \\('
     );
   });

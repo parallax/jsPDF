@@ -187,7 +187,7 @@ class GState {
     this.objectNumber = -1; // will be set by putGState()
   }
 
-  equals(other: GState): boolean {
+  equals(other: GState | null): boolean {
     var ignore = "id,objectNumber,equals";
     var p;
     if (!other || typeof other !== typeof this) return false;
@@ -314,7 +314,9 @@ class TilingPattern extends Pattern {
  */
 function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   // Legacy positional signature: jsPDF(orientation, unit, format, compressPdf).
-  var orientation: string =
+  // Honestly `string | undefined` until normalized below ("p" fallback):
+  // options.orientation may be absent.
+  var orientation: string | undefined =
     typeof arguments[0] === "string" ? (arguments[0] as string) : "p";
   var unit: Unit | number = arguments[1] as Unit | number;
   var format: PageFormat = arguments[2] as PageFormat;
@@ -480,9 +482,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    */
   var combineFontStyleAndFontWeight =
     (API.__private__.combineFontStyleAndFontWeight = function (
-      fontStyle: string,
+      fontStyle: string | undefined,
       fontWeight?: string | number
-    ): string {
+    ): string | undefined {
       if (
         (fontStyle == "bold" && fontWeight == "normal") ||
         (fontStyle == "bold" && fontWeight == 400) ||
@@ -667,7 +669,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var scale =
     (API.scale =
     API.__private__.scale =
-      function (number: number): number {
+      // apiMode is always COMPAT or ADVANCED, so one branch always returns;
+      // the assertion covers TypeScript's inability to prove exhaustiveness
+      // of if/else-if chains.
+      function (number: number) {
         if (isNaN(number)) {
           throw new Error("Invalid argument passed to jsPDF.scale");
         }
@@ -676,15 +681,17 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
         } else if (apiMode === ApiMode.ADVANCED) {
           return number;
         }
-      });
+      } as (number: number) => number);
 
-  var transformY = function (y: number): number {
+  // apiMode is always COMPAT or ADVANCED, so one branch always returns (see
+  // the note on `scale` above).
+  var transformY = function (y: number) {
     if (apiMode === ApiMode.COMPAT) {
       return getPageHeight() - y;
     } else if (apiMode === ApiMode.ADVANCED) {
       return y;
     }
-  };
+  } as (y: number) => number;
 
   var transformScaleY = function (y: number): number {
     return scale(transformY(y));
@@ -726,7 +733,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
     if (encryptionOptions !== null) {
       encryption = new PDFSecurity(
-        encryptionOptions.userPermissions,
+        // Normalized to an array in the constructor's option handling.
+        encryptionOptions.userPermissions!,
         encryptionOptions.userPassword,
         encryptionOptions.ownerPassword,
         fileId
@@ -1041,10 +1049,12 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     return R2L;
   };
 
-  var zoomMode: string | number; // default: 1;
+  // Honestly nullable: null/undefined are valid (contextual) zoom modes and
+  // putCatalog applies the "fullwidth" default for falsy values.
+  var zoomMode: string | number | null | undefined; // default: 1;
 
   var setZoomMode = (API.__private__.setZoomMode = function (
-    zoom: string | number
+    zoom: string | number | null | undefined
   ) {
     var validZoomModes: Array<string | number | null | undefined> = [
       undefined,
@@ -1074,8 +1084,11 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     return zoomMode;
   };
 
-  var pageMode: string; // default: 'UseOutlines';
-  var setPageMode = (API.__private__.setPageMode = function (pmode: string) {
+  // Honestly nullable: null/undefined are valid page modes (no /PageMode).
+  var pageMode: string | null | undefined; // default: 'UseOutlines';
+  var setPageMode = (API.__private__.setPageMode = function (
+    pmode: string | null | undefined
+  ) {
     var validPageModes: Array<string | null | undefined> = [
       undefined,
       null,
@@ -1099,9 +1112,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     return pageMode;
   };
 
-  var layoutMode: string; // default: 'continuous';
+  // Honestly nullable: null/undefined are valid (default) layout modes.
+  var layoutMode: string | null | undefined; // default: 'continuous';
   var setLayoutMode = (API.__private__.setLayoutMode = function (
-    layout: string
+    layout: string | null | undefined
   ) {
     var validLayoutModes: Array<string | null | undefined> = [
       undefined,
@@ -1271,14 +1285,16 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       tx?: number,
       ty?: number
     ) {
-      if (isNaN(sx)) sx = 1;
-      if (isNaN(shy)) shy = 0;
-      if (isNaN(shx)) shx = 0;
-      if (isNaN(sy)) sy = 1;
-      if (isNaN(tx)) tx = 0;
-      if (isNaN(ty)) ty = 0;
+      // isNaN(undefined) is true, so each isNaN branch assigns the default;
+      // the assertions reflect that every value is a number afterwards.
+      if (isNaN(sx!)) sx = 1;
+      if (isNaN(shy!)) shy = 0;
+      if (isNaN(shx!)) shx = 0;
+      if (isNaN(sy!)) sy = 1;
+      if (isNaN(tx!)) tx = 0;
+      if (isNaN(ty!)) ty = 0;
 
-      this._matrix = [sx, shy, shx, sy, tx, ty];
+      this._matrix = [sx!, shy!, shx!, sy!, tx!, ty!];
     }
 
     /**
@@ -1695,7 +1711,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       pattern.boundingBox[1],
       pattern.boundingBox[2] - pattern.boundingBox[0],
       pattern.boundingBox[3] - pattern.boundingBox[1],
-      pattern.matrix
+      // A tiling pattern passed to beginTilingPattern always carries a matrix.
+      pattern.matrix!
     );
   };
 
@@ -1719,8 +1736,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
     events.publish("endTilingPattern", pattern);
 
-    // restore state from stack
-    renderTargetStack.pop().restore();
+    // restore state from stack; endTilingPattern is always paired with a
+    // beginTilingPattern that pushed onto the stack.
+    renderTargetStack.pop()!.restore();
   };
 
   var newObject = (API.__private__.newObject = function () {
@@ -1958,7 +1976,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       );
     }
     if (encryptionOptions !== null) {
-      encryptor = encryption.encryptor(objectId, 0);
+      // encryption is initialized whenever encryptionOptions is set, and the
+      // guard above threw if objectId was missing.
+      encryptor = encryption!.encryptor(objectId!, 0);
     }
 
     var processedData: ProcessedData;
@@ -2468,10 +2488,11 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     for (var p in gState) {
       switch (p) {
         case "opacity":
-          out("/ca " + f2(gState[p]));
+          // The for-in key's presence guarantees the property is set.
+          out("/ca " + f2(gState[p]!));
           break;
         case "stroke-opacity":
-          out("/CA " + f2(gState["stroke-opacity"]));
+          out("/CA " + f2(gState["stroke-opacity"]!));
           break;
       }
     }
@@ -2510,15 +2531,17 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     out(">>");
   };
 
+  // Only called when encryptionOptions is set, which implies `encryption`
+  // was initialized (hence the assertions).
   var putEncryptionDict = function () {
-    encryption.oid = newObject();
+    encryption!.oid = newObject();
     out("<<");
     out("/Filter /Standard");
-    out("/V " + encryption.v);
-    out("/R " + encryption.r);
-    out("/U <" + encryption.toHexString(encryption.U) + ">");
-    out("/O <" + encryption.toHexString(encryption.O) + ">");
-    out("/P " + encryption.P);
+    out("/V " + encryption!.v);
+    out("/R " + encryption!.r);
+    out("/U <" + encryption!.toHexString(encryption!.U) + ">");
+    out("/O <" + encryption!.toHexString(encryption!.O) + ">");
+    out("/P " + encryption!.P);
     out(">>");
     out("endobj");
   };
@@ -2666,7 +2689,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     postScriptName: string,
     fontName: string,
     fontStyle: string,
-    encoding: string,
+    encoding: string | null,
     isStandardFont?: boolean
   ): string {
     var font: Font = {
@@ -2744,7 +2767,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
           (e as Error).message;
         if (globalObject.console) {
           globalObject.console.error(m, e);
-          if (globalObject.alert) alert(m);
+          // The cast makes the runtime feature-check visible to the type
+          // system (lib.dom declares alert as always present).
+          if ((globalObject as { alert?: typeof alert }).alert) alert(m);
         } else {
           throw new Error(m);
         }
@@ -2770,7 +2795,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
   var to8bitStream = function (
     text: string,
-    flags?: To8BitStreamFlags
+    // null is accepted (and normalized to {}) to match the loose legacy calls.
+    flags?: To8BitStreamFlags | null
   ): string {
     /**
      * PDF 1.3 spec:
@@ -2824,7 +2850,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       l,
       sourceEncoding: string,
       encodingBlock: FontEncodingBlock,
-      outputEncoding: string | Record<number, number>,
+      // Honestly optional: flags.outputEncoding may be absent and the value
+      // stays undefined when no encoding can be resolved.
+      outputEncoding: string | Record<number, number> | undefined,
       newtext: Array<string | number>,
       isUnicode: boolean | undefined,
       ch: number,
@@ -2853,13 +2881,15 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       (flags.autoencode || outputEncoding) &&
       activeFontMetadata &&
       activeFontMetadata[sourceEncoding] &&
-      activeFontMetadata[sourceEncoding].encoding
+      // Assertion mirrors the preceding truthiness check (TypeScript cannot
+      // narrow element access with a mutable key).
+      activeFontMetadata[sourceEncoding]!.encoding
     ) {
-      encodingBlock = activeFontMetadata[sourceEncoding].encoding;
+      encodingBlock = activeFontMetadata[sourceEncoding]!.encoding!;
 
       // each font has default encoding. Some have it clearly defined.
       if (!outputEncoding && fonts[activeFontKey].encoding) {
-        outputEncoding = fonts[activeFontKey].encoding;
+        outputEncoding = fonts[activeFontKey].encoding!;
       }
 
       // Hmmm, the above did not work? Let's try again, in different place.
@@ -2934,7 +2964,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var pdfEscape =
     (API.__private__.pdfEscape =
     API.pdfEscape =
-      function (text: string, flags?: To8BitStreamFlags): string {
+      function (text: string, flags?: To8BitStreamFlags | null): string {
         /**
          * Replace '/', '(', and ')' with pdf-safe versions
          *
@@ -2978,7 +3008,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   });
 
   var _addPage = function (parmFormat?: PageFormat, parmOrientation?: string) {
-    var dimensions, width: number, height: number;
+    // Definite-assignment assertions: when neither branch below assigns them,
+    // isNaN(width) is true (undefined) and the fallback branch assigns both.
+    var dimensions, width!: number, height!: number;
 
     orientation = parmOrientation || orientation;
 
@@ -3010,7 +3042,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
     format = [width, height];
 
-    switch (orientation.substr(0, 1)) {
+    // orientation was normalized to a string in the constructor before any
+    // page can be added.
+    switch (orientation!.substr(0, 1)) {
       case "l":
         if (height > width) {
           format = [height, width];
@@ -3084,8 +3118,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     fontName?: string,
     fontStyle?: string,
     options?: { disableWarning?: boolean; noFallback?: boolean }
-  ): string {
-    var key: string = undefined,
+    // With `noFallback` the lookup may legitimately come up empty.
+  ): string | undefined {
+    var key: string | undefined = undefined,
       fontNameLowerCase;
     options = options || {};
 
@@ -3132,7 +3167,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       return data;
     };
     if (encryptionOptions !== null) {
-      encryptor = encryption.encryptor(objectId, 0);
+      // encryption is initialized whenever encryptionOptions is set.
+      encryptor = encryption!.encryptor(objectId, 0);
     }
     out("<<");
     out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
@@ -3225,7 +3261,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     out("/Root " + objectNumber + " 0 R");
     out("/Info " + (objectNumber - 1) + " 0 R");
     if (encryptionOptions !== null) {
-      out("/Encrypt " + encryption.oid + " 0 R");
+      // encryption is initialized whenever encryptionOptions is set.
+      out("/Encrypt " + encryption!.oid + " 0 R");
     }
     out("/ID [ <" + fileId + "> <" + fileId + "> ]");
     out(">>");
@@ -3413,7 +3450,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
             }
             return (
               "data:application/pdf;filename=" +
-              encodeURIComponent(options.filename) +
+              encodeURIComponent(options.filename!) +
               ";base64," +
               dataURI
             );
@@ -3426,7 +3463,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
               var useDefaultPdfObjectUrl = !options.pdfObjectUrl;
 
               if (!useDefaultPdfObjectUrl) {
-                pdfObjectUrl = options.pdfObjectUrl;
+                pdfObjectUrl = options.pdfObjectUrl!;
               }
 
               var nW = globalObject.open();
@@ -3487,12 +3524,14 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
                   pdfJsUrl +
                   pdfJsQueryChar +
                   "file=&downloadName=" +
-                  encodeURIComponent(options.filename);
+                  encodeURIComponent(options.filename!);
 
                 pdfViewer.onload = function () {
-                  PDFjsNewWindow.document.title = (
+                  // Guarded by the enclosing `PDFjsNewWindow !== null` check;
+                  // filename was defaulted at the top of output().
+                  PDFjsNewWindow!.document.title = (
                     options as OutputOptions
-                  ).filename;
+                  ).filename!;
                   // PDFViewerApplication is provided by the embedded PDF.js viewer.
                   (
                     pdfViewer.contentWindow as Window & {
@@ -3522,7 +3561,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
                 dataUrlFrame.src = this.output("datauristring", options);
                 initializedDataUrlWindow.body.appendChild(dataUrlFrame);
-                dataURLNewWindow.document.title = options.filename;
+                dataURLNewWindow.document.title = options.filename!;
               }
               if (
                 dataURLNewWindow ||
@@ -3601,7 +3640,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 
   var getEncryptor = function (objectId: number): Encryptor {
     if (encryptionOptions !== null) {
-      return encryption.encryptor(objectId, 0);
+      // encryption is initialized whenever encryptionOptions is set.
+      return encryption!.encryptor(objectId, 0);
     }
     return function (data) {
       return data;
@@ -3614,15 +3654,23 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var getPageInfo =
     (API.__private__.getPageInfo =
     API.getPageInfo =
-      function (pageNumberOneBased: number): PageInfo {
-        if (isNaN(pageNumberOneBased) || pageNumberOneBased % 1 !== 0) {
+      // Numeric strings are genuinely supported: the isNaN / % 1 validation
+      // coerces, and getPageInfoByObjId passes for-in keys straight through.
+      function (pageNumberOneBased: number | string): PageInfo {
+        if (
+          isNaN(pageNumberOneBased as number) ||
+          (pageNumberOneBased as number) % 1 !== 0
+        ) {
           throw new Error("Invalid argument passed to jsPDF.getPageInfo");
         }
-        var objId = pagesContext[pageNumberOneBased].objId;
+        // The validation above guarantees a whole number (possibly as a
+        // numeric string); array indexing is identical for both forms.
+        var pageIndex = pageNumberOneBased as number;
+        var objId = pagesContext[pageIndex].objId;
         return {
           objId: objId,
-          pageNumber: pageNumberOneBased,
-          pageContext: pagesContext[pageNumberOneBased]
+          pageNumber: pageIndex,
+          pageContext: pagesContext[pageIndex]
         };
       });
 
@@ -3637,9 +3685,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
         break;
       }
     }
-    // for-in keys are strings; getPageInfo coerces via arithmetic checks,
-    // matching the original loose behavior.
-    return getPageInfo(pageNumber as unknown as number);
+    // The definite-assignment assertion covers the (empty pagesContext) case
+    // where the loop never ran and getPageInfo throws on the resulting
+    // undefined, as before.
+    return getPageInfo(pageNumber!);
   });
 
   var getCurrentPageInfo =
@@ -3862,12 +3911,12 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     var scope = options.scope || this;
     var payload: TextPayload,
       da: Array<string | Array<string | number>>,
-      angle: number | MatrixType | string,
+      angle: number | MatrixType | string | null | undefined,
       align: string,
-      charSpace: number,
+      charSpace: number | undefined,
       maxWidth: number,
-      flags: To8BitStreamFlags,
-      horizontalScale: number;
+      flags: To8BitStreamFlags | null,
+      horizontalScale: number | undefined;
 
     // Pre-August-2012 the order of arguments was function(x, y, text, flags)
     // in effort to make all calls have similar signature like
@@ -3886,7 +3935,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       text = tmp;
     }
 
-    var transformationMatrix: MatrixType;
+    var transformationMatrix: MatrixType | undefined;
 
     if (arguments[3] instanceof Matrix === false) {
       flags = arguments[3];
@@ -3907,7 +3956,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
           flags = null;
         }
         options = {
-          flags: flags as { noBOM: boolean; autoencode: boolean },
+          // In this legacy-arguments branch flags is always null by now; the
+          // assertion keeps the historical `flags: null` value flowing through.
+          flags: flags! as { noBOM: boolean; autoencode: boolean },
           angle: angle as number,
           align: align as TextOptionsLight["align"]
         };
@@ -3936,7 +3987,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     var scaleFactor = scope.internal.scaleFactor;
 
     function ESC(s: string): string {
-      s = s.split("\t").join(Array(options.TabLen || 9).join(" "));
+      // `options` was defaulted at the top of text(); the closure just cannot
+      // see that narrowing.
+      s = s.split("\t").join(Array(options!.TabLen || 9).join(" "));
       return pdfEscape(s, flags);
     }
 
@@ -4002,7 +4055,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
         }
         result = da;
       }
-      return result;
+      // `text` has been validated to be a string or array before this helper
+      // is ever invoked, so `result` is always assigned.
+      return result!;
     }
 
     //Check if text is of type String
@@ -4234,7 +4289,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     charSpace = options.charSpace || activeCharSpace;
     maxWidth = options.maxWidth || 0;
 
-    var lineWidths: number[];
+    // Assigned whenever align !== "left"; only those branches read it.
+    var lineWidths!: number[];
     flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
 
     var wordSpacingPerLine: Array<string | number> = [];
@@ -4411,9 +4467,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     var STRING = 0;
     var ARRAY = 1;
     var variant = Array.isArray(da[0]) ? ARRAY : STRING;
-    var posX: number;
-    var posY: number;
-    var content: string;
+    // Definite-assignment: the switch below covers both possible variants.
+    var posX!: number;
+    var posY!: number;
+    var content!: string;
     var wordSpacing = "";
 
     var generatePosition = function (
@@ -4625,7 +4682,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var getStyle =
     (API.__private__.getStyle =
     API.getStyle =
-      function (style: string): string {
+      // An unset style resolves to the default path operation.
+      function (style?: string): string {
         // see path-painting operators in PDF spec
         var op = defaultPathOperation; // stroke
 
@@ -4799,12 +4857,14 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     if (pattern instanceof ShadingPattern) {
       out("q");
 
-      out(clipRuleFromStyle(style));
+      // All styles produced by getStyle are covered by clipRuleFromStyle.
+      out(clipRuleFromStyle(style)!);
 
       if (pattern.gState) {
         API.setGState(pattern.gState);
       }
-      out(patternData.matrix.toString() + " cm");
+      // Shading pattern data always carries a matrix (see ShadingPattern use).
+      out(patternData.matrix!.toString() + " cm");
       out("/" + patternId + " sh");
       out("Q");
     } else if (pattern instanceof TilingPattern) {
@@ -4839,7 +4899,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     }
   };
 
-  var clipRuleFromStyle = function (style: string): string {
+  var clipRuleFromStyle = function (style: string): string | undefined {
     switch (style) {
       case "f":
       case "F":
@@ -5414,9 +5474,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     if (fontWeight) {
       fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
     }
+    // Without `noFallback` getFont always resolves a key (times fallback).
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
-    });
+    })!;
     return this;
   };
 
@@ -5440,6 +5501,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
         options?: { disableWarning?: boolean; noFallback?: boolean }
       ): Font {
         return fonts[
+          // With `noFallback` the key may be undefined; the resulting
+          // undefined lookup matches the original loose behavior.
           getFont.apply(
             API,
             // eslint-disable-next-line prefer-rest-params
@@ -5448,7 +5511,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
               string?,
               { disableWarning?: boolean; noFallback?: boolean }?
             ]
-          )
+          )!
         ];
       });
 
@@ -5513,7 +5576,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       //IE 11 fix
       encoding = arguments[3];
     } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
-      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+      // fontStyle is a string here, so the combination is always a string.
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight)!;
     }
     encoding = encoding || "Identity-H";
     // URL inputs are resolved by the ttfsupport plugin through the addFont
@@ -5625,7 +5689,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var setLineHeightFactor =
     (API.__private__.setLineHeightFactor =
     API.setLineHeightFactor =
-      function (this: jsPDFDocument | void, value: number) {
+      function (this: jsPDFDocument | void, value?: number) {
         value = value || 1.15;
         if (typeof value === "number") {
           lineHeightFactor = value;
@@ -6081,7 +6145,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     if (typeof gState === "string") {
       resolvedGState = gStates[gStatesMap[gState]];
     } else {
-      resolvedGState = addGState(null, gState);
+      // With a null key addGState never hits its early return.
+      resolvedGState = addGState(null, gState)!;
     }
 
     if (!resolvedGState.equals(activeGState)) {
@@ -6095,11 +6160,17 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @param {String} key Might also be null, if no later reference to this gState is needed
    * @param {Object} gState The gState object
    */
-  var addGState = function (key: string | null, gState: GState): GState {
+  var addGState = function (
+    key: string | null,
+    gState: GState
+  ): GState | undefined {
     // only add it if it is not already present (the keys provided by the user must be unique!)
     if (key && gStatesMap[key]) return;
     var duplicate = false;
-    for (var s in gStates) {
+    // Definite-assignment: `s` is only read when `duplicate` was set inside
+    // the loop, i.e. after it has been assigned.
+    var s!: string;
+    for (s in gStates) {
       if (gStates.hasOwnProperty(s)) {
         if (gStates[s].equals(gState)) {
           duplicate = true;
@@ -6171,7 +6242,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     out("Q");
 
     // restore previous font state
-    var fontState = fontStateStack.pop();
+    // A restore without a matching save crashed here before as well.
+    var fontState = fontStateStack.pop()!;
     activeFontKey = fontState.key;
     activeFontSize = fontState.size;
     textColor = fontState.color;
@@ -6371,7 +6443,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   var endFormObject = function (key: string) {
     // only add it if it is not already present (the keys provided by the user must be unique!)
     if (renderTargetMap[key]) {
-      renderTargetStack.pop().restore();
+      // endFormObject is only called after beginFormObject pushed a target.
+      renderTargetStack.pop()!.restore();
       return;
     }
 
@@ -6387,7 +6460,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     events.publish("addFormObject", newXObject);
 
     // restore state from stack
-    renderTargetStack.pop().restore();
+    renderTargetStack.pop()!.restore();
   };
 
   /**
@@ -6507,7 +6580,9 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     if (options.returnPromise === false) {
       saveAs(getBlob(buildDocument()), filename);
       if (typeof saveAsWithUnload.unload === "function") {
-        if (globalObject.setTimeout) {
+        // Exotic global objects may lack setTimeout; the standard globalThis
+        // type cannot express that, hence the widening assertion.
+        if (globalObject.setTimeout as typeof setTimeout | undefined) {
           setTimeout(saveAsWithUnload.unload, 911);
         }
       }
@@ -6517,7 +6592,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
         try {
           var result = saveAs(getBlob(buildDocument()), filename);
           if (typeof saveAsWithUnload.unload === "function") {
-            if (globalObject.setTimeout) {
+            // See the widening assertion note above.
+            if (globalObject.setTimeout as typeof setTimeout | undefined) {
               setTimeout(saveAsWithUnload.unload, 911);
             }
           }
@@ -6533,11 +6609,15 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     // eslint-disable-next-line no-unreachable
     var fs = require("fs");
     var buffer = Buffer.from(getArrayBuffer(buildDocument()));
-    if (options.returnPromise === false) {
-      fs.writeFileSync(filename, buffer);
+    // In the ES source this block is unreachable (both branches above
+    // return), so TS drops the narrowing from the defaults assigned at the
+    // top; in the cjs build the block above is stripped and the defaults are
+    // always set.
+    if (options!.returnPromise === false) {
+      fs.writeFileSync(filename!, buffer);
     } else {
       return new Promise<void>(function (resolve, reject) {
-        fs.writeFile(filename, buffer, function (err) {
+        fs.writeFile(filename!, buffer, function (err) {
           if (err) {
             reject(err);
           } else {
@@ -6771,7 +6851,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
 // augmentation; only the events list exists at this point.
 jsPDF.API = {
   events: []
-} as jsPDFAPI;
+} as Partial<jsPDFAPI> as jsPDFAPI;
 /**
  * The version of jsPDF.
  * @name version

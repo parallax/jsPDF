@@ -44,13 +44,13 @@ declare module "../types.js" {
     loadFile(
       url: string,
       sync?: boolean,
-      callback?: (data: string) => string
-    ): string;
+      callback?: (data?: string) => unknown
+    ): string | undefined;
     loadImageFile(
       url: string,
       sync?: boolean,
-      callback?: (data: string) => string
-    ): string;
+      callback?: (data?: string) => unknown
+    ): string | undefined;
     allowFsRead?: string[];
   }
 }
@@ -207,7 +207,9 @@ declare module "../types.js" {
       if (sync) {
         return undefined;
       } else {
-        callback(undefined);
+        // Latent parity: unlike the async read below, this path does not
+        // check that a callback was supplied before invoking it.
+        callback!(undefined);
         return;
       }
     }

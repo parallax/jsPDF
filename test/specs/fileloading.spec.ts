@@ -37,13 +37,10 @@ describe("Module: FileLoad", () => {
     if (typeof isNode !== "undefined" && isNode) {
       doc.allowFsRead = [successURL];
     }
-    // The declared callback type requires a string return, but the runtime
-    // ignores the callback's return value (LoadFileCallback in
-    // src/modules/fileloading.ts), so the void callback is safe.
     doc.loadFile(successURL, false, function (data?: string) {
       expect(data).toEqual("success");
       done();
-    } as unknown as (data: string) => string);
+    });
   });
 
   it("should fail to load a file (async)", done => {
@@ -51,11 +48,10 @@ describe("Module: FileLoad", () => {
     if (typeof isNode !== "undefined" && isNode) {
       doc.allowFsRead = ["fail.txt"];
     }
-    // See the cast note in the async success spec above.
     doc.loadFile("fail.txt", false, function (data?: string) {
       expect(data).toEqual(undefined);
       done();
-    } as unknown as (data: string) => string);
+    });
   });
 });
 
@@ -112,7 +108,7 @@ if (typeof isNode !== "undefined" && isNode) {
       doc.allowFsRead = undefined;
       const allowedDir = path.resolve("./test/reference/");
       process.permission = {
-        has: (perm, url) => perm === "fs.read" && url.startsWith(allowedDir)
+        has: (perm, url) => perm === "fs.read" && url!.startsWith(allowedDir)
       };
 
       const data = doc.loadFile(absSuccess, true);

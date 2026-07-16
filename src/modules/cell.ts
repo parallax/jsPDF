@@ -172,6 +172,18 @@ export interface CellState {
   table_y?: number;
 }
 
+/**
+ * The cell state as guaranteed after `_initialize` has run: these members are
+ * assigned on first initialization (`padding`/`margins` by `_initialize`
+ * itself, `lastCell`/`pages` by `_reset`) and are never deleted afterwards.
+ */
+interface InitializedCellState extends CellState {
+  padding: number;
+  margins: CellMargins;
+  lastCell: Cell;
+  pages: number;
+}
+
 declare module "../types.js" {
   interface jsPDFInternal {
     __cell__?: CellState;
@@ -196,12 +208,14 @@ declare module "../types.js" {
     table(
       x: number,
       y: number,
-      data: Array<Record<string, string>>,
+      data: Array<Record<string, string>> | undefined,
       headers: string[] | CellConfig[],
       config?: TableConfig
     ): jsPDFDocument;
     setTableHeaderRow(config: Cell[]): void;
-    printHeaderRow(lineNumber: number, new_page?: boolean): void;
+    // `lineNumber` may be undefined when re-printing headers for a cell that
+    // was created without one (it is simply copied onto the header cells).
+    printHeaderRow(lineNumber: number | undefined, new_page?: boolean): void;
 
     // Provided by src/modules/split_text_to_size.ts; declared here so this
     // module typechecks independently (merged declarations become overloads).
@@ -220,6 +234,17 @@ declare module "../types.js" {
       }
     ): number;
   }
+
+  interface jsPDFDocument {
+    // The core setFont treats an undefined fontName as "keep the current
+    // font family" (see getFont in src/jspdf.ts); this plugin relies on that
+    // to toggle only the style between "bold" and "normal".
+    setFont(
+      fontName: undefined,
+      fontStyle?: string,
+      fontWeight?: string | number
+    ): jsPDFDocument;
+  }
 }
 
 /**
@@ -234,7 +259,7 @@ declare module "../types.js" {
   var px2pt = (0.264583 * 72) / 25.4;
   var printingHeaderRow = false;
 
-  var _initialize = function (this: jsPDFDocument) {
+  var _initialize = function (this: jsPDFDocument): InitializedCellState {
     if (typeof this.internal.__cell__ === "undefined") {
       this.internal.__cell__ = {};
       this.internal.__cell__.padding = 3;
@@ -243,11 +268,15 @@ declare module "../types.js" {
       this.internal.__cell__.margins.width = this.getPageWidth();
       _reset.call(this);
     }
+    // See InitializedCellState: the required members were all just assigned
+    // (or were already present from an earlier initialization).
+    return this.internal.__cell__ as InitializedCellState;
   };
 
   var _reset = function (this: jsPDFDocument) {
-    this.internal.__cell__.lastCell = new Cell();
-    this.internal.__cell__.pages = 1;
+    // _initialize always runs before _reset (see both call sites).
+    this.internal.__cell__!.lastCell = new Cell();
+    this.internal.__cell__!.pages = 1;
   };
 
   /**
@@ -259,9 +288,8 @@ declare module "../types.js" {
     this: jsPDFDocument,
     func: CellHeaderFunction
   ) {
-    _initialize.call(this);
-    this.internal.__cell__.headerFunction =
-      typeof func === "function" ? func : undefined;
+    var state = _initialize.call(this);
+    state.headerFunction = typeof func === "function" ? func : undefined;
     return this;
   };
 
@@ -298,7 +326,9 @@ declare module "../types.js" {
     }
 
     const maxWidth = options.maxWidth;
-    if (maxWidth > 0) {
+    // Same effective condition as the historic `maxWidth > 0` (which is
+    // false for undefined), spelled out for the benefit of narrowing.
+    if (maxWidth !== undefined && maxWidth > 0) {
       if (typeof text === "string") {
         text = this.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
@@ -340,18 +370,13 @@ declare module "../types.js" {
    * @function
    */
   jsPDFAPI.cellAddPage = function (this: jsPDFDocument) {
-    _initialize.call(this);
+    var state = _initialize.call(this);
 
     this.addPage();
 
-    var margins = this.internal.__cell__.margins || NO_MARGINS;
-    this.internal.__cell__.lastCell = new Cell(
-      margins.left,
-      margins.top,
-      undefined,
-      undefined
-    );
-    this.internal.__cell__.pages += 1;
+    var margins = state.margins || NO_MARGINS;
+    state.lastCell = new Cell(margins.left, margins.top, undefined, undefined);
+    state.pages += 1;
 
     return this;
   };
@@ -385,12 +410,12 @@ declare module "../types.js" {
     } else {
       currentCell = new Cell(x, y, width, height, text, lineNumber, align);
     }
-    _initialize.call(this);
-    var lastCell = this.internal.__cell__.lastCell;
-    var padding = this.internal.__cell__.padding;
-    var margins = this.internal.__cell__.margins || NO_MARGINS;
-    var tableHeaderRow = this.internal.__cell__.tableHeaderRow;
-    var printHeaders = this.internal.__cell__.printHeaders;
+    var state = _initialize.call(this);
+    var lastCell = state.lastCell;
+    var padding = state.padding;
+    var margins = state.margins || NO_MARGINS;
+    var tableHeaderRow = state.tableHeaderRow;
+    var printHeaders = state.printHeaders;
     // If this is not the first cell, we must change its position
     if (typeof lastCell.lineNumber !== "undefined") {
       if (lastCell.lineNumber === currentCell.lineNumber) {
@@ -399,62 +424,71 @@ declare module "../types.js" {
         currentCell.y = lastCell.y || 0;
       } else {
         //New line
+        // The non-null assertions below only affect types: absent members
+        // NaN-propagate through the arithmetic exactly as they always did
+        // (a NaN sum fails the comparison, so no page is added).
         if (
-          lastCell.y + lastCell.height + currentCell.height + margins.bottom >
+          lastCell.y! +
+            lastCell.height! +
+            currentCell.height! +
+            margins.bottom! >
           this.getPageHeight()
         ) {
           this.cellAddPage();
           currentCell.y = margins.top;
           if (printHeaders && tableHeaderRow) {
             this.printHeaderRow(currentCell.lineNumber, true);
-            currentCell.y += tableHeaderRow[0].height;
+            currentCell.y = currentCell.y! + tableHeaderRow[0].height!;
           }
         } else {
-          currentCell.y = lastCell.y + lastCell.height || currentCell.y;
+          currentCell.y = lastCell.y! + lastCell.height! || currentCell.y;
         }
       }
     }
 
-    if (typeof currentCell.text[0] !== "undefined") {
+    // As above, the `!`s below are type-level only: missing coordinates
+    // flow through as undefined/NaN just like in the untyped implementation
+    // (and `text` cannot be undefined here — indexing it above would throw).
+    if (typeof currentCell.text![0] !== "undefined") {
       this.rect(
-        currentCell.x,
-        currentCell.y,
-        currentCell.width,
-        currentCell.height,
+        currentCell.x!,
+        currentCell.y!,
+        currentCell.width!,
+        currentCell.height!,
         printingHeaderRow === true ? "FD" : undefined
       );
       if (currentCell.align === "right") {
         this.text(
-          currentCell.text,
-          currentCell.x + currentCell.width - padding,
-          currentCell.y + padding,
+          currentCell.text!,
+          currentCell.x! + currentCell.width! - padding,
+          currentCell.y! + padding,
           { align: "right", baseline: "top" }
         );
       } else if (currentCell.align === "center") {
         this.text(
-          currentCell.text,
-          currentCell.x + currentCell.width / 2,
-          currentCell.y + padding,
+          currentCell.text!,
+          currentCell.x! + currentCell.width! / 2,
+          currentCell.y! + padding,
           {
             align: "center",
             baseline: "top",
-            maxWidth: currentCell.width - padding - padding
+            maxWidth: currentCell.width! - padding - padding
           }
         );
       } else {
         this.text(
-          currentCell.text,
-          currentCell.x + padding,
-          currentCell.y + padding,
+          currentCell.text!,
+          currentCell.x! + padding,
+          currentCell.y! + padding,
           {
             align: "left",
             baseline: "top",
-            maxWidth: currentCell.width - padding - padding
+            maxWidth: currentCell.width! - padding - padding
           }
         );
       }
     }
-    this.internal.__cell__.lastCell = currentCell;
+    state.lastCell = currentCell;
     return this;
   };
   jsPDFAPI.cell = cell;
@@ -488,7 +522,7 @@ declare module "../types.js" {
     headers: string[] | CellConfig[],
     config?: TableConfig
   ) {
-    _initialize.call(this);
+    var state = _initialize.call(this);
     if (!data) {
       throw new Error("No data for PDF table.");
     }
@@ -521,12 +555,12 @@ declare module "../types.js" {
 
     _reset.call(this);
 
-    this.internal.__cell__.printHeaders = printHeaders;
-    this.internal.__cell__.margins = margins;
-    this.internal.__cell__.table_font_size = fontSize;
-    this.internal.__cell__.padding = padding;
-    this.internal.__cell__.headerBackgroundColor = headerBackgroundColor;
-    this.internal.__cell__.headerTextColor = headerTextColor;
+    state.printHeaders = printHeaders;
+    state.margins = margins;
+    state.table_font_size = fontSize;
+    state.padding = padding;
+    state.headerBackgroundColor = headerBackgroundColor;
+    state.headerTextColor = headerTextColor;
     this.setFontSize(fontSize);
 
     // Set header values
@@ -550,7 +584,9 @@ declare module "../types.js" {
       });
       // Split header configs into names and prompts
       for (i = 0; i < headerConfigs.length; i += 1) {
-        columnWidths[headerConfigs[i].name] = headerConfigs[i].width * px2pt;
+        // A missing width NaN-propagates into the column width, exactly as
+        // in the untyped implementation.
+        columnWidths[headerConfigs[i].name] = headerConfigs[i].width! * px2pt;
       }
     } else if (Array.isArray(headers) && typeof headers[0] === "string") {
       headerNames = headers as string[];
@@ -578,7 +614,7 @@ declare module "../types.js" {
         this.setFont(undefined, "bold");
         columnMinWidths.push(
           this.getTextDimensions(headerLabels[i], {
-            fontSize: this.internal.__cell__.table_font_size,
+            fontSize: state.table_font_size,
             scaleFactor: this.internal.scaleFactor
           }).w
         );
@@ -589,7 +625,7 @@ declare module "../types.js" {
         for (j = 0; j < column.length; j += 1) {
           columnMinWidths.push(
             this.getTextDimensions(column[j], {
-              fontSize: this.internal.__cell__.table_font_size,
+              fontSize: state.table_font_size,
               scaleFactor: this.internal.scaleFactor
             }).w
           );
@@ -685,8 +721,8 @@ declare module "../types.js" {
         );
       }
     }
-    this.internal.__cell__.table_x = x;
-    this.internal.__cell__.table_y = y;
+    state.table_x = x;
+    state.table_y = y;
     return this;
   };
 
@@ -705,8 +741,11 @@ declare module "../types.js" {
     model: Record<string, string | { text?: string | string[] }>,
     columnWidths: Record<string, number>
   ): number {
-    var padding = this.internal.__cell__.padding;
-    var fontSize = this.internal.__cell__.table_font_size;
+    // Only ever called from table(), which has initialized the state and
+    // assigned table_font_size before the first call.
+    var state = this.internal.__cell__ as InitializedCellState;
+    var padding = state.padding;
+    var fontSize = state.table_font_size!;
     var scaleFactor = this.internal.scaleFactor;
 
     return Object.keys(model)
@@ -741,8 +780,8 @@ declare module "../types.js" {
    * except the lineNumber parameter is excluded
    */
   jsPDFAPI.setTableHeaderRow = function (this: jsPDFDocument, config: Cell[]) {
-    _initialize.call(this);
-    this.internal.__cell__.tableHeaderRow = config;
+    var state = _initialize.call(this);
+    state.tableHeaderRow = config;
   };
 
   /**
@@ -755,23 +794,20 @@ declare module "../types.js" {
    */
   jsPDFAPI.printHeaderRow = function (
     this: jsPDFDocument,
-    lineNumber: number,
+    lineNumber: number | undefined,
     new_page?: boolean
   ) {
-    _initialize.call(this);
-    if (!this.internal.__cell__.tableHeaderRow) {
+    var state = _initialize.call(this);
+    if (!state.tableHeaderRow) {
       throw new Error("Property tableHeaderRow does not exist.");
     }
 
     var tableHeaderCell;
 
     printingHeaderRow = true;
-    if (typeof this.internal.__cell__.headerFunction === "function") {
-      var position = this.internal.__cell__.headerFunction(
-        this,
-        this.internal.__cell__.pages
-      );
-      this.internal.__cell__.lastCell = new Cell(
+    if (typeof state.headerFunction === "function") {
+      var position = state.headerFunction(this, state.pages);
+      state.lastCell = new Cell(
         position[0],
         position[1],
         position[2],
@@ -783,16 +819,21 @@ declare module "../types.js" {
     this.setFont(undefined, "bold");
 
     var tempHeaderConf: Cell[] = [];
-    for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
-      tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
+    // Re-read from state each iteration: a recursive printHeaderRow (page
+    // overflow inside cell()) may replace tableHeaderRow mid-loop.
+    for (var i = 0; i < state.tableHeaderRow.length; i += 1) {
+      tableHeaderCell = state.tableHeaderRow[i].clone();
       if (new_page) {
-        tableHeaderCell.y = this.internal.__cell__.margins.top || 0;
+        tableHeaderCell.y = state.margins.top || 0;
         tempHeaderConf.push(tableHeaderCell);
       }
       tableHeaderCell.lineNumber = lineNumber;
       var currentTextColor = this.getTextColor();
-      this.setTextColor(this.internal.__cell__.headerTextColor);
-      this.setFillColor(this.internal.__cell__.headerBackgroundColor);
+      // Both colors are assigned by table() before headers are printed; a
+      // direct printHeaderRow() call without them passes undefined through,
+      // as the untyped implementation did.
+      this.setTextColor(state.headerTextColor!);
+      this.setFillColor(state.headerBackgroundColor!);
       cell.call(this, tableHeaderCell);
       this.setTextColor(currentTextColor);
     }

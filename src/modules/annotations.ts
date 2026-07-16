@@ -310,7 +310,9 @@ declare module "../types.js" {
             break;
           case "link":
             if (anno.options.name) {
-              var loc = this.annotations._nameMap[anno.options.name];
+              // Latent parity: named links assume the consumer populated
+              // this.annotations._nameMap; a missing map crashed before too.
+              var loc = this.annotations!._nameMap[anno.options.name];
               anno.options.pageNumber = loc.page;
               anno.options.top = loc.y;
             } else {

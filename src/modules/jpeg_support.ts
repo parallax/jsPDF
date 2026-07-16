@@ -22,7 +22,7 @@ declare module "../types.js" {
       compression?: ImageCompression,
       dataAsBinaryString?: string,
       colorSpace?: string
-    ): ImageProperties;
+    ): ImageProperties | null;
   }
 }
 
@@ -76,7 +76,7 @@ declare module "../types.js" {
    */
   jsPDFAPI.processJPEG = function (
     this: jsPDFDocument,
-    data: string | ArrayBuffer | ImageTypedArray,
+    data?: unknown,
     index?: number,
     alias?: number | string,
     compression?: ImageCompression,
@@ -102,7 +102,9 @@ declare module "../types.js" {
         ? this.__addimage__.arrayBufferToBinaryString(data)
         : data;
 
-      dims = getJpegInfo(data);
+      // The conversions above leave a binary string; the `unknown` parameter
+      // type (required by the declared signature) defeats TS's narrowing.
+      dims = getJpegInfo(data as string);
       switch (dims.numcomponents) {
         case 1:
           colorSpace = this.color_spaces.DEVICE_GRAY;
@@ -116,10 +118,12 @@ declare module "../types.js" {
       }
 
       result = {
-        data: data,
+        data: data as string,
         width: dims.width,
         height: dims.height,
-        colorSpace: colorSpace,
+        // Latent parity: stays undefined for unrecognized component counts
+        // when the caller supplied no colorSpace, exactly as before typing.
+        colorSpace: colorSpace!,
         bitsPerComponent: bpc,
         filter: filter,
         index: index,

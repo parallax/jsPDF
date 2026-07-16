@@ -20,7 +20,7 @@ describe("Context2D: standard tests", () => {
       c.width = 1000;
       c.height = 500;
 
-      var ctx = c.getContext("2d");
+      var ctx = c.getContext("2d")!;
       ctx.ignoreClearRect = true;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, 1000, 700);
@@ -52,7 +52,7 @@ describe("Context2D: standard tests", () => {
       c.width = 1000;
       c.height = 500;
 
-      var ctx = c.getContext("2d");
+      var ctx = c.getContext("2d")!;
       ctx.ignoreClearRect = true;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, 1000, 700);

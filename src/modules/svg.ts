@@ -152,7 +152,8 @@ declare module "../types.js" {
     var canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
-    var ctx = canvas.getContext("2d");
+    // A fresh canvas always yields a 2d context.
+    var ctx = canvas.getContext("2d")!;
     ctx.fillStyle = "#fff"; /// set white fill style
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 

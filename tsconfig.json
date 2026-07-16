@@ -7,7 +7,7 @@
     "noEmit": true,
     "strict": true,
     "noImplicitAny": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "noImplicitThis": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,

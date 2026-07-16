@@ -309,7 +309,7 @@ declare module "../types.js" {
     var value: boolean | string | number | number[][] | undefined;
 
     function arrayContainsElement(
-      array: ArrayLike<unknown> | null,
+      array: ArrayLike<unknown>,
       element: unknown
     ): boolean {
       var iterator: number;
@@ -330,7 +330,8 @@ declare module "../types.js" {
       );
       this.internal.viewerpreferences.isSubscribed = false;
     }
-    configuration = this.internal.viewerpreferences.configuration;
+    // Initialized in the block above on first use.
+    configuration = this.internal.viewerpreferences.configuration!;
 
     if (options === "reset" || doReset === true) {
       var len = configurationKeys.length;
@@ -356,7 +357,8 @@ declare module "../types.js" {
             configuration[method].value = value;
           } else if (
             configuration[method].type === "name" &&
-            arrayContainsElement(configuration[method].valueSet, value)
+            // Every "name"-typed entry in the template carries a valueSet.
+            arrayContainsElement(configuration[method].valueSet!, value)
           ) {
             // Membership in valueSet (checked above) guarantees a name string.
             configuration[method].value = value as string;

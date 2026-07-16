@@ -713,7 +713,9 @@ class GifReader {
         index_stream,
         num_pixels
       );
-      var palette_offset = frame.palette_offset;
+      // The palette offset is null only for frames without a palette; the
+      // original untyped code indexed with it regardless.
+      var palette_offset = frame.palette_offset!;
 
       // NOTE(deanm): It seems to be much faster to compare index to 256 than
       // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
@@ -794,7 +796,9 @@ class GifReader {
         index_stream,
         num_pixels
       );
-      var palette_offset = frame.palette_offset;
+      // The palette offset is null only for frames without a palette; the
+      // original untyped code indexed with it regardless.
+      var palette_offset = frame.palette_offset!;
 
       // NOTE(deanm): It seems to be much faster to compare index to 256 than
       // to === null.  Not sure why, but CompareStub_EQ_STRICT shows up high in
@@ -952,8 +956,11 @@ function GifReaderLZWOutputIndexStream(
     var chase_code: number | null = code < next_code ? code : prev_code;
 
     // Chase what we will output, either {CODE} or {CODE-1}.
+    // chase_code is null only for corrupt streams (an out-of-range code while
+    // prev_code is still null); the original untyped code relied on null
+    // coercing like 0 in the arithmetic below.
     var chase_length = 0;
-    var chase = chase_code;
+    var chase = chase_code!;
     while (chase > clear_code) {
       chase = code_table[chase] >> 8;
       ++chase_length;
@@ -977,7 +984,7 @@ function GifReaderLZWOutputIndexStream(
       // The case of emitting {CODE-1} + k.
       output[op++] = k;
 
-    chase = chase_code;
+    chase = chase_code!; // See null-coercion note above.
     while (chase_length--) {
       chase = code_table[chase];
       output[--b] = chase & 0xff; // Write backwards.

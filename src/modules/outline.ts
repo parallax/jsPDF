@@ -172,12 +172,13 @@ declare module "../types.js" {
 
       // Created with its data members only and filled method by method
       // directly below.
-      pdf.outline = {
+      var outline: Pick<Outline, "createNamedDestinations" | "root"> = {
         createNamedDestinations: false,
         root: {
           children: []
         }
-      } as Outline;
+      };
+      pdf.outline = outline as Outline;
 
       /**
        * Options: pageNumber
@@ -243,7 +244,8 @@ declare module "../types.js" {
           var item = node.children[i];
           this.objStart(item);
 
-          this.line("/Title " + this.makeString(item.title));
+          // Only the root node lacks a title; children always carry one.
+          this.line("/Title " + this.makeString(item.title!));
 
           this.line("/Parent " + this.makeRef(node));
           if (i > 0) {

@@ -29,7 +29,7 @@ describe("Core: Initialization Options", () => {
   var global: typeof globalThis & { isNode?: boolean } =
     (typeof self !== "undefined" && self) ||
     (typeof window !== "undefined" && window) ||
-    (typeof global !== "undefined" && global) ||
+    (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
     Function("return this")();
 
@@ -153,7 +153,7 @@ describe("Core: Initialization Options", () => {
       });
 
       viewerFrame =
-        popupWindow.document.querySelector<HTMLIFrameElement>("#pdfViewer");
+        popupWindow.document.querySelector<HTMLIFrameElement>("#pdfViewer")!;
       Object.defineProperty(viewerFrame, "contentWindow", {
         value: {
           PDFViewerApplication: {
@@ -196,7 +196,7 @@ describe("Core: Initialization Options", () => {
         customOption: payload
       });
 
-      loaderScript = popupWindow.document.querySelector("script");
+      loaderScript = popupWindow.document.querySelector("script")!;
       // The onload handler assigned by jsPDF takes no arguments.
       (loaderScript.onload as unknown as () => void)();
 
@@ -218,7 +218,7 @@ describe("Core: Initialization Options", () => {
       spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
 
       doc.output("pdfobjectnewwindow", { filename: "test.pdf" });
-      var loaderScript = popupWindow.document.querySelector("script");
+      var loaderScript = popupWindow.document.querySelector("script")!;
       expect(loaderScript.integrity).toBeTruthy();
       expect(loaderScript.crossOrigin).toEqual("anonymous");
     });
@@ -234,7 +234,7 @@ describe("Core: Initialization Options", () => {
         filename: "test.pdf",
         pdfObjectUrl: "https://example.com/pdfobject.js"
       });
-      var loaderScript = popupWindow.document.querySelector("script");
+      var loaderScript = popupWindow.document.querySelector("script")!;
       expect(loaderScript.integrity).toBeFalsy();
       expect(loaderScript.src).toContain("example.com");
     });

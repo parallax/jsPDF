@@ -114,9 +114,14 @@ declare module "../types.js" {
     // members this plugin consults (see SplitFontMetadataView above).
     var metadata = activeFont.metadata as SplitFontMetadataView;
 
-    var widths = options.widths ? options.widths : metadata.Unicode.widths;
+    // Latent parity: when no explicit tables are passed, the font is assumed
+    // to carry Unicode metric tables (standard fonts do); a font without them
+    // crashed here before typing, too.
+    var widths = (options.widths ? options.widths : metadata.Unicode!.widths)!;
     var widthsFractionOf = widths.fof ? widths.fof : 1;
-    var kerning = options.kerning ? options.kerning : metadata.Unicode.kerning;
+    var kerning = (
+      options.kerning ? options.kerning : metadata.Unicode!.kerning
+    )!;
     var kerningFractionOf = kerning.fof ? kerning.fof : 1;
     var doKerning = options.doKerning === false ? false : true;
     var kerningValue = 0;
@@ -133,7 +138,9 @@ declare module "../types.js" {
 
       if (typeof metadata.widthOfString === "function") {
         output.push(
-          (metadata.widthOfGlyph(metadata.characterToGlyph(char_code)) +
+          // A TTF metadata object with widthOfString always carries the
+          // companion glyph helpers as well.
+          (metadata.widthOfGlyph!(metadata.characterToGlyph!(char_code)) +
             charSpace * (1000 / fontSize) || 0) / 1000
         );
       } else {
@@ -336,13 +343,15 @@ declare module "../types.js" {
             maxlen - (line_length + separator_length),
             maxlen
           ]);
+          // splitLongWord always returns at least one fragment; the
+          // assertions mirror the historical trust in that invariant.
           // first line we add to existing line object
-          line.push(tmp.shift()); // it's ok to have extra space indicator there
+          line.push(tmp.shift()!); // it's ok to have extra space indicator there
           // last line we make into new line object
-          line = [tmp.pop()];
+          line = [tmp.pop()!];
           // lines in the middle we apped to lines object as whole lines
           while (tmp.length) {
-            lines.push([tmp.shift()]); // single fragment occupies whole line
+            lines.push([tmp.shift()!]); // single fragment occupies whole line
           }
           current_word_length = widths_array
             .slice(word.length - (line[0] ? line[0].length : 0))
@@ -429,11 +438,17 @@ declare module "../types.js" {
               // font.metadata values are opaque to the core; the assertions
               // name the metric-table entry consulted here.
               widths:
-                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
-                  .widths || widths,
+                (
+                  f.metadata[encoding] as NonNullable<
+                    SplitFontMetadataView["Unicode"]
+                  >
+                ).widths || widths,
               kerning:
-                (f.metadata[encoding] as SplitFontMetadataView["Unicode"])
-                  .kerning || kerning
+                (
+                  f.metadata[encoding] as NonNullable<
+                    SplitFontMetadataView["Unicode"]
+                  >
+                ).kerning || kerning
             };
           } else {
             return {

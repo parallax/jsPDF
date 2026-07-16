@@ -300,7 +300,8 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
     }
     for (s = 0; s < strText.length; s += 1) {
       if (fonts[key].metadata.hasOwnProperty("cmap")) {
-        cmapConfirm = (fonts[key] as TTFFontEntry).metadata.cmap.unicode
+        // hasOwnProperty("cmap") above guarantees presence.
+        cmapConfirm = (fonts[key] as TTFFontEntry).metadata.cmap!.unicode
           .codeMap[strText[s].charCodeAt(0)];
         /*
              if (Object.prototype.toString.call(text) === '[object Array]') {

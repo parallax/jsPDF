@@ -24,8 +24,9 @@ declare const require: ((id: string) => unknown) &
   ((deps: string[], callback: (mod: unknown) => unknown) => unknown);
 declare const module: { exports: unknown } | undefined;
 declare const exports: unknown;
-declare const define:
-  (((...args: unknown[]) => unknown) & { amd?: unknown }) | undefined;
+// Typed non-optional like the other loader globals: the runtime existence
+// check is the `typeof define === "function"` guard in the AMD branches.
+declare const define: ((...args: unknown[]) => unknown) & { amd?: unknown };
 
 /** Minimal call surface of the lazily loaded html2canvas library. */
 type Html2CanvasStatic = (
@@ -441,7 +442,8 @@ declare module "../types.js" {
     // Recursively clone the node.
     var clone =
       node.nodeType === 3
-        ? document.createTextNode(node.nodeValue)
+        ? // A text node (nodeType 3) always has a nodeValue.
+          document.createTextNode(node.nodeValue!)
         : node.cloneNode(false);
     for (var child = node.firstChild; child; child = child.nextSibling) {
       if (
@@ -460,8 +462,9 @@ declare module "../types.js" {
         (clone as HTMLCanvasElement).height = (
           node as HTMLCanvasElement
         ).height;
+        // A fresh canvas clone always yields a 2d context.
         (clone as HTMLCanvasElement)
-          .getContext("2d")
+          .getContext("2d")!
           .drawImage(node as HTMLCanvasElement, 0, 0);
       } else if (node.nodeName === "TEXTAREA" || node.nodeName === "SELECT") {
         (clone as HTMLTextAreaElement).value = (
@@ -650,10 +653,11 @@ declare module "../types.js" {
           typeof this.opt.windowWidth === "number" &&
           !isNaN(this.opt.windowWidth)
             ? this.opt.windowWidth
-            : Math.max(
-                this.prop.src.clientWidth,
-                this.prop.src.scrollWidth,
-                this.prop.src.offsetWidth
+            : // The checkSrc prereq guarantees prop.src before this runs.
+              Math.max(
+                this.prop.src!.clientWidth,
+                this.prop.src!.scrollWidth,
+                this.prop.src!.offsetWidth
               )) + "px",
         left: 0,
         right: 0,
@@ -662,8 +666,9 @@ declare module "../types.js" {
         backgroundColor: this.opt.backgroundColor
       }; // Set the overlay to hidden (could be changed in the future to provide a print preview).
 
+      // The checkSrc prereq guarantees prop.src before this runs.
       var source = cloneNode(
-        this.prop.src,
+        this.prop.src!,
         this.opt.html2canvas.javascriptEnabled
       );
 
@@ -687,7 +692,8 @@ declare module "../types.js" {
         style: containerCSS
       });
       this.prop.container.appendChild(source);
-      this.prop.container.firstChild.appendChild(
+      // The container was given a child (`source`) on the previous line.
+      this.prop.container.firstChild!.appendChild(
         createElement("div", {
           style: {
             clear: "both",
@@ -734,7 +740,8 @@ declare module "../types.js" {
         var options = Object.assign({}, this.opt.html2canvas);
         delete options.onrendered;
 
-        return html2canvas(this.prop.container, options);
+        // The checkContainer prereq guarantees prop.container before this runs.
+        return html2canvas(this.prop.container!, options);
       })
       .then(function toCanvas_post(
         this: HTMLWorker,
@@ -745,7 +752,8 @@ declare module "../types.js" {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        // toContainer (run via the prereq chain) set prop.overlay.
+        document.body.removeChild(this.prop.overlay!);
       });
   };
 
@@ -805,7 +813,11 @@ declare module "../types.js" {
         pdf.context2d.posX = this.opt.x;
         pdf.context2d.posY = this.opt.y;
         pdf.context2d.margin = this.opt.margin;
-        pdf.context2d.fontFaces = fontFaces;
+        // NormalizedFontFace[] is assignable to the FontFaceInput[] the
+        // context2d declares; the assertion only drops null/undefined from
+        // the type — either value still flows through verbatim at runtime,
+        // exactly as before typing.
+        pdf.context2d.fontFaces = fontFaces!;
 
         if (fontFaces) {
           for (var i = 0; i < fontFaces.length; ++i) {
@@ -821,17 +833,18 @@ declare module "../types.js" {
         }
 
         options.windowHeight = options.windowHeight || 0;
+        // The checkContainer prereq guarantees prop.container before this runs.
         options.windowHeight =
           options.windowHeight == 0
             ? Math.max(
-                this.prop.container.clientHeight,
-                this.prop.container.scrollHeight,
-                this.prop.container.offsetHeight
+                this.prop.container!.clientHeight,
+                this.prop.container!.scrollHeight,
+                this.prop.container!.offsetHeight
               )
             : options.windowHeight;
 
         pdf.context2d.save(true);
-        return html2canvas(this.prop.container, options);
+        return html2canvas(this.prop.container!, options);
       })
       .then(function toContext2d_post(
         this: HTMLWorker,
@@ -844,7 +857,8 @@ declare module "../types.js" {
         onRendered(canvas);
 
         this.prop.canvas = canvas;
-        document.body.removeChild(this.prop.overlay);
+        // toContainer (run via the prereq chain) set prop.overlay.
+        document.body.removeChild(this.prop.overlay!);
       });
   };
 
@@ -858,9 +872,11 @@ declare module "../types.js" {
 
     // Fulfill prereqs then create the image.
     return this.thenList(prereqs).then(function toImg_main(this: HTMLWorker) {
-      var imgData = this.prop.canvas.toDataURL(
-        "image/" + this.opt.image.type,
-        this.opt.image.quality
+      // The checkCanvas prereq guarantees prop.canvas, and opt.image is
+      // seeded by the Worker template.
+      var imgData = this.prop.canvas!.toDataURL(
+        "image/" + this.opt.image!.type,
+        this.opt.image!.quality
       );
       this.prop.img = document.createElement("img");
       this.prop.img.src = imgData;
@@ -924,7 +940,8 @@ declare module "../types.js" {
       // The core `output` is declared as per-literal-type overloads; the
       // dynamic type string is forwarded verbatim at runtime, so pick a
       // representative overload for the type check.
-      return this.prop.pdf.output(type as "datauristring", options);
+      // The checkPdf prereq guarantees prop.pdf before this runs.
+      return this.prop.pdf!.output(type as "datauristring", options);
     });
   };
 
@@ -943,16 +960,17 @@ declare module "../types.js" {
     return this.thenList(prereqs).then(function outputImg_main(
       this: HTMLWorker
     ) {
+      // The checkImg prereq guarantees prop.img before this runs.
       switch (type) {
         case undefined:
         case "img":
           return this.prop.img;
         case "datauristring":
         case "dataurlstring":
-          return this.prop.img.src;
+          return this.prop.img!.src;
         case "datauri":
         case "dataurl":
-          return (document.location.href = this.prop.img.src);
+          return (document.location.href = this.prop.img!.src);
         default:
           throw 'Image output type "' + type + '" is not supported.';
       }
@@ -971,7 +989,8 @@ declare module "../types.js" {
     return this.thenList(prereqs)
       .set(filename ? { filename: filename } : null)
       .then(function save_main(this: HTMLWorker) {
-        this.prop.pdf.save(this.opt.filename);
+        // The checkPdf prereq guarantees prop.pdf before this runs.
+        this.prop.pdf!.save(this.opt.filename);
       });
   };
 
@@ -987,7 +1006,8 @@ declare module "../types.js" {
     return this.thenList(prereqs).then(function doCallback_main(
       this: HTMLWorker
     ) {
-      this.prop.callback(this.prop.pdf);
+      // The checkPdf prereq guarantees prop.pdf before this runs.
+      this.prop.callback(this.prop.pdf!);
     });
   };
 
@@ -1014,16 +1034,19 @@ declare module "../types.js" {
           )[key];
         };
       } else {
+        // objType(opt) === "object" (checked above) guarantees opt inside
+        // these closures; TS cannot see through the helper, hence the
+        // assertions.
         switch (key) {
           case "margin":
-            return this.setMargin.bind(this, opt.margin);
+            return this.setMargin.bind(this, opt!.margin!);
           case "jsPDF":
             return function set_jsPDF(this: HTMLWorker) {
-              this.opt.jsPDF = opt.jsPDF;
+              this.opt.jsPDF = opt!.jsPDF!;
               return this.setPageSize();
             };
           case "pageSize":
-            return this.setPageSize.bind(this, opt.pageSize);
+            return this.setPageSize.bind(this, opt!.pageSize);
           default:
             // Set any other properties in opt.
             return function set_opt(this: HTMLWorker) {
