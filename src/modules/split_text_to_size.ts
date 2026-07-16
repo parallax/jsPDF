@@ -25,7 +25,12 @@
  */
 
 import { jsPDF } from "../jspdf.js";
-import type { Font, jsPDFAPI as JsPDFAPI, jsPDFDocument } from "../types.js";
+import type {
+  Font,
+  FontMetadata,
+  jsPDFAPI as JsPDFAPI,
+  jsPDFDocument
+} from "../types.js";
 
 /** Character widths table: char code -> width, plus the `fof` fraction. */
 export interface FontWidthsTable {
@@ -41,7 +46,12 @@ export interface FontKerningTable {
 
 /** Options consumed by getCharWidthsArray()/getStringUnitWidth(). */
 export interface CharWidthsOptions {
-  font?: Font;
+  /**
+   * Honestly admits FontMetadata as well: splitTextToSize has always passed
+   * the raw TTF metadata object through this slot (a latent quirk preserved
+   * for parity; the consumers only ever read `.metadata` off this value).
+   */
+  font?: Font | FontMetadata;
   fontSize?: number;
   charSpace?: number;
   widths?: FontWidthsTable;
@@ -147,14 +157,11 @@ declare module "../types.js" {
         if (
           doKerning &&
           typeof kerning[char_code] === "object" &&
-          // parseInt applies ToString to its argument at runtime, so the
-          // numeric kerning value is accepted; the assertion keeps that.
-          !isNaN(
-            parseInt(
-              kerning[char_code][prior_char_code] as unknown as string,
-              10
-            )
-          )
+          // parseInt applies ToString to its argument at runtime; String()
+          // performs that exact conversion up front, so the result is
+          // identical for every input (including a missing entry:
+          // parseInt("undefined") is NaN either way).
+          !isNaN(parseInt(String(kerning[char_code][prior_char_code]), 10))
         ) {
           kerningValue =
             kerning[char_code][prior_char_code] / kerningFractionOf;
@@ -210,10 +217,12 @@ declare module "../types.js" {
     if (typeof metadata.widthOfString === "function") {
       result = metadata.widthOfString(text, fontSize, charSpace) / fontSize;
     } else {
+      // The raw arguments object is forwarded verbatim (in strict mode it
+      // still holds the original, pre-defaulting values); it always carries
+      // (text, options?), which is exactly what getCharWidthsArray takes.
+      var rawArgs: unknown = arguments;
       result = getCharWidthsArray
-        // The raw arguments object is forwarded verbatim; it always holds
-        // (text, options), which is exactly what getCharWidthsArray takes.
-        .apply(this, arguments as unknown as [string, CharWidthsOptions])
+        .apply(this, rawArgs as [string, CharWidthsOptions])
         .reduce(function (pv, cv) {
           return pv + cv;
         }, 0);
@@ -454,8 +463,9 @@ declare module "../types.js" {
             return {
               // Latent quirk preserved for parity: the TTF metadata object is
               // passed through the `font` option slot (getCharWidthsArray and
-              // getStringUnitWidth then look up `.metadata` on it).
-              font: f.metadata as unknown as Font,
+              // getStringUnitWidth then look up `.metadata` on it), which the
+              // CharWidthsOptions.font type admits honestly.
+              font: f.metadata,
               fontSize: this.internal.getFontSize(),
               charSpace: this.internal.getCharSpace()
             };

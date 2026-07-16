@@ -32,7 +32,7 @@ describe("Lib: Bidi Engine", function () {
     // jsPDF.__bidiEngine__ is an internal attachment that is deliberately
     // not part of the public jsPDF typings, hence the one local cast here.
     bidiEngine = new (
-      jsPDF as unknown as {
+      jsPDF as typeof jsPDF & {
         __bidiEngine__: new (options?: BidiEngineOptions) => BidiEngine;
       }
     ).__bidiEngine__(options);

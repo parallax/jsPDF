@@ -341,9 +341,9 @@ describe("Context2D: standard tests", () => {
     // The extra positional arguments are ignored at runtime when an options
     // object is passed; kept verbatim and cast to the legacy signature.
     var doc = new jsPDF(
-      {
+      invalidArg<string>({
         floatPrecision: 2
-      } as unknown as string,
+      }),
       "pt",
       "a4"
     );
@@ -753,7 +753,7 @@ describe("Context2D: standard tests", () => {
     expect(ctx.margin).toEqual([0, 0, 0, 0]);
     // The margin setter accepts a bare-number shorthand at runtime and
     // normalizes it to [n, n, n, n]; the declared property type is number[].
-    ctx.margin = 1 as unknown as number[];
+    ctx.margin = invalidArg<number[]>(1);
     expect(ctx.margin).toEqual([1, 1, 1, 1]);
     ctx.margin = [1];
     expect(ctx.margin).toEqual([1, 1, 1, 1]);

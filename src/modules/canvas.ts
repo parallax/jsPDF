@@ -57,8 +57,8 @@ declare module "../types.js" {
    * @classdesc A Canvas Wrapper for jsPDF
    */
   // A classic constructor function carries no construct signature in its
-  // inferred type; the assertion reinstates the `new`-able shape.
-  var Canvas = function (this: CanvasShim) {
+  // inferred type; keep it opaque and assert the `new`-able shape once below.
+  var CanvasImpl: unknown = function (this: CanvasShim) {
     var jsPdfInstance: jsPDFDocument | undefined = undefined;
     Object.defineProperty(this, "pdf", {
       get: function () {
@@ -148,7 +148,8 @@ declare module "../types.js" {
     });
 
     Object.defineProperty(this, "parentNode", {});
-  } as unknown as CanvasShimConstructor;
+  };
+  var Canvas = CanvasImpl as CanvasShimConstructor;
 
   /**
    * The getContext() method returns a drawing context on the canvas, or null if the context identifier is not supported.
@@ -169,18 +170,17 @@ declare module "../types.js" {
     if (contextType !== "2d") {
       return null;
     }
+    // The class surface of the context is opaque here: arbitrary
+    // caller-provided attributes are copied onto it (dynamic by design), and
+    // `_canvas` is an expando this plugin stashes on it.
+    var context2d: unknown = this.pdf.context2d;
     for (key in contextAttributes) {
       if (this.pdf.context2d.hasOwnProperty(key)) {
-        // Copies arbitrary, caller-provided attributes onto the context;
-        // dynamic by design, hence the indexable view of the instance.
         // The for-in loop body only runs when contextAttributes is defined.
-        (this.pdf.context2d as unknown as Record<string, unknown>)[key] =
-          contextAttributes![key];
+        (context2d as Record<string, unknown>)[key] = contextAttributes![key];
       }
     }
-    // `_canvas` is an expando the canvas plugin stashes on the context; it is
-    // not part of the Context2D class surface.
-    (this.pdf.context2d as unknown as { _canvas: CanvasShim })._canvas = this;
+    (context2d as { _canvas: CanvasShim })._canvas = this;
     return this.pdf.context2d;
   };
 

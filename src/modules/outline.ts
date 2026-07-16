@@ -99,13 +99,10 @@ declare module "../types.js" {
           var m = rx.exec(line);
           if (m != null) {
             var oid = m[1];
-            // Preserved verbatim: the object id captured from the rendered
-            // line is a string; newObjectDeferredBegin coerces it when used
-            // as an offset table key.
-            pdf.internal.newObjectDeferredBegin(
-              oid as unknown as number,
-              false
-            );
+            // The object id captured from the rendered line is a string;
+            // newObjectDeferredBegin accepts it as-is (it only serves as an
+            // offset table key).
+            pdf.internal.newObjectDeferredBegin(oid, false);
           }
           pdf.internal.write(line);
         }

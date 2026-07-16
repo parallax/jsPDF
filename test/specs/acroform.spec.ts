@@ -6,17 +6,17 @@
  */
 describe("Module: Acroform Unit Test", function () {
   beforeAll(loadGlobals);
-  // Note: the `("invalid" as unknown) as number`-style casts throughout this
+  // Note: the `invalidArg<number>("invalid")`-style calls throughout this
   // file feed deliberately invalid values to negative tests that expect a
   // throw.
   it("setBit", function () {
     expect(function () {
-      jsPDF.API.__acroform__.setBit("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.setBit(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.setBit")
     );
     expect(function () {
-      jsPDF.API.__acroform__.setBit(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.setBit(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.setBit")
     );
@@ -27,12 +27,12 @@ describe("Module: Acroform Unit Test", function () {
 
   it("getBit", function () {
     expect(function () {
-      jsPDF.API.__acroform__.getBit("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.getBit(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.getBit")
     );
     expect(function () {
-      jsPDF.API.__acroform__.getBit(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.getBit(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.getBit")
     );
@@ -44,12 +44,12 @@ describe("Module: Acroform Unit Test", function () {
 
   it("clearBit", function () {
     expect(function () {
-      jsPDF.API.__acroform__.clearBit("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.clearBit(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.clearBit")
     );
     expect(function () {
-      jsPDF.API.__acroform__.clearBit(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.clearBit(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to jsPDF.API.__acroform__.clearBit")
     );
@@ -63,14 +63,14 @@ describe("Module: Acroform Unit Test", function () {
 
   it("setBitForPdf", function () {
     expect(function () {
-      jsPDF.API.__acroform__.setBitForPdf("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.setBitForPdf(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.setBitForPdf"
       )
     );
     expect(function () {
-      jsPDF.API.__acroform__.setBitForPdf(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.setBitForPdf(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.setBitForPdf"
@@ -83,14 +83,14 @@ describe("Module: Acroform Unit Test", function () {
 
   it("getBitForPdf", function () {
     expect(function () {
-      jsPDF.API.__acroform__.getBitForPdf("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.getBitForPdf(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.getBitForPdf"
       )
     );
     expect(function () {
-      jsPDF.API.__acroform__.getBitForPdf(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.getBitForPdf(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.getBitForPdf"
@@ -104,14 +104,14 @@ describe("Module: Acroform Unit Test", function () {
 
   it("clearBitForPdf", function () {
     expect(function () {
-      jsPDF.API.__acroform__.clearBitForPdf("invalid" as unknown as number, 1);
+      jsPDF.API.__acroform__.clearBitForPdf(invalidArg<number>("invalid"), 1);
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf"
       )
     );
     expect(function () {
-      jsPDF.API.__acroform__.clearBitForPdf(0, "invalid" as unknown as number);
+      jsPDF.API.__acroform__.clearBitForPdf(0, invalidArg<number>("invalid"));
     }).toThrow(
       new Error(
         "Invalid arguments passed to jsPDF.API.__acroform__.clearBitForPdf"
@@ -127,14 +127,9 @@ describe("Module: Acroform Unit Test", function () {
 
   it("AcroFormField Rect, x, y, width, height", function () {
     // Legacy positional constructor form jsPDF(orientation, unit, format);
-    // still supported at runtime by src/jspdf.ts.
-    var doc = new (
-      jsPDF as unknown as new (
-        orientation?: string,
-        unit?: string,
-        format?: string | number[]
-      ) => ReturnType<typeof jsPDF>
-    )("p", "pt", "a4");
+    // still supported at runtime by src/jspdf.ts and declared on the ambient
+    // jsPDF global (test/globals.d.ts).
+    var doc = new jsPDF("p", "pt", "a4");
     var textFieldRect = new TextField();
     textFieldRect.Rect = [50, 140, 30, 10];
     // doc.addField(textFieldRect);
@@ -341,9 +336,14 @@ describe("Module: Acroform Unit Test", function () {
     listbox.setOptions(["c", "a", "d", "f", "b", "s"]);
     // getOptions() takes no arguments; the historical spurious "" argument is
     // kept (and ignored at runtime) via a cast.
-    expect(
-      (listbox.getOptions as unknown as (x?: string) => string[])("")
-    ).toEqual(["c", "a", "d", "f", "b", "s"]);
+    expect((listbox.getOptions as (x?: string) => string[])("")).toEqual([
+      "c",
+      "a",
+      "d",
+      "f",
+      "b",
+      "s"
+    ]);
   });
 
   it("AcroFormChoiceField sort", function () {
@@ -392,7 +392,7 @@ describe("Module: Acroform Unit Test", function () {
   it("arrayToPdfArray", function () {
     expect(function () {
       jsPDF.API.__acroform__.arrayToPdfArray(
-        "notAnArray" as unknown as unknown[]
+        invalidArg<unknown[]>("notAnArray")
       );
     }).toThrow(
       new Error("Invalid argument passed to jsPDF.__acroform__.arrayToPdfArray")
@@ -461,10 +461,10 @@ describe("Module: Acroform Unit Test", function () {
     var field = new TextField();
 
     expect(function () {
-      field.Ff = "Invalid" as unknown as number;
+      field.Ff = invalidArg<number>("Invalid");
     }).toThrow(new Error('Invalid value "Invalid" for attribute Ff supplied.'));
     expect(function () {
-      field.FT = 0 as unknown as string;
+      field.FT = invalidArg<string>(0);
     }).not.toThrow(
       new Error('Invalid value "Invalid" for attribute Ff supplied.')
     );
@@ -655,7 +655,7 @@ describe("Module: Acroform Unit Test", function () {
     var field = new TextField();
 
     expect(function () {
-      field.F = "Invalid" as unknown as number;
+      field.F = invalidArg<number>("Invalid");
     }).toThrow(new Error('Invalid value "Invalid" for attribute F supplied.'));
     expect(function () {
       field.F = 0;
@@ -704,7 +704,7 @@ describe("Module: Acroform Unit Test", function () {
     expect(field.textAlign).toEqual("left");
     expect(field.Q).toEqual(0);
     // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
-    field.textAlign = 0 as unknown as string;
+    field.textAlign = invalidArg<string>(0);
     expect(field.textAlign).toEqual("left");
     expect(field.Q).toEqual(0);
 
@@ -712,7 +712,7 @@ describe("Module: Acroform Unit Test", function () {
     expect(field.textAlign).toEqual("center");
     expect(field.Q).toEqual(1);
     // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
-    field.textAlign = 1 as unknown as string;
+    field.textAlign = invalidArg<string>(1);
     expect(field.textAlign).toEqual("center");
     expect(field.Q).toEqual(1);
 
@@ -720,12 +720,12 @@ describe("Module: Acroform Unit Test", function () {
     expect(field.textAlign).toEqual("right");
     expect(field.Q).toEqual(2);
     // The runtime setter also accepts numeric Q values (see src/modules/acroform.ts).
-    field.textAlign = 2 as unknown as string;
+    field.textAlign = invalidArg<string>(2);
     expect(field.textAlign).toEqual("right");
     expect(field.Q).toEqual(2);
 
     expect(function () {
-      field.Q = "invalid" as unknown as number;
+      field.Q = invalidArg<number>("invalid");
     }).toThrow(new Error('Invalid value "invalid" for attribute Q supplied.'));
     expect(function () {
       field.Q = 3;
@@ -764,7 +764,7 @@ describe("Module: Acroform Unit Test", function () {
     expect(function () {
       // Deliberately invalid field object (negative test).
       doc.addField(
-        new Object() as unknown as Parameters<typeof doc.addField>[0]
+        invalidArg<Parameters<typeof doc.addField>[0]>(new Object())
       );
     }).toThrow(new Error("Invalid argument passed to jsPDF.addField."));
   });
@@ -783,7 +783,7 @@ describe("Module: Acroform Unit Test", function () {
     expect(function () {
       // Deliberately invalid field object (negative test).
       doc.addField(
-        new Object() as unknown as Parameters<typeof doc.addField>[0]
+        invalidArg<Parameters<typeof doc.addField>[0]>(new Object())
       );
     }).toThrow(new Error("Invalid argument passed to jsPDF.addField."));
   });

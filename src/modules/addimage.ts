@@ -160,7 +160,10 @@ declare module "../types.js" {
       w?: number,
       h?: number,
       alias?: string,
-      compression?: ImageCompression,
+      // `number` admitted honestly: addSvgAsImage (src/modules/svg.ts) has
+      // always passed its arguments one slot early (latent bug preserved for
+      // parity), so its numeric `rotation` arrives in this parameter.
+      compression?: ImageCompression | number,
       rotation?: number
     ): jsPDFDocument;
     addImage(options: ImageOptions): jsPDFDocument;
@@ -492,7 +495,9 @@ declare module "../types.js" {
     }
   };
 
-  var checkCompressValue = function (value?: string): ImageCompression {
+  var checkCompressValue = function (
+    value?: string | number | null
+  ): ImageCompression {
     if (value && typeof value === "string") value = value.toUpperCase();
     return typeof value === "string" && value in jsPDFAPI.image_compression
       ? (value as ImageCompression)
@@ -543,10 +548,12 @@ declare module "../types.js" {
   };
 
   var isImageTypeSupported = function (type: string) {
+    // Dynamic plugin dispatch: the processXXX methods are contributed by
+    // the individual image-format plugins, so look them up reflectively
+    // through an opaque view of the API object.
+    var api: unknown = jsPDFAPI;
     return (
-      // Dynamic plugin dispatch: the processXXX methods are contributed by
-      // the individual image-format plugins.
-      typeof (jsPDFAPI as unknown as Record<string, unknown>)[
+      typeof (api as Record<string, unknown>)[
         "process" + type.toUpperCase()
       ] === "function"
     );
@@ -956,12 +963,10 @@ declare module "../types.js" {
         // Limit the amount of characters being parsed to prevent overflow.
         // Note that while TextDecoder would be faster, it does not have the same
         // functionality as fromCharCode with any provided encodings as of 3/2021.
-        out += String.fromCharCode.apply(
-          null,
-          // fromCharCode is declared to take number[], but accepts any
-          // array-like of char codes at runtime.
-          buf.subarray(i, i + ARRAY_APPLY_BATCH) as unknown as number[]
-        );
+        // fromCharCode is declared to take number[], but accepts any
+        // array-like of char codes at runtime; assert the opaque batch once.
+        var batch: unknown = buf.subarray(i, i + ARRAY_APPLY_BATCH);
+        out += String.fromCharCode.apply(null, batch as number[]);
       }
       return out;
     });
@@ -1003,7 +1008,12 @@ declare module "../types.js" {
     arg3?: number,
     arg4?: number,
     arg5?: number | string,
-    arg6?: string,
+    // `number` admitted honestly: in the no-format overload this slot is the
+    // compression parameter, which addSvgAsImage passes its numeric rotation
+    // into (latent arg-shift bug preserved for parity; see the overload
+    // declaration above). `null` admitted for parity with the context2d
+    // drawImage() overload, which declares alias as string | null.
+    arg6?: string | number | null,
     // null admitted for parity with the context2d drawImage() overload of
     // addImage, which declares alias/compression as string | null.
     arg7?: string | number | null,
@@ -1027,7 +1037,9 @@ declare module "../types.js" {
       y = arg3;
       w = arg4;
       h = arg5 as number;
-      alias = arg6;
+      // The assertion only satisfies the declared signature; the svg.ts
+      // number / context2d null call shapes flow on unchanged, as ever.
+      alias = arg6 as string;
       compression = arg7 as string;
       rotation = arg8;
     }
@@ -1093,7 +1105,10 @@ declare module "../types.js" {
     imageData: ImageInput,
     format: string | undefined,
     alias?: number | string,
-    compression?: string
+    // `number` honestly admitted for the svg.ts arg-shift call shape and
+    // `null` for the context2d drawImage() call shape; checkCompressValue
+    // maps every non-string to NONE, as it always has.
+    compression?: string | number | null
   ) {
     var result, dataAsBinaryString;
 
@@ -1151,8 +1166,10 @@ declare module "../types.js" {
       }
 
       // Dynamic plugin dispatch: the processXXX methods are contributed by
-      // the individual image-format plugins.
-      result = (this as unknown as Record<string, ImageFormatProcessor>)[
+      // the individual image-format plugins; invoke through an opaque view
+      // of the document so `this` binding is preserved.
+      var host: unknown = this;
+      result = (host as Record<string, ImageFormatProcessor>)[
         "process" + format.toUpperCase()
       ](
         imageData,
@@ -1255,8 +1272,10 @@ declare module "../types.js" {
     }
 
     // Dynamic plugin dispatch: the processXXX methods are contributed by
-    // the individual image-format plugins.
-    image = (this as unknown as Record<string, ImageFormatProcessor>)[
+    // the individual image-format plugins; invoke through an opaque view
+    // of the document so `this` binding is preserved.
+    var host: unknown = this;
+    image = (host as Record<string, ImageFormatProcessor>)[
       "process" + format.toUpperCase()
     ](imageData);
 

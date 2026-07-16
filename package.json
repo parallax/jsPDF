@@ -113,7 +113,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p test/tsconfig.json",
     "prettier": "prettier --write \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\"",
     "lint": "prettier --check \"*.{js,ts,md,css,json}\" \"{spec,examples,src,types}/**/*.{js,ts,md,css,json}\" && yarpm run lint-no-any",
-    "lint-no-any": "oxlint -A all -D no-explicit-any -D no-ts-ignore src test/specs test/utils",
+    "lint-no-any": "oxlint -A all -D no-explicit-any -D no-ts-ignore src test/specs test/utils && yarpm run lint-no-unsafe-cast",
+    "lint-no-unsafe-cast": "! grep -rn --include=*.ts \"as unknown as\" src test/specs test/utils test/globals.d.ts",
     "pregenerate-docs": "node deletedocs.js",
     "generate-docs": "jsdoc -c jsdoc.json --readme README.md"
   },

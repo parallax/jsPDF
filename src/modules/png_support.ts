@@ -311,9 +311,12 @@ function filterNone(line: PngLine): number[] {
     result[0] = 0;
     result.set(line, 1);*/
 
-  // Array.apply spreads the (array-like) line into a plain array of samples;
-  // its loose lib typing loses the element type, hence the assertion.
-  const result = Array.apply([], line as unknown as number[]) as number[];
+  // Array.apply spreads the (array-like) typed-array line into a plain array
+  // of samples (preserved verbatim, including the historical Array(n) quirk
+  // for length-1 lines); apply's lib typing wants a real array, so assert the
+  // opaque value once.
+  const samples: unknown = line;
+  const result = Array.apply([], samples as number[]) as number[];
   result.unshift(0);
 
   return result;

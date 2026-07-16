@@ -275,6 +275,16 @@ type GetPageSizeFn = (
   format?: string | number[]
 ) => HTMLWorkerPageSize;
 
+// `getPageSize` is an expando static this plugin installs on the imported
+// jsPDF constructor function (see the assignment near the end of the IIFE
+// below); declare it via function/namespace merging so both the installation
+// and the call sites type-check without casts.
+declare module "../jspdf.js" {
+  namespace jsPDF {
+    let getPageSize: GetPageSizeFn;
+  }
+}
+
 declare module "../types.js" {
   interface jsPDFAPI {
     /**
@@ -422,12 +432,12 @@ declare module "../types.js" {
     if (opt.innerHTML && opt.dompurify) {
       el.innerHTML = opt.dompurify.sanitize(opt.innerHTML);
     }
+    // The style templates use raw numbers for some properties (historical
+    // behavior); CSSStyleDeclaration declares no string index signature, so
+    // write through an opaque view of the (per-spec stable) style object.
+    var elStyle: unknown = el.style;
     for (var key in opt.style) {
-      // The style templates use raw numbers for some properties (historical
-      // behavior); CSSStyleDeclaration declares no string index signature, so
-      // widen at this boundary.
-      (el.style as unknown as Record<string, string | number>)[key] =
-        opt.style[key];
+      (elStyle as Record<string, string | number>)[key] = opt.style[key];
     }
     return el;
   };
@@ -524,6 +534,18 @@ declare module "../types.js" {
       inherit || Worker.prototype;
     return promise as HTMLWorker;
   };
+
+  /**
+   * A Worker's prototype chain is a hijacked Promise
+   * (`Worker.prototype = Object.create(Promise.prototype)` above), so every
+   * Worker is a genuine runtime Promise even though the nominal types
+   * diverge. This is the single sanctioned coercion for handing a Worker (or
+   * a plain object converted onto the Promise prototype) to
+   * `Promise.prototype` methods.
+   */
+  function asPromise(worker: unknown): Promise<unknown> {
+    return worker as Promise<unknown>;
+  }
 
   Worker.template = {
     prop: {
@@ -1126,13 +1148,7 @@ declare module "../types.js" {
 
     return this.then(function setPageSize_main(this: HTMLWorker) {
       // Retrieve page-size based on jsPDF settings, if not explicitly provided.
-      pageSize =
-        pageSize ||
-        // `getPageSize` is an expando static installed on the imported
-        // constructor function below; it is invisible to jsPDF's own type.
-        (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize(
-          this.opt.jsPDF
-        );
+      pageSize = pageSize || jsPDF.getPageSize(this.opt.jsPDF);
 
       // Add 'inner' field if not present.
       if (!pageSize.hasOwnProperty("inner")) {
@@ -1245,16 +1261,16 @@ declare module "../types.js" {
       : Worker.convert(Object.assign({}, self), Promise.prototype);
 
     // Return the promise, after casting it into a Worker and preserving props.
-    // The Worker hijacks the Promise prototype chain, so the nominal types
-    // diverge at this boundary.
     var returnVal = thenBase.call(
-      selfPromise as unknown as Promise<unknown>,
+      asPromise(selfPromise),
       onFulfilled,
       onRejected
     );
+    // `__proto__` is declared optional purely to satisfy asymmetric type
+    // comparability; every Worker object has a prototype at runtime.
     return Worker.convert(
       returnVal,
-      (self as unknown as { __proto__: object }).__proto__
+      (self as { __proto__?: object }).__proto__
     );
   };
 
@@ -1264,9 +1280,8 @@ declare module "../types.js" {
     onRejected?: (reason: unknown) => unknown
   ) {
     // Call `then` and return a standard promise (exits the Worker chain).
-    // The Worker is a Promise at runtime despite its hijacked prototype.
     return Promise.prototype.then.call(
-      this as unknown as Promise<unknown>,
+      asPromise(this),
       onFulfilled,
       onRejected
     );
@@ -1292,9 +1307,8 @@ declare module "../types.js" {
     if (onRejected) {
       onRejected = onRejected.bind(this);
     }
-    // The Worker is a Promise at runtime despite its hijacked prototype.
     var returnVal = Promise.prototype["catch"].call(
-      this as unknown as Promise<unknown>,
+      asPromise(this),
       onRejected
     );
     return Worker.convert(returnVal, this);
@@ -1305,11 +1319,7 @@ declare module "../types.js" {
     onRejected?: (reason: unknown) => unknown
   ) {
     // Call `catch` and return a standard promise (exits the Worker chain).
-    // The Worker is a Promise at runtime despite its hijacked prototype.
-    return Promise.prototype["catch"].call(
-      this as unknown as Promise<unknown>,
-      onRejected
-    );
+    return Promise.prototype["catch"].call(asPromise(this), onRejected);
   };
 
   Worker.prototype.error = function error(this: HTMLWorker, msg: string) {
@@ -1328,12 +1338,8 @@ declare module "../types.js" {
 
   // Get dimensions of a PDF page, as determined by jsPDF.
   // `getPageSize` is an expando static assigned onto the imported constructor
-  // function, which is invisible to jsPDF's own type.
-  (jsPDF as unknown as { getPageSize: GetPageSizeFn }).getPageSize = function (
-    orientation,
-    unit,
-    format
-  ) {
+  // function (declared via the module augmentation near the top of the file).
+  jsPDF.getPageSize = function (orientation, unit, format) {
     // Decode options object
     if (typeof orientation === "object") {
       var options = orientation;
@@ -1551,10 +1557,9 @@ declare module "../types.js" {
     options.html2canvas = options.html2canvas || {};
     options.html2canvas.canvas =
       options.html2canvas.canvas ||
-      // The canvas plugin (src/modules/canvas.ts) installs `canvas` as an
-      // expando on the document instance; it is not part of the typed core
-      // surface yet.
-      (this as unknown as { canvas?: unknown }).canvas;
+      // `canvas` is installed on every document instance by the canvas
+      // plugin, which declares it on jsPDFDocument (src/modules/canvas.ts).
+      this.canvas;
     options.jsPDF = options.jsPDF || this;
     options.fontFaces = options.fontFaces
       ? options.fontFaces.map(normalizeFontFace)

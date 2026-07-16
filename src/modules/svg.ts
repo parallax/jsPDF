@@ -184,10 +184,11 @@ declare module "../types.js" {
           h,
           // Latent bug preserved for parity: compression and rotation are
           // passed one parameter slot early (into addImage's alias and
-          // compression parameters); `alias` itself is never forwarded. The
-          // assertion keeps the historical call shape verbatim.
+          // compression parameters); `alias` itself is never forwarded.
+          // addImage's compression parameter honestly admits `number` for
+          // exactly this call shape.
           compression,
-          rotation as unknown as ImageCompression
+          rotation
         );
       });
   };

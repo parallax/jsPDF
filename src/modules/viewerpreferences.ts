@@ -375,9 +375,11 @@ declare module "../types.js" {
             for (i = 0; i < range.length; i += 1) {
               isValid = true;
               if (range[i].length === 1 && typeof range[i][0] === "number") {
-                // Preserved verbatim: subtracting from the one-element array
-                // relies on JS coercion ([n] - 1 === n - 1).
-                rangeArray.push(String((range[i] as unknown as number) - 1));
+                // Historically this subtracted from the one-element array,
+                // relying on JS coercion ([n] - 1 === n - 1). Number() takes
+                // the exact same ToPrimitive/ToNumber path for an array, so
+                // the result is identical for every input.
+                rangeArray.push(String(Number(range[i]) - 1));
               } else if (range[i].length > 1) {
                 for (j = 0; j < range[i].length; j += 1) {
                   if (typeof range[i][j] !== "number") {

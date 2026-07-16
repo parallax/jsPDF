@@ -12,255 +12,23 @@ describe("Core: Unit Tests", () => {
     (typeof window !== "undefined" && window) ||
     (typeof globalThis !== "undefined" && globalThis) ||
     Function('return typeof this === "object" && this.content')() ||
-    Function("return this")()) as unknown as typeof globalThis & {
+    Function("return this")()) as typeof globalThis & {
     isNode?: boolean;
   };
 
   type TestDoc = ReturnType<typeof jsPDF>;
   type PubSubInterface = import("../../src/types.js").PubSubInterface;
   type PubSubCallback = import("../../src/types.js").PubSubCallback;
-  /** Deliberately invalid coordinate/dimension inputs are part of the spec. */
-  type LooseNumber = number | string;
+  type OutputType = import("../../src/types.js").OutputType;
 
-  /** Options bag accepted by the private `text` implementation. */
-  interface TestTextOptions {
-    scope?: TestDoc;
-    angle?: number;
-    charSpace?: number;
-    R2L?: boolean;
-    renderingMode?: string | number | boolean;
-    align?: string;
-    maxWidth?: number;
-  }
-
-  /**
-   * `getCurrentPageInfo` result; `pageContext` is left open because plugins
-   * (e.g. annotations) add members to it at runtime.
-   */
-  interface TestPageInfo {
-    objId: number;
-    pageNumber: number;
-    pageContext: Record<string, unknown>;
-  }
-
-  /**
-   * Typed view of the internal `__private__` surface.
-   *
-   * src/types.ts declares jsPDFPrivate with an `[member: string]: unknown`
-   * index signature, so calling through `priv(doc)` directly is not
-   * type-safe. These specs exercise the concrete private helpers, so the
-   * members under test are re-declared here with their real signatures
-   * (mirroring the `API.__private__` assignments in src/jspdf.ts). Where the
-   * runtime is deliberately lenient (legacy argument orders, coercion,
-   * invalid-input guards under test), the parameter types reflect that
-   * leniency instead of the narrower source annotations.
-   */
-  interface PrivateSurface {
-    PubSub: new (context: unknown) => PubSubInterface;
-    getPdfVersion(): string;
-    setPdfVersion(value: string): void;
-    getPageFormats(): Record<string, number[]>;
-    getPageFormat(value: string): number[];
-    f2(number: LooseNumber): string;
-    f3(number: LooseNumber): string;
-    roundToPrecision(number: LooseNumber, parmPrecision?: number): string;
-    scale(number: LooseNumber): number;
-    getFileId(): string;
-    setFileId(value?: string): string;
-    setCreationDate(date?: Date | string): string;
-    getCreationDate(type: "jsDate"): Date;
-    getCreationDate(type?: string): Date | string;
-    padd2(number: LooseNumber): string;
-    // Declared as string in src/jspdf.ts; the runtime coerces via toString
-    // and the spec exercises numeric input.
-    padd2Hex(hexString: LooseNumber): string;
-    setCustomOutputDestination(destination: string[]): void;
-    resetCustomOutputDestination(): void;
-    out(string: string | number): string[];
-    write(value: string | number, ...rest: Array<string | number>): string[];
-    getArrayBuffer(data: string): ArrayBuffer;
-    getStandardFonts(): Array<Array<string | null>>;
-    getFontList(): Record<string, string[]>;
-    getCharSpace(): number;
-    setCharSpace(charSpace: LooseNumber): unknown;
-    getLineWidth(): number;
-    setLineWidth(width: number): unknown;
-    setLineDash(
-      dashArray?: number[] | string,
-      dashPhase?: LooseNumber
-    ): unknown;
-    getLineHeight(): number;
-    setLineHeightFactor(value: number): unknown;
-    getHorizontalCoordinateString(value: number): string;
-    getVerticalCoordinateString(value: number): string;
-    getR2L(): boolean;
-    setZoomMode(zoom: string | number): void;
-    getZoomMode(): string | number;
-    setPageMode(pmode: string): void;
-    getPageMode(): string;
-    setLayoutMode(layout: string): void;
-    getLayoutMode(): string;
-    setDisplayMode(
-      zoom: string | number,
-      layout?: string,
-      pmode?: string
-    ): unknown;
-    getTextColor(): string;
-    setTextColor(
-      ch1: LooseNumber,
-      ch2?: LooseNumber,
-      ch3?: LooseNumber,
-      ch4?: LooseNumber
-    ): unknown;
-    getFillColor(): string;
-    setFillColor(
-      ch1: LooseNumber,
-      ch2?: LooseNumber,
-      ch3?: LooseNumber,
-      ch4?: LooseNumber
-    ): unknown;
-    getStrokeColor(): string;
-    setStrokeColor(
-      ch1: LooseNumber,
-      ch2?: LooseNumber,
-      ch3?: LooseNumber,
-      ch4?: LooseNumber
-    ): unknown;
-    encodeColorString: import("../../src/types.js").jsPDFPrivate["encodeColorString"];
-    decodeColorString(color: string): string;
-    getDocumentProperty(key: string): string;
-    setDocumentProperty(key: string, value: string): string;
-    getDocumentProperties(): Record<string, string>;
-    setDocumentProperties(properties: Record<string, string>): unknown;
-    isValidStyle(style?: string | null): boolean;
-    getStyle(style: string): string;
-    newObject(): number;
-    newObjectDeferred(): number;
-    newAdditionalObject(): { objId: number; content: string };
-    pdfEscape(text: string): string;
-    getNumberOfPages(): number;
-    getCurrentPageInfo(): TestPageInfo;
-    getFilters(): string | string[];
-    putStream(options?: {
-      data?: string;
-      filters?: string[] | boolean;
-      alreadyAppliedFilters?: string[] | string;
-      addLength1?: boolean;
-      objectId?: number;
-    }): void;
-    putPage(page: {
-      number: number;
-      data: string[];
-      mediaBox: {
-        bottomLeftX: number;
-        bottomLeftY: number;
-        topRightX: number;
-        topRightY: number;
-      };
-      artBox: null;
-      bleedBox: null;
-      cropBox: null;
-      trimBox: null;
-      userUnit: number;
-      resourceDictionaryObjId: number;
-      rootDictionaryObjId: number;
-      objId: number;
-      contentsObjId: number;
-    }): number;
-    putCatalog(options?: { rootDictionaryObjId?: number }): void;
-    putInfo(): void;
-    putTrailer(): void;
-    putHeader(): void;
-    putXRef(): void;
-    buildDocument(): string;
-    getBlob(data: string): Blob;
-    output(
-      type?: string,
-      options?: string | Record<string, unknown>
-    ): string | ArrayBuffer | Blob | null;
-    clip(rule?: string): unknown;
-    discardPath(): unknown;
-    // text/lines accept both the current and the legacy argument order.
-    text(
-      text?: string | string[] | number,
-      x?: LooseNumber,
-      y?: LooseNumber,
-      options?: TestTextOptions,
-      transform?: number
-    ): unknown;
-    line(
-      x1: LooseNumber,
-      y1: LooseNumber,
-      x2: LooseNumber,
-      y2: LooseNumber,
-      style?: string | null
-    ): unknown;
-    lines(
-      lines?: number[][] | number | string,
-      x?: LooseNumber,
-      y?: LooseNumber | number[][],
-      scale?: number[] | string,
-      style?: string | null,
-      closed?: boolean | string
-    ): unknown;
-    rect(
-      x: LooseNumber,
-      y: LooseNumber,
-      w: LooseNumber,
-      h: LooseNumber,
-      style?: string | null
-    ): unknown;
-    triangle(
-      x1: LooseNumber,
-      y1: LooseNumber,
-      x2: LooseNumber,
-      y2: LooseNumber,
-      x3: LooseNumber,
-      y3: LooseNumber,
-      style?: string | null
-    ): unknown;
-    roundedRect(
-      x: LooseNumber,
-      y: LooseNumber,
-      w: LooseNumber,
-      h: LooseNumber,
-      rx: LooseNumber,
-      ry: LooseNumber,
-      style?: string | null
-    ): unknown;
-    ellipse(
-      x: LooseNumber,
-      y: LooseNumber,
-      rx: LooseNumber,
-      ry: LooseNumber,
-      style?: string | null
-    ): unknown;
-    circle(
-      x: LooseNumber,
-      y: LooseNumber,
-      r: LooseNumber,
-      style?: string | null
-    ): unknown;
-    setLineCap(style: string | number): unknown;
-    setLineJoin(style: string | number): unknown;
-    setLineMiterLimit(length: LooseNumber): unknown;
-  }
-
-  /** Single documented cast from the loose jsPDFPrivate index signature. */
-  const priv = (doc: TestDoc): PrivateSurface =>
-    (doc as unknown as { __private__: PrivateSurface }).__private__;
+  const priv = (doc: TestDoc) => doc.__private__;
 
   // jsPDF also supports the legacy positional (orientation, unit, format)
-  // call form at runtime; the declared TS signature only takes options.
-  type JsPDFLegacyCtor = (
-    orientation?: string,
-    unit?: string,
-    format?: string
-  ) => TestDoc;
+  // call form at runtime; the ambient jsPDF global (test/globals.d.ts)
+  // declares that legacy call signature.
   // Lazy: reads the jsPDF global at call time — in the Node run the global
   // is only installed by loadGlobals() inside beforeAll, after module load.
-  const jsPDFLegacy: JsPDFLegacyCtor = (...args) =>
-    (jsPDF as unknown as JsPDFLegacyCtor)(...args);
+  const jsPDFLegacy = (...args: jsPDFLegacyArgs) => jsPDF(...args);
 
   //PubSub-Functionality
 
@@ -292,13 +60,13 @@ describe("Core: Unit Tests", () => {
     );
     expect(function () {
       // deliberately invalid callback to exercise the runtime guard
-      pubSub.subscribe("testEvent", "invalid" as unknown as PubSubCallback);
+      pubSub.subscribe("testEvent", invalidArg<PubSubCallback>("invalid"));
     }).toThrow(
       new Error("Invalid arguments passed to PubSub.subscribe (jsPDF-module)")
     );
     expect(function () {
       // deliberately invalid topic to exercise the runtime guard
-      pubSub.subscribe(1 as unknown as string, function () {});
+      pubSub.subscribe(invalidArg<string>(1), function () {});
     }).toThrow(
       new Error("Invalid arguments passed to PubSub.subscribe (jsPDF-module)")
     );
@@ -307,7 +75,7 @@ describe("Core: Unit Tests", () => {
       pubSub.subscribe(
         "testEvent",
         function () {},
-        "invalid" as unknown as boolean
+        invalidArg<boolean>("invalid")
       );
     }).toThrow(
       new Error("Invalid arguments passed to PubSub.subscribe (jsPDF-module)")
@@ -436,7 +204,7 @@ describe("Core: Unit Tests", () => {
     expect(priv(doc).f2(2.22222)).toEqual("2.22");
 
     expect(function () {
-      priv(doc).f2("invalid");
+      priv(doc).f2(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.f2"));
   });
 
@@ -445,7 +213,7 @@ describe("Core: Unit Tests", () => {
     expect(priv(doc).roundToPrecision(2.22222, 2)).toEqual("2.22");
 
     expect(function () {
-      priv(doc).roundToPrecision("invalid");
+      priv(doc).roundToPrecision(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.roundToPrecision"));
   });
 
@@ -454,7 +222,7 @@ describe("Core: Unit Tests", () => {
     expect(priv(doc).scale(1)).toEqual(2.834645669291339);
 
     expect(function () {
-      priv(doc).scale("invalid");
+      priv(doc).scale(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.scale"));
   });
 
@@ -463,7 +231,7 @@ describe("Core: Unit Tests", () => {
     expect(priv(doc).f3(2.22222)).toEqual("2.222");
 
     expect(function () {
-      priv(doc).f3("invalid");
+      priv(doc).f3(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.f3"));
   });
 
@@ -490,22 +258,22 @@ describe("Core: Unit Tests", () => {
 
     var creationDate = new Date();
     priv(doc).setCreationDate(creationDate);
-    expect(priv(doc).getCreationDate("jsDate").getFullYear()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getFullYear()).toEqual(
       creationDate.getFullYear()
     );
-    expect(priv(doc).getCreationDate("jsDate").getMonth()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getMonth()).toEqual(
       creationDate.getMonth()
     );
-    expect(priv(doc).getCreationDate("jsDate").getDate()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getDate()).toEqual(
       creationDate.getDate()
     );
-    expect(priv(doc).getCreationDate("jsDate").getHours()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getHours()).toEqual(
       creationDate.getHours()
     );
-    expect(priv(doc).getCreationDate("jsDate").getMinutes()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getMinutes()).toEqual(
       creationDate.getMinutes()
     );
-    expect(priv(doc).getCreationDate("jsDate").getSeconds()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getSeconds()).toEqual(
       creationDate.getSeconds()
     );
   });
@@ -515,22 +283,22 @@ describe("Core: Unit Tests", () => {
     var creationDate = new Date(1987, 11, 10, 0, 0, 0);
     var pdfDateString = "D:19871210000000+00'00'";
     priv(doc).setCreationDate(pdfDateString);
-    expect(priv(doc).getCreationDate("jsDate").getFullYear()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getFullYear()).toEqual(
       creationDate.getFullYear()
     );
-    expect(priv(doc).getCreationDate("jsDate").getMonth()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getMonth()).toEqual(
       creationDate.getMonth()
     );
-    expect(priv(doc).getCreationDate("jsDate").getDate()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getDate()).toEqual(
       creationDate.getDate()
     );
-    expect(priv(doc).getCreationDate("jsDate").getHours()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getHours()).toEqual(
       creationDate.getHours()
     );
-    expect(priv(doc).getCreationDate("jsDate").getMinutes()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getMinutes()).toEqual(
       creationDate.getMinutes()
     );
-    expect(priv(doc).getCreationDate("jsDate").getSeconds()).toEqual(
+    expect((priv(doc).getCreationDate("jsDate") as Date).getSeconds()).toEqual(
       creationDate.getSeconds()
     );
 
@@ -597,16 +365,16 @@ describe("Core: Unit Tests", () => {
 
   it("jsPDF private function padd2Hex", () => {
     const doc = jsPDF({ floatPrecision: 2 });
-    expect(priv(doc).padd2Hex(2)).toEqual("02");
-    expect(priv(doc).padd2Hex(23)).toEqual("23");
-    expect(priv(doc).padd2Hex(234)).toEqual("34");
+    expect(priv(doc).padd2Hex(invalidArg<string>(2))).toEqual("02");
+    expect(priv(doc).padd2Hex(invalidArg<string>(23))).toEqual("23");
+    expect(priv(doc).padd2Hex(invalidArg<string>(234))).toEqual("34");
   });
 
   it("jsPDF private function getFilters", () => {
     var doc = jsPDF({ floatPrecision: 2 });
     expect(priv(doc).getFilters()).toEqual([]);
     // deliberately-lenient input: the runtime accepts a bare filter string
-    doc = jsPDF({ filters: "FlateEncode" as unknown as string[] });
+    doc = jsPDF({ filters: invalidArg<string[]>("FlateEncode") });
     expect(priv(doc).getFilters()).toEqual("FlateEncode");
     doc = jsPDF({ filters: ["FlateEncode"] });
     expect(priv(doc).getFilters()).toEqual(["FlateEncode"]);
@@ -766,7 +534,7 @@ describe("Core: Unit Tests", () => {
 
     expect(function () {
       // deliberately invalid page number to exercise the runtime guard
-      doc.internal.getPageInfo("invalid" as unknown as number);
+      doc.internal.getPageInfo(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.getPageInfo"));
     expect(function () {
       doc.internal.getPageInfo(3.14);
@@ -777,7 +545,7 @@ describe("Core: Unit Tests", () => {
     const doc = jsPDF({ floatPrecision: 2 });
     doc.addPage();
     doc.addPage();
-    expect(priv(doc).getCurrentPageInfo()).toEqual({
+    expect<unknown>(priv(doc).getCurrentPageInfo()).toEqual({
       objId: 0,
       pageNumber: 3,
       pageContext: {
@@ -1073,7 +841,7 @@ describe("Core: Unit Tests", () => {
         btoa(data.join("\n"))
     );
 
-    expect(priv(doc).output("invalid")).toEqual(null);
+    expect(priv(doc).output(invalidArg<OutputType>("invalid"))).toEqual(null);
   });
 
   //Font-Functionality
@@ -1139,7 +907,7 @@ describe("Core: Unit Tests", () => {
 
     expect(priv(doc).getCharSpace()).toEqual(2);
     expect(function () {
-      priv(doc).setCharSpace("invalid");
+      priv(doc).setCharSpace(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.setCharSpace"));
   });
 
@@ -1156,7 +924,7 @@ describe("Core: Unit Tests", () => {
     priv(doc).setCustomOutputDestination(writeArray);
 
     expect(function () {
-      priv(doc).setLineDash("");
+      priv(doc).setLineDash(invalidArg<number[]>(""));
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.setLineDash"));
 
     var writeArray: string[] = [];
@@ -1170,13 +938,16 @@ describe("Core: Unit Tests", () => {
     var writeArray: string[] = [];
     priv(doc).setCustomOutputDestination(writeArray);
     expect(function () {
-      priv(doc).setLineDash("1 1", "1");
+      priv(doc).setLineDash(
+        invalidArg<number[]>("1 1"),
+        invalidArg<number>("1")
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.setLineDash"));
 
     var writeArray: string[] = [];
     priv(doc).setCustomOutputDestination(writeArray);
     expect(function () {
-      priv(doc).setLineDash("1 1", 1);
+      priv(doc).setLineDash(invalidArg<number[]>("1 1"), 1);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.setLineDash"));
 
     var writeArray: string[] = [];
@@ -1749,7 +1520,14 @@ describe("Core: Unit Tests", () => {
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.lines"));
 
     expect(function () {
-      priv(doc).lines("invalid", 212, 110, [1, 1], "F", false);
+      priv(doc).lines(
+        invalidArg<number>("invalid"),
+        212,
+        110,
+        [1, 1],
+        "F",
+        false
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.lines"));
     expect(function () {
       priv(doc).lines(
@@ -1759,7 +1537,7 @@ describe("Core: Unit Tests", () => {
           [1, 1, 2, 2, 3, 3],
           [2, 1]
         ],
-        "invalid",
+        invalidArg<number>("invalid"),
         110,
         [1, 1],
         "F",
@@ -1775,7 +1553,7 @@ describe("Core: Unit Tests", () => {
           [2, 1]
         ],
         212,
-        "invalid",
+        invalidArg<number>("invalid"),
         [1, 1],
         "F",
         false
@@ -1791,7 +1569,7 @@ describe("Core: Unit Tests", () => {
         ],
         212,
         110,
-        "invalid",
+        invalidArg<number[]>("invalid"),
         "F",
         false
       );
@@ -1823,7 +1601,7 @@ describe("Core: Unit Tests", () => {
         110,
         [1, 1],
         "F",
-        "invalid"
+        invalidArg<boolean>("invalid")
       );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.lines"));
   });
@@ -1835,16 +1613,16 @@ describe("Core: Unit Tests", () => {
       priv(doc).line(1, 2, 3, 4);
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.line"));
     expect(function () {
-      priv(doc).line("invalid", 2, 3, 4);
+      priv(doc).line(invalidArg<number>("invalid"), 2, 3, 4);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.line"));
     expect(function () {
-      priv(doc).line(1, "invalid", 3, 4);
+      priv(doc).line(1, invalidArg<number>("invalid"), 3, 4);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.line"));
     expect(function () {
-      priv(doc).line(1, 2, "invalid", 4);
+      priv(doc).line(1, 2, invalidArg<number>("invalid"), 4);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.line"));
     expect(function () {
-      priv(doc).line(1, 2, 3, "invalid");
+      priv(doc).line(1, 2, 3, invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.line"));
   });
 
@@ -1855,28 +1633,28 @@ describe("Core: Unit Tests", () => {
       priv(doc).triangle(1, 2, 3, 4, 5, 6, "F");
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle("invalid", 2, 3, 4, 5, 6, "F");
+      priv(doc).triangle(invalidArg<number>("invalid"), 2, 3, 4, 5, 6, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle(1, "invalid", 3, 4, 5, 6, "F");
+      priv(doc).triangle(1, invalidArg<number>("invalid"), 3, 4, 5, 6, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle(1, 2, "invalid", 4, 5, 6, "F");
+      priv(doc).triangle(1, 2, invalidArg<number>("invalid"), 4, 5, 6, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle(1, 2, 3, "invalid", 5, 6, "F");
+      priv(doc).triangle(1, 2, 3, invalidArg<number>("invalid"), 5, 6, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle(1, 2, 3, 4, "invalid", 6, "F");
+      priv(doc).triangle(1, 2, 3, 4, invalidArg<number>("invalid"), 6, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
-      priv(doc).triangle(1, 2, 3, 4, 5, "invalid", "F");
+      priv(doc).triangle(1, 2, 3, 4, 5, invalidArg<number>("invalid"), "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
     expect(function () {
       priv(doc).triangle(1, 2, 3, 4, 5, 6, "invalid");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.triangle"));
 
-    expect(priv(doc).triangle(1, 2, 3, 4, 5, 6, "F")).toBe(priv(doc));
+    expect<unknown>(priv(doc).triangle(1, 2, 3, 4, 5, 6, "F")).toBe(priv(doc));
   });
 
   it("jsPDF private function roundedRect", () => {
@@ -1886,28 +1664,78 @@ describe("Core: Unit Tests", () => {
       priv(doc).roundedRect(1, 2, 3, 4, 5, 6, "F");
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect("undefined", 2, 3, 4, 5, 6, "F");
+      priv(doc).roundedRect(
+        invalidArg<number>("undefined"),
+        2,
+        3,
+        4,
+        5,
+        6,
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect(1, "undefined", 3, 4, 5, 6, "F");
+      priv(doc).roundedRect(
+        1,
+        invalidArg<number>("undefined"),
+        3,
+        4,
+        5,
+        6,
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect(1, 2, "undefined", 4, 5, 6, "F");
+      priv(doc).roundedRect(
+        1,
+        2,
+        invalidArg<number>("undefined"),
+        4,
+        5,
+        6,
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect(1, 2, 3, "undefined", 5, 6, "F");
+      priv(doc).roundedRect(
+        1,
+        2,
+        3,
+        invalidArg<number>("undefined"),
+        5,
+        6,
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect(1, 2, 3, 4, "undefined", 6, "F");
+      priv(doc).roundedRect(
+        1,
+        2,
+        3,
+        4,
+        invalidArg<number>("undefined"),
+        6,
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
-      priv(doc).roundedRect(1, 2, 3, 4, 5, "undefined", "F");
+      priv(doc).roundedRect(
+        1,
+        2,
+        3,
+        4,
+        5,
+        invalidArg<number>("undefined"),
+        "F"
+      );
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
     expect(function () {
       priv(doc).roundedRect(1, 2, 3, 4, 5, 6, "undefined");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.roundedRect"));
 
-    expect(priv(doc).roundedRect(1, 2, 3, 4, 5, 6, "F")).toBe(priv(doc));
+    expect<unknown>(priv(doc).roundedRect(1, 2, 3, 4, 5, 6, "F")).toBe(
+      priv(doc)
+    );
   });
 
   it("jsPDF private function ellipse", () => {
@@ -1917,22 +1745,22 @@ describe("Core: Unit Tests", () => {
       priv(doc).ellipse(1, 2, 3, 4, "F");
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
     expect(function () {
-      priv(doc).ellipse("undefined", 2, 3, 4, "F");
+      priv(doc).ellipse(invalidArg<number>("undefined"), 2, 3, 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
     expect(function () {
-      priv(doc).ellipse(1, "undefined", 3, 4, "F");
+      priv(doc).ellipse(1, invalidArg<number>("undefined"), 3, 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
     expect(function () {
-      priv(doc).ellipse(1, 2, "undefined", 4, "F");
+      priv(doc).ellipse(1, 2, invalidArg<number>("undefined"), 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
     expect(function () {
-      priv(doc).ellipse(1, 2, 3, "undefined", "F");
+      priv(doc).ellipse(1, 2, 3, invalidArg<number>("undefined"), "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
     expect(function () {
       priv(doc).ellipse(1, 2, 3, 4, "undefined");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.ellipse"));
 
-    expect(priv(doc).ellipse(1, 2, 3, 4, "F")).toBe(priv(doc));
+    expect<unknown>(priv(doc).ellipse(1, 2, 3, 4, "F")).toBe(priv(doc));
 
     var writeArray: string[] = [];
     priv(doc).setCustomOutputDestination(writeArray);
@@ -1975,16 +1803,16 @@ describe("Core: Unit Tests", () => {
       priv(doc).rect(1, 2, 3, 4, "F");
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.rect"));
     expect(function () {
-      priv(doc).rect("invalid", 2, 3, 4, "F");
+      priv(doc).rect(invalidArg<number>("invalid"), 2, 3, 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.rect"));
     expect(function () {
-      priv(doc).rect(1, "invalid", 3, 4, "F");
+      priv(doc).rect(1, invalidArg<number>("invalid"), 3, 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.rect"));
     expect(function () {
-      priv(doc).rect(1, 2, "invalid", 4, "F");
+      priv(doc).rect(1, 2, invalidArg<number>("invalid"), 4, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.rect"));
     expect(function () {
-      priv(doc).rect(1, 2, 3, "invalid", "F");
+      priv(doc).rect(1, 2, 3, invalidArg<number>("invalid"), "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.rect"));
     expect(function () {
       priv(doc).rect(1, 2, 3, 4, "invalid");
@@ -1995,7 +1823,7 @@ describe("Core: Unit Tests", () => {
     priv(doc).rect(1, 2, 3, 4, "F");
     expect(writeArray).toEqual(["2.83 836.22 8.5 -11.34 re", "f"]);
 
-    expect(priv(doc).rect(1, 2, 3, 4, "F")).toBe(priv(doc));
+    expect<unknown>(priv(doc).rect(1, 2, 3, 4, "F")).toBe(priv(doc));
   });
 
   it("jsPDF private function circle", () => {
@@ -2005,19 +1833,19 @@ describe("Core: Unit Tests", () => {
       priv(doc).circle(1, 2, 3, "F");
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.circle"));
     expect(function () {
-      priv(doc).circle("undefined", 2, 3, "F");
+      priv(doc).circle(invalidArg<number>("undefined"), 2, 3, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.circle"));
     expect(function () {
-      priv(doc).circle(1, "undefined", 3, "F");
+      priv(doc).circle(1, invalidArg<number>("undefined"), 3, "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.circle"));
     expect(function () {
-      priv(doc).circle(1, 2, "undefined", "F");
+      priv(doc).circle(1, 2, invalidArg<number>("undefined"), "F");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.circle"));
     expect(function () {
       priv(doc).circle(1, 2, 3, "undefined");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.circle"));
 
-    expect(priv(doc).circle(1, 2, 3, "F")).toBe(priv(doc));
+    expect<unknown>(priv(doc).circle(1, 2, 3, "F")).toBe(priv(doc));
   });
 
   it("jsPDF private function clip", () => {
@@ -2051,25 +1879,26 @@ describe("Core: Unit Tests", () => {
       priv(doc).text("valid", 10, 10);
     }).not.toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text(undefined, 10, 10);
+      priv(doc).text(invalidArg<string>(undefined), 10, 10);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text("valid", undefined, 10);
+      priv(doc).text("valid", invalidArg<number>(undefined), 10);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text("valid", "invalid", 10);
+      priv(doc).text("valid", invalidArg<number>("invalid"), 10);
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
       priv(doc).text("valid", 10, "invalid");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text("valid", 10, undefined);
+      priv(doc).text("valid", 10, invalidArg<string>(undefined));
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text("valid");
+      // Cast the receiver, not the method — this-binding must survive.
+      invalidArg<{ text(t: string): unknown }>(priv(doc)).text("valid");
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
     expect(function () {
-      priv(doc).text();
+      invalidArg<{ text(): unknown }>(priv(doc)).text();
     }).toThrow(new Error("Invalid arguments passed to jsPDF.text"));
 
     //check for latest method header (text, x, y, options);
@@ -2675,7 +2504,7 @@ break`,
     expect(function () {
       priv(doc).text(200, 10, "This is a test.", {
         scope: doc,
-        align: "invalid"
+        align: invalidArg<"left">("invalid")
       });
     }).toThrow(
       new Error(
@@ -2822,7 +2651,7 @@ This is a test too.`,
     priv(doc).setLineMiterLimit(1);
     expect(writeArray).toEqual(["2.83 M"]);
     expect(function () {
-      priv(doc).setLineMiterLimit("invalid");
+      priv(doc).setLineMiterLimit(invalidArg<number>("invalid"));
     }).toThrow(new Error("Invalid argument passed to jsPDF.setLineMiterLimit"));
   });
   it("jsPDF private function putHeader", () => {

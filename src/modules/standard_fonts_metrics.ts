@@ -113,10 +113,9 @@ declare module "../types.js" {
       value = data[key];
 
       if (!isNaN(parseInt(key, 10))) {
-        // Preserved verbatim: the loop variable is reused to hold the numeric
-        // key; hex() coerces it back through parseInt.
-        key = parseInt(key, 10) as unknown as string;
-        keystring = hex(key).slice(2);
+        // hex() accepts the numeric key directly (its parseInt re-coerces it
+        // through ToString exactly as the historical loop-variable reuse did).
+        keystring = hex(parseInt(key, 10)).slice(2);
         keystring =
           keystring.slice(0, -1) + mappingCompress[keystring.slice(-1)];
       } else {

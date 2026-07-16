@@ -122,11 +122,11 @@ import type { jsPDFAPI as JsPDFAPI } from "../types.js";
     }
     var result = "";
     for (var i = 0; i < value.length; i += 2) {
-      result += String.fromCharCode(
-        // fromCharCode applies ToNumber to its argument at runtime, so the
-        // hex string is coerced; the assertion keeps that behavior verbatim.
-        ("0x" + (value[i] + value[i + 1])) as unknown as number
-      );
+      // fromCharCode applies ToNumber to its argument at runtime; converting
+      // the "0x.." hex string with Number() up front takes the exact same
+      // ToNumber path (fromCharCode then sees an already-converted number),
+      // so the behavior is identical for every input, including NaN.
+      result += String.fromCharCode(Number("0x" + (value[i] + value[i + 1])));
     }
     return result;
   };

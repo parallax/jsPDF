@@ -67,8 +67,9 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
     unicodeMap =
       "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo <<\n  /Registry (Adobe)\n  /Ordering (UCS)\n  /Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000><ffff>\nendcodespacerange";
     codes = Object.keys(map).sort(function (a, b) {
-      // Numeric sort of numeric string keys; subtraction coerces at runtime.
-      return (a as unknown as number) - (b as unknown as number);
+      // Numeric sort of numeric string keys; Number() performs exactly the
+      // ToNumber coercion the original bare subtraction applied.
+      return Number(a) - Number(b);
     });
 
     range = [];
@@ -233,10 +234,13 @@ type TTFFontEntry = Font & { metadata: TTFFontInstance };
       font.objectNumber = newObject();
       for (var j = 0; j < font.metadata.hmtx.widths.length; j++) {
         font.metadata.hmtx.widths[j] = parseInt(
-          // parseInt coerces its argument to a string at runtime; kept as-is
-          // (truncation via parseInt) to avoid a behavior change.
-          (font.metadata.hmtx.widths[j] *
-            (1000 / font.metadata.head.unitsPerEm)) as unknown as string
+          // String() performs exactly the ToString coercion parseInt applied
+          // to its numeric argument; kept as-is (truncation via parseInt)
+          // to avoid a behavior change.
+          String(
+            font.metadata.hmtx.widths[j] *
+              (1000 / font.metadata.head.unitsPerEm)
+          )
         ); //Change the width of Em units to Point units.
       }
       out(

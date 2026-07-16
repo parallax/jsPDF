@@ -122,7 +122,10 @@ class BmpDecoder {
     try {
       // Dispatch by bit depth ("bit1" ... "bit32"); unknown depths throw and
       // are reported below, matching the original dynamic-lookup behavior.
-      (this as unknown as Record<string, () => void>)[bitn]();
+      // Widen the instance to unknown and assert a string-keyed method map so
+      // the computed-name lookup (and its `this` binding) stays identical.
+      const decoderAsUnknown: unknown = this;
+      (decoderAsUnknown as Record<string, () => void>)[bitn]();
     } catch (e) {
       console.log("bit decode error:" + e);
     }

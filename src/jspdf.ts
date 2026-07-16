@@ -43,6 +43,7 @@ import type {
   PageContext,
   PageInfo,
   PageBox,
+  PageSize,
   AdditionalObject,
   Font,
   FontMap,
@@ -193,10 +194,10 @@ class GState {
     if (!other || typeof other !== typeof this) return false;
     var count = 0;
     // Reflective own-property comparison over dynamically attached
-    // graphics-state entries; the double assertion widens the class
-    // instances for generic string indexing.
-    var self = this as unknown as Record<string, unknown>;
-    var that = other as unknown as Record<string, unknown>;
+    // graphics-state entries; the string index signature on the merged
+    // GState interface below makes them visible for generic indexing.
+    var self: GState = this;
+    var that: GState = other;
     for (p in self) {
       if (ignore.indexOf(p) >= 0) continue;
       if (self.hasOwnProperty(p) && !that.hasOwnProperty(p)) return false;
@@ -213,6 +214,12 @@ class GState {
 // Declaration-merged home for the quoted-name field assigned in the constructor.
 interface GState {
   "stroke-opacity"?: number;
+  /**
+   * Graphics-state parameters are attached dynamically (see the constructor
+   * loop above), so instances honestly carry arbitrary extra entries; the
+   * index signature makes them visible to the reflective `equals` above.
+   */
+  [parameter: string]: unknown;
 }
 
 class Pattern {
@@ -861,11 +868,14 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @param {Object} type
    * @returns {Object}
    */
-  // The cast reconciles the single implementation signature with the
-  // `(type: "jsDate") => Date` convenience overload declared in types.ts.
-  API.getCreationDate = function (type?: string) {
+  // The overload list mirrors jsPDFDocument["getCreationDate"] in types.ts
+  // (including the `(type: "jsDate") => Date` convenience overload).
+  function getCreationDateImpl(type: "jsDate"): Date;
+  function getCreationDateImpl(type?: string): Date | string;
+  function getCreationDateImpl(type?: string): Date | string {
     return getCreationDate(type);
-  } as unknown as jsPDFDocument["getCreationDate"];
+  }
+  API.getCreationDate = getCreationDateImpl;
 
   var padd2 = (API.__private__.padd2 = function (
     number: number | string
@@ -2747,15 +2757,18 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
   // (browser only). The wrapper is attached to the function itself, so the
   // generic parameter/return relationship is intentionally loose.
   type SafeWrappable = ((...args: never[]) => unknown) & {
-    foo?: ((...args: unknown[]) => unknown) & { bar?: unknown };
+    foo?: ((...args: never[]) => unknown) & { bar?: unknown };
   };
   var SAFE = function __safeCall<F extends SafeWrappable>(fn: F): F {
     fn.foo = function __safeCallWrapper(this: unknown) {
       try {
-        return (fn as unknown as (...args: unknown[]) => unknown).apply(
+        return fn.apply(
           this,
+          // The wrapper forwards whatever arguments arrive at runtime; the
+          // untyped `arguments` array is asserted to the wrapped function's
+          // (unknowable) parameter list.
           // eslint-disable-next-line prefer-rest-params
-          Array.prototype.slice.call(arguments)
+          Array.prototype.slice.call(arguments) as never[]
         );
       } catch (e) {
         var stack = (e as Error).stack || "";
@@ -2778,7 +2791,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     fn.foo.bar = fn;
     // The wrapper preserves the wrapped function's call behavior; the
     // assertion restores its precise signature for callers.
-    return fn.foo as unknown as F;
+    return fn.foo as F;
   };
 
   interface FontEncodingBlock {
@@ -3390,201 +3403,237 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @memberof jsPDF#
    * @name output
    */
-  // The output implementation accepts every OutputType and returns the
-  // corresponding union; the double assertion maps it onto the per-type
-  // overloads declared on jsPDFDocument.
-  var output =
-    (API.output =
-    API.__private__.output =
-      SAFE(function output(
-        this: jsPDFDocument,
-        type?: OutputType,
-        options?: OutputOptions | string
-      ) {
-        options = options || {};
+  // The overload list mirrors jsPDFDocument["output"] in types.ts, plus a
+  // final catch-all signature (accepting every OutputType and returning the
+  // corresponding union) that `internal.output` is declared with.
+  function outputImpl(this: jsPDFDocument): string;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "arraybuffer",
+    options?: OutputOptions | string
+  ): ArrayBuffer;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "blob",
+    options?: OutputOptions | string
+  ): Blob;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "bloburi" | "bloburl",
+    options?: OutputOptions | string
+  ): string | undefined;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "datauristring" | "dataurlstring",
+    options?: OutputOptions | string
+  ): string;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "pdfobjectnewwindow" | "pdfjsnewwindow" | "dataurlnewwindow",
+    options?: OutputOptions | string
+  ): Window | null;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "dataurl" | "datauri",
+    options?: OutputOptions | string
+  ): string;
+  function outputImpl(
+    this: jsPDFDocument,
+    type: "save",
+    options?: OutputOptions | string
+  ): void;
+  function outputImpl(
+    this: jsPDFDocument,
+    type?: OutputType,
+    options?: OutputOptions | string
+  ): string | ArrayBuffer | Blob | Window | null | undefined;
+  function outputImpl(
+    this: jsPDFDocument,
+    type?: OutputType,
+    options?: OutputOptions | string
+  ): string | ArrayBuffer | Blob | Window | null | undefined {
+    options = options || {};
 
-        if (typeof options === "string") {
-          options = {
-            filename: options
-          };
+    if (typeof options === "string") {
+      options = {
+        filename: options
+      };
+    } else {
+      options.filename = options.filename || "generated.pdf";
+    }
+
+    switch (type) {
+      case undefined:
+        return buildDocument();
+      case "save":
+        API.save(options.filename);
+        break;
+      case "arraybuffer":
+        return getArrayBuffer(buildDocument());
+      case "blob":
+        return getBlob(buildDocument());
+      case "bloburi":
+      case "bloburl":
+        // Developer is responsible of calling revokeObjectURL
+        if (
+          typeof globalObject.URL !== "undefined" &&
+          typeof globalObject.URL.createObjectURL === "function"
+        ) {
+          return (
+            (globalObject.URL &&
+              globalObject.URL.createObjectURL(getBlob(buildDocument()))) ||
+            void 0
+          );
         } else {
-          options.filename = options.filename || "generated.pdf";
+          console.warn(
+            "bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser."
+          );
         }
+        break;
+      case "datauristring":
+      case "dataurlstring":
+        var dataURI = "";
+        var pdfDocument = buildDocument();
+        try {
+          dataURI = btoa(pdfDocument);
+        } catch (e) {
+          dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
+        }
+        return (
+          "data:application/pdf;filename=" +
+          encodeURIComponent(options.filename!) +
+          ";base64," +
+          dataURI
+        );
+      case "pdfobjectnewwindow":
+        if (
+          Object.prototype.toString.call(globalObject) === "[object Window]"
+        ) {
+          var pdfObjectUrl =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+          var useDefaultPdfObjectUrl = !options.pdfObjectUrl;
 
-        switch (type) {
-          case undefined:
-            return buildDocument();
-          case "save":
-            API.save(options.filename);
-            break;
-          case "arraybuffer":
-            return getArrayBuffer(buildDocument());
-          case "blob":
-            return getBlob(buildDocument());
-          case "bloburi":
-          case "bloburl":
-            // Developer is responsible of calling revokeObjectURL
-            if (
-              typeof globalObject.URL !== "undefined" &&
-              typeof globalObject.URL.createObjectURL === "function"
-            ) {
-              return (
-                (globalObject.URL &&
-                  globalObject.URL.createObjectURL(getBlob(buildDocument()))) ||
-                void 0
-              );
-            } else {
-              console.warn(
-                "bloburl is not supported by your system, because URL.createObjectURL is not supported by your browser."
-              );
+          if (!useDefaultPdfObjectUrl) {
+            pdfObjectUrl = options.pdfObjectUrl!;
+          }
+
+          var nW = globalObject.open();
+
+          if (nW !== null) {
+            var initializedPdfObjectWindow = initializeNewWindow(nW);
+            var pdfObjectScript =
+              initializedPdfObjectWindow.document.createElement("script");
+            var scope = this;
+
+            pdfObjectScript.src = pdfObjectUrl;
+
+            if (useDefaultPdfObjectUrl) {
+              pdfObjectScript.integrity =
+                "sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==";
+              pdfObjectScript.crossOrigin = "anonymous";
             }
-            break;
-          case "datauristring":
-          case "dataurlstring":
-            var dataURI = "";
-            var pdfDocument = buildDocument();
-            try {
-              dataURI = btoa(pdfDocument);
-            } catch (e) {
-              dataURI = btoa(unescape(encodeURIComponent(pdfDocument)));
-            }
-            return (
-              "data:application/pdf;filename=" +
-              encodeURIComponent(options.filename!) +
-              ";base64," +
-              dataURI
-            );
-          case "pdfobjectnewwindow":
-            if (
-              Object.prototype.toString.call(globalObject) === "[object Window]"
-            ) {
-              var pdfObjectUrl =
-                "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
-              var useDefaultPdfObjectUrl = !options.pdfObjectUrl;
 
-              if (!useDefaultPdfObjectUrl) {
-                pdfObjectUrl = options.pdfObjectUrl!;
-              }
-
-              var nW = globalObject.open();
-
-              if (nW !== null) {
-                var initializedPdfObjectWindow = initializeNewWindow(nW);
-                var pdfObjectScript =
-                  initializedPdfObjectWindow.document.createElement("script");
-                var scope = this;
-
-                pdfObjectScript.src = pdfObjectUrl;
-
-                if (useDefaultPdfObjectUrl) {
-                  pdfObjectScript.integrity =
-                    "sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==";
-                  pdfObjectScript.crossOrigin = "anonymous";
+            pdfObjectScript.onload = function () {
+              // PDFObject is provided by the script injected right above.
+              (
+                nW as Window & {
+                  PDFObject: {
+                    embed(url: string, options?: unknown): unknown;
+                  };
                 }
+              ).PDFObject.embed(scope.output("dataurlstring"), options);
+            };
 
-                pdfObjectScript.onload = function () {
-                  // PDFObject is provided by the script injected right above.
-                  (
-                    nW as Window & {
-                      PDFObject: {
-                        embed(url: string, options?: unknown): unknown;
-                      };
-                    }
-                  ).PDFObject.embed(scope.output("dataurlstring"), options);
-                };
-
-                initializedPdfObjectWindow.body.appendChild(pdfObjectScript);
-              }
-              return nW;
-            } else {
-              throw new Error(
-                "The option pdfobjectnewwindow just works in a browser-environment."
-              );
-            }
-          case "pdfjsnewwindow":
-            if (
-              Object.prototype.toString.call(globalObject) === "[object Window]"
-            ) {
-              var pdfJsUrl =
-                options.pdfJsUrl || "examples/PDF.js/web/viewer.html";
-              var PDFjsNewWindow = globalObject.open();
-
-              if (PDFjsNewWindow !== null) {
-                var initializedPdfJsWindow =
-                  initializeNewWindow(PDFjsNewWindow);
-                var pdfViewer =
-                  initializedPdfJsWindow.document.createElement("iframe");
-                var pdfJsQueryChar = pdfJsUrl.indexOf("?") === -1 ? "?" : "&";
-                var scope = this;
-
-                pdfViewer.id = "pdfViewer";
-                pdfViewer.width = "500px";
-                pdfViewer.height = "400px";
-                pdfViewer.src =
-                  pdfJsUrl +
-                  pdfJsQueryChar +
-                  "file=&downloadName=" +
-                  encodeURIComponent(options.filename!);
-
-                pdfViewer.onload = function () {
-                  // Guarded by the enclosing `PDFjsNewWindow !== null` check;
-                  // filename was defaulted at the top of output().
-                  PDFjsNewWindow!.document.title = (
-                    options as OutputOptions
-                  ).filename!;
-                  // PDFViewerApplication is provided by the embedded PDF.js viewer.
-                  (
-                    pdfViewer.contentWindow as Window & {
-                      PDFViewerApplication: { open(url: unknown): unknown };
-                    }
-                  ).PDFViewerApplication.open(scope.output("bloburl"));
-                };
-
-                initializedPdfJsWindow.body.appendChild(pdfViewer);
-              }
-              return PDFjsNewWindow;
-            } else {
-              throw new Error(
-                "The option pdfjsnewwindow just works in a browser-environment."
-              );
-            }
-          case "dataurlnewwindow":
-            if (
-              Object.prototype.toString.call(globalObject) === "[object Window]"
-            ) {
-              var dataURLNewWindow = globalObject.open();
-              if (dataURLNewWindow !== null) {
-                var initializedDataUrlWindow =
-                  initializeNewWindow(dataURLNewWindow);
-                var dataUrlFrame =
-                  initializedDataUrlWindow.document.createElement("iframe");
-
-                dataUrlFrame.src = this.output("datauristring", options);
-                initializedDataUrlWindow.body.appendChild(dataUrlFrame);
-                dataURLNewWindow.document.title = options.filename!;
-              }
-              if (
-                dataURLNewWindow ||
-                typeof (globalObject as { safari?: unknown }).safari ===
-                  "undefined"
-              )
-                return dataURLNewWindow;
-            } else {
-              throw new Error(
-                "The option dataurlnewwindow just works in a browser-environment."
-              );
-            }
-            break;
-          case "datauri":
-          case "dataurl":
-            return (globalObject.document.location.href = this.output(
-              "datauristring",
-              options
-            ));
-          default:
-            return null;
+            initializedPdfObjectWindow.body.appendChild(pdfObjectScript);
+          }
+          return nW;
+        } else {
+          throw new Error(
+            "The option pdfobjectnewwindow just works in a browser-environment."
+          );
         }
-      }) as unknown as jsPDFDocument["output"]);
+      case "pdfjsnewwindow":
+        if (
+          Object.prototype.toString.call(globalObject) === "[object Window]"
+        ) {
+          var pdfJsUrl = options.pdfJsUrl || "examples/PDF.js/web/viewer.html";
+          var PDFjsNewWindow = globalObject.open();
+
+          if (PDFjsNewWindow !== null) {
+            var initializedPdfJsWindow = initializeNewWindow(PDFjsNewWindow);
+            var pdfViewer =
+              initializedPdfJsWindow.document.createElement("iframe");
+            var pdfJsQueryChar = pdfJsUrl.indexOf("?") === -1 ? "?" : "&";
+            var scope = this;
+
+            pdfViewer.id = "pdfViewer";
+            pdfViewer.width = "500px";
+            pdfViewer.height = "400px";
+            pdfViewer.src =
+              pdfJsUrl +
+              pdfJsQueryChar +
+              "file=&downloadName=" +
+              encodeURIComponent(options.filename!);
+
+            pdfViewer.onload = function () {
+              // Guarded by the enclosing `PDFjsNewWindow !== null` check;
+              // filename was defaulted at the top of output().
+              PDFjsNewWindow!.document.title = (
+                options as OutputOptions
+              ).filename!;
+              // PDFViewerApplication is provided by the embedded PDF.js viewer.
+              (
+                pdfViewer.contentWindow as Window & {
+                  PDFViewerApplication: { open(url: unknown): unknown };
+                }
+              ).PDFViewerApplication.open(scope.output("bloburl"));
+            };
+
+            initializedPdfJsWindow.body.appendChild(pdfViewer);
+          }
+          return PDFjsNewWindow;
+        } else {
+          throw new Error(
+            "The option pdfjsnewwindow just works in a browser-environment."
+          );
+        }
+      case "dataurlnewwindow":
+        if (
+          Object.prototype.toString.call(globalObject) === "[object Window]"
+        ) {
+          var dataURLNewWindow = globalObject.open();
+          if (dataURLNewWindow !== null) {
+            var initializedDataUrlWindow =
+              initializeNewWindow(dataURLNewWindow);
+            var dataUrlFrame =
+              initializedDataUrlWindow.document.createElement("iframe");
+
+            dataUrlFrame.src = this.output("datauristring", options);
+            initializedDataUrlWindow.body.appendChild(dataUrlFrame);
+            dataURLNewWindow.document.title = options.filename!;
+          }
+          if (
+            dataURLNewWindow ||
+            typeof (globalObject as { safari?: unknown }).safari === "undefined"
+          )
+            return dataURLNewWindow;
+        } else {
+          throw new Error(
+            "The option dataurlnewwindow just works in a browser-environment."
+          );
+        }
+        break;
+      case "datauri":
+      case "dataurl":
+        return (globalObject.document.location.href = this.output(
+          "datauristring",
+          options
+        ));
+      default:
+        return null;
+    }
+  }
+  var output = (API.output = API.__private__.output = SAFE(outputImpl));
 
   /**
    * Used to see if a supplied hotfix was requested when the pdf instance was created.
@@ -3884,17 +3933,39 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     mutex: TextMutex;
   }
 
-  // The trailing cast reconciles the single implementation signature with the
-  // overloads declared in types.ts (including the deprecated pre-2012
-  // `text(x, y, text, ...)` argument order handled by the swap shim below).
-  API.__private__.text = API.text = function (
+  // The overload list mirrors jsPDFDocument["text"] in types.ts (including
+  // the deprecated pre-2012 `text(x, y, text, ...)` argument order handled
+  // by the swap shim below); the implementation signature honestly widens
+  // each parameter to the union of what the two argument orders put there.
+  function textImpl(
     this: jsPDFDocument,
-    text: string | number | TextItem[],
+    text: string | string[],
     x: number,
     y: number,
-    options?: TextOptionsInternal,
-    transform?: number | Matrix
-  ) {
+    options?: TextOptionsLight,
+    transform?: number | MatrixType
+  ): jsPDFDocument;
+  function textImpl(
+    this: jsPDFDocument,
+    x: number,
+    y: number,
+    text: string | string[],
+    flags?: TextOptionsLight["flags"] | null,
+    angle?: number | null,
+    align?: string
+  ): jsPDFDocument;
+  function textImpl(
+    this: jsPDFDocument,
+    textArg: string | number | TextItem[],
+    xArg: number,
+    // In the legacy argument order the string/array content arrives here.
+    yArg: number | string | TextItem[],
+    // The legacy argument order passes a flags object (or null) here.
+    options?:
+      (TextOptionsInternal & { noBOM?: boolean; autoencode?: boolean }) | null,
+    // The legacy argument order passes the angle (or null) here.
+    transform?: number | MatrixType | null
+  ): jsPDFDocument {
     /*
      * Inserts something like this into PDF
      *   BT
@@ -3923,16 +3994,23 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     //   function(data, coordinates... , miscellaneous)
     // this method had its args flipped.
     // code below allows backward compatibility with old arg order.
+    // The normalized locals carry the standard (text, x, y) order for the
+    // rest of the implementation.
+    var text: string | number | TextItem[] = textArg;
+    var x = xArg;
+    var y: number;
     if (
-      typeof text === "number" &&
-      typeof x === "number" &&
-      ((typeof y as string) === "string" || Array.isArray(y))
+      typeof textArg === "number" &&
+      typeof xArg === "number" &&
+      (typeof yArg === "string" || Array.isArray(yArg))
     ) {
       // Legacy argument order: the string/array content arrived in `y`.
-      var tmp = y as unknown as string | TextItem[];
-      y = x;
-      x = text;
-      text = tmp;
+      text = yArg;
+      y = xArg;
+      x = textArg;
+    } else {
+      // Standard argument order: `y` is the numeric baseline coordinate.
+      y = yArg as number;
     }
 
     var transformationMatrix: MatrixType | undefined;
@@ -4573,7 +4651,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     out(result);
     usedFonts[activeFontKey] = true;
     return scope;
-  } as unknown as jsPDFDocument["text"];
+  }
+  API.__private__.text = API.text = textImpl;
 
   // PDF supports these path painting and clip path operators:
   //
@@ -5094,8 +5173,10 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     // this method had its args flipped.
     // code below allows backward compatibility with old arg order.
     if (typeof lines === "number") {
-      // Legacy argument order: the line data arrived in `y`.
-      tmp = y as unknown as Array<number[]>;
+      // Legacy argument order: the line data arrived in `y`. The untyped
+      // `tmp` carries it back into `lines`, whose Array.isArray validation
+      // below covers both argument orders.
+      tmp = y;
       y = x;
       x = lines;
       lines = tmp;
@@ -6564,11 +6645,18 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @param  {string} filename The filename including extension.
    * @param  {Object} options An Object with additional options, possible options: 'returnPromise'.
    * @returns {jsPDF|Promise} jsPDF-instance     */
-  API.save = function (
+  // The overload list mirrors jsPDFDocument["save"] in types.ts.
+  function saveImpl(
+    this: jsPDFDocument,
+    filename: string,
+    options: { returnPromise: true }
+  ): Promise<void>;
+  function saveImpl(this: jsPDFDocument, filename?: string): jsPDFDocument;
+  function saveImpl(
     this: jsPDFDocument,
     filename?: string,
     options?: { returnPromise?: boolean }
-  ) {
+  ): jsPDFDocument | Promise<void> {
     filename = filename || "generated.pdf";
 
     options = options || {};
@@ -6627,9 +6715,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       });
     }
     // @endif
-    // The per-overload return types (jsPDF vs Promise) are mapped through
-    // the double assertion below; the implementation returns the union.
-  } as unknown as jsPDFDocument["save"];
+  }
+  API.save = saveImpl;
 
   // applying plugins (more methods) ON TOP of built-in API.
   // this is intentional as we allow plugins to override
@@ -6664,10 +6751,12 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
           }
         })(events, jsPDF.API.events);
       } else {
-        // Copy each plugin member onto the instance; the member set is only
-        // known through the jsPDFAPI augmentations, hence the generic view.
-        (API as unknown as Record<string, unknown>)[plugin] = (
-          jsPDF.API as unknown as Record<string, unknown>
+        // Copy each plugin member onto the instance. Plugins may attach
+        // members beyond the jsPDFAPI augmentations, so both objects
+        // honestly carry dynamic entries; the intersection views make that
+        // visible for the generic copy.
+        (API as jsPDFDocument & Record<string, unknown>)[plugin] = (
+          jsPDF.API as jsPDFAPI & Record<string, unknown>
         )[plugin];
       }
     }
@@ -6726,10 +6815,12 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
    * @public
    * @ignore
    */
-  // Plugin modules augment jsPDFInternal with the members they stash on
-  // `internal` themselves (and `pageSize`'s width/height accessors are
-  // attached right below), so the literal is asserted onto the interface.
-  API.internal = {
+  // The core constructs every jsPDFInternal member except the state that
+  // plugins stash on `internal` themselves (module augmentations may declare
+  // such members as required, e.g. the AcroForm plugin's `acroformPlugin`),
+  // so the literal is checked against the plugin-free view and asserted once
+  // onto the full interface.
+  var internal: Omit<jsPDFInternal, "acroformPlugin"> = {
     pdfEscape: pdfEscape,
     getStyle: getStyle,
     getFont: getFontEntry,
@@ -6753,6 +6844,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     putStream: putStream,
     events: events,
     scaleFactor: scaleFactor,
+    // The width/height accessors required by PageSize are attached via
+    // Object.defineProperty right below, hence the single assertion.
     pageSize: {
       getWidth: function () {
         return getPageWidth(currentPage);
@@ -6766,7 +6859,7 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
       setHeight: function (value: number) {
         setPageHeight(currentPage, value);
       }
-    },
+    } as PageSize,
     encryptionOptions: encryptionOptions,
     encryption: encryption,
     getEncryptor: getEncryptor,
@@ -6786,10 +6879,8 @@ function jsPDF(options?: jsPDFOptions): jsPDFDocument {
     Rectangle: Rectangle,
     Matrix: Matrix,
     hasHotfix: hasHotfix //Expose the hasHotfix check so plugins can also check them.
-    // The interface carries members merged in by plugin augmentations (and
-    // `pageSize` width/height accessors attached below), so a direct
-    // assertion cannot see enough overlap.
-  } as unknown as jsPDFInternal;
+  };
+  API.internal = internal as jsPDFInternal;
 
   Object.defineProperty(API.internal.pageSize, "width", {
     get: function () {

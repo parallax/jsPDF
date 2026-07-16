@@ -43,7 +43,8 @@ describe("Module: Cell", () => {
     expect(function () {
       // Deliberately called without the required text argument to assert the
       // runtime validation throws.
-      (doc.getTextDimensions as unknown as () => void)();
+      // Cast the receiver, not the method — this-binding must survive.
+      invalidArg<{ getTextDimensions(): void }>(doc).getTextDimensions();
     }).toThrow(
       new Error(
         "getTextDimensions expects text-parameter to be of type String or type Number or an Array of Strings."

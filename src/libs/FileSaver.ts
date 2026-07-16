@@ -13,7 +13,8 @@ import { globalObject } from "./globalObject.js";
 
 // Loose view of the global for feature-detection of non-standard members
 // (saveAs, webkitURL, safari, msSaveOrOpenBlob hosts).
-const _global = globalObject as unknown as Record<string, unknown> & {
+const globalAsUnknown: unknown = globalObject;
+const _global = globalAsUnknown as Record<string, unknown> & {
   URL?: typeof URL;
   webkitURL?: typeof URL;
   HTMLElement?: typeof HTMLElement;
@@ -179,9 +180,10 @@ var saveAs: SaveAsFunction =
               }
             } else {
               // msSaveOrOpenBlob is an IE-only, nonstandard API absent from the
-              // DOM lib typings.
+              // DOM lib typings; widen the navigator to unknown and assert it.
+              const navigatorAsUnknown: unknown = navigator;
               (
-                navigator as unknown as {
+                navigatorAsUnknown as {
                   msSaveOrOpenBlob: (blob: Blob, name: string) => void;
                 }
               ).msSaveOrOpenBlob(bom(blob, opts), name);
@@ -218,9 +220,11 @@ var saveAs: SaveAsFunction =
             ) {
               // Safari doesn't allow downloading of blob URLs
               // The `typeof FileReader === "object"` guard above narrows the
-              // constructor's declared function type away, so restore it.
+              // constructor's declared function type away, so widen to
+              // unknown and restore a construct signature.
+              const FileReaderAsUnknown: unknown = FileReader;
               var reader = new (
-                FileReader as unknown as {
+                FileReaderAsUnknown as {
                   new (): FileReader;
                 }
               )();

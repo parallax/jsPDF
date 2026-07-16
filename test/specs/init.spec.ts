@@ -9,22 +9,22 @@
 describe("Core: Initialization Options", () => {
   beforeAll(loadGlobals);
 
-  /** Minimal fake of the popup window handed back by the stubbed window.open. */
-  interface FakePopupWindow {
+  /**
+   * Minimal fake of the popup window handed back by the stubbed window.open.
+   * Extends Partial<Window> so the fake overlaps Window and a plain
+   * `as Window` assertion is enough where the stubbed window.open needs one.
+   */
+  interface FakePopupWindow extends Partial<Window> {
     document: Document;
     PDFObject?: { embed: jasmine.Spy };
   }
 
-  type JsPDFLegacyCtor = (
-    orientation?: string,
-    unit?: string,
-    format?: string | number[],
-    compressPdf?: boolean
-  ) => ReturnType<typeof jsPDF>;
+  // jsPDF also supports the legacy positional (orientation, unit, format)
+  // call form at runtime; the ambient jsPDF global (test/globals.d.ts)
+  // declares that legacy call signature.
   // Lazy: reads the jsPDF global at call time — in the Node run the global
   // is only installed by loadGlobals() inside beforeAll, after module load.
-  const jsPDFLegacy: JsPDFLegacyCtor = (...args) =>
-    (jsPDF as unknown as JsPDFLegacyCtor)(...args);
+  const jsPDFLegacy = (...args: jsPDFLegacyArgs) => jsPDF(...args);
 
   var global: typeof globalThis & { isNode?: boolean } =
     (typeof self !== "undefined" && self) ||
@@ -130,7 +130,7 @@ describe("Core: Initialization Options", () => {
       const popupWindow = createPopupWindow();
       const payload = '"></iframe><script>window.__xss = true</script>';
 
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("dataurlnewwindow", { filename: payload });
 
@@ -145,7 +145,7 @@ describe("Core: Initialization Options", () => {
       const payload = '"></iframe><script>window.__xss = true</script>';
       let viewerFrame: HTMLIFrameElement;
 
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("pdfjsnewwindow", {
         filename: payload,
@@ -154,28 +154,24 @@ describe("Core: Initialization Options", () => {
 
       viewerFrame =
         popupWindow.document.querySelector<HTMLIFrameElement>("#pdfViewer")!;
-      Object.defineProperty(viewerFrame, "contentWindow", {
-        value: {
-          PDFViewerApplication: {
-            open: jasmine.createSpy("open")
-          }
+      // Fake contentWindow stubbed onto the iframe; kept in a local so the
+      // assertions below need no cast.
+      const fakeContentWindow = {
+        PDFViewerApplication: {
+          open: jasmine.createSpy("open")
         }
+      };
+      Object.defineProperty(viewerFrame, "contentWindow", {
+        value: fakeContentWindow
       });
 
       // The onload handler assigned by jsPDF takes no arguments.
-      (viewerFrame.onload as unknown as () => void)();
+      (viewerFrame.onload as () => void)();
 
       expect(popupWindow.document.title).toEqual(payload);
       expect(popupWindow.document.querySelectorAll("script").length).toEqual(0);
       expect(viewerFrame.src).toContain(encodeURIComponent(payload));
-      expect(
-        // contentWindow was stubbed above with a fake PDFViewerApplication.
-        (
-          viewerFrame.contentWindow as unknown as {
-            PDFViewerApplication: { open: jasmine.Spy };
-          }
-        ).PDFViewerApplication.open
-      ).toHaveBeenCalled();
+      expect(fakeContentWindow.PDFViewerApplication.open).toHaveBeenCalled();
     });
 
     it("should safely render pdfobjectnewwindow content with attacker controlled options", () => {
@@ -188,7 +184,7 @@ describe("Core: Initialization Options", () => {
         embed: jasmine.createSpy("embed")
       };
 
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("pdfobjectnewwindow", {
         filename: payload,
@@ -198,7 +194,7 @@ describe("Core: Initialization Options", () => {
 
       loaderScript = popupWindow.document.querySelector("script")!;
       // The onload handler assigned by jsPDF takes no arguments.
-      (loaderScript.onload as unknown as () => void)();
+      (loaderScript.onload as () => void)();
 
       expect(popupWindow.document.querySelectorAll("script").length).toEqual(1);
       expect(popupWindow.PDFObject.embed).toHaveBeenCalledWith(
@@ -215,7 +211,7 @@ describe("Core: Initialization Options", () => {
       const popupWindow = createPopupWindow();
 
       popupWindow.PDFObject = { embed: jasmine.createSpy("embed") };
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("pdfobjectnewwindow", { filename: "test.pdf" });
       var loaderScript = popupWindow.document.querySelector("script")!;
@@ -228,7 +224,7 @@ describe("Core: Initialization Options", () => {
       const popupWindow = createPopupWindow();
 
       popupWindow.PDFObject = { embed: jasmine.createSpy("embed") };
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("pdfobjectnewwindow", {
         filename: "test.pdf",
@@ -253,7 +249,7 @@ describe("Core: Initialization Options", () => {
       const popupWindow = createPopupWindow();
       const maliciousUrl = '" onload="alert(1)" data-x="';
 
-      spyOn(global, "open").and.returnValue(popupWindow as unknown as Window);
+      spyOn(global, "open").and.returnValue(popupWindow as Window);
 
       doc.output("pdfjsnewwindow", {
         filename: "test.pdf",
@@ -356,13 +352,14 @@ describe("Core: Initialization Options", () => {
   it("should warn me about an invalid unit", () => {
     expect(() => {
       // Deliberately invalid unit (negative test).
-      jsPDF({ unit: "invalid" as unknown as "mm" });
+      jsPDF({ unit: invalidArg<"mm">("invalid") });
     }).toThrow(new Error("Invalid unit: invalid"));
   });
 
   it("should warn me about an invalid unit when passed as second argument", () => {
     expect(() => {
-      jsPDFLegacy("portrait", "invalid");
+      // Deliberately invalid unit (negative test).
+      jsPDFLegacy("portrait", invalidArg<"mm">("invalid"));
     }).toThrow(new Error("Invalid unit: invalid"));
   });
 
