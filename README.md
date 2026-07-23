@@ -14,7 +14,7 @@ You can [catch me on twitter](http://twitter.com/MrRio): [@MrRio](http://twitter
 
 jsPDF is now co-maintained by [yWorks - the diagramming experts](https://www.yworks.com/).
 
-## [Live Demo](http://raw.githack.com/MrRio/jsPDF/master/) | [Documentation](http://raw.githack.com/MrRio/jsPDF/master/docs/)
+## [Live Demo](https://parallax.github.io/jsPDF/) | [Documentation](https://parallax.github.io/jsPDF/docs/)
 
 ## Install
 
@@ -209,7 +209,7 @@ Chinese text in your pdf, your font has to have the necessary Chinese glyphs. So
 the wanted glyphs or else it will show garbled characters instead of the right text.
 
 To add the font to jsPDF use our fontconverter in
-[/fontconverter/fontconverter.html](https://rawgit.com/MrRio/jsPDF/master/fontconverter/fontconverter.html).
+[/fontconverter/fontconverter.html](https://parallax.github.io/jsPDF/fontconverter/fontconverter.html).
 The fontconverter will create a js-file with the content of the provided ttf-file as base64 encoded string
 and additional code for jsPDF. You just have to add this generated js-File to your project.
 You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
