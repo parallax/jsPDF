@@ -102,6 +102,18 @@ import {
       }
     });
 
+    /**
+     * Buffer of deferred text draws collected while rendering via doc.html().
+     * Each entry captures everything needed to reissue the draw later, once
+     * the whole page has finished rendering, so that entries can be sorted
+     * into natural reading order (top-to-bottom, left-to-right) rather than
+     * the order html2canvas happened to paint them in (which follows CSS
+     * painting order, not DOM/reading order - see issue #4000).
+     * @name textRunBuffer
+     * @type {Array}
+     */
+    this.textRunBuffer = [];
+
     var _pageWrapXEnabled = false;
     /**
      * @name pageWrapXEnabled
@@ -1323,6 +1335,19 @@ import {
    * @param maxWidth {Number} Optional. The maximum allowed width of the text, in pixels
    * @description The fillText() method draws filled text on the canvas. The default color of the text is black.
    */
+  /**
+   * Writes any buffered text draws (see {@link textRunBuffer}) to the PDF
+   * content stream, in reading order. Called automatically at the end of
+   * doc.html() rendering; safe to call manually if using the context2d API
+   * directly and autoPaging === 'text'.
+   *
+   * @name flushTextRuns
+   * @function
+   */
+  Context2D.prototype.flushTextRuns = function() {
+    flushTextRuns.call(this);
+  };
+
   Context2D.prototype.fillText = function(text, x, y, maxWidth) {
     if (isNaN(x) || isNaN(y) || typeof text !== "string") {
       console.error("jsPDF.context2d.fillText: Invalid arguments", arguments);
@@ -2390,33 +2415,69 @@ import {
             const needsClipping =
               doSlice && (i > min || i < max) && hasMargins.call(this);
 
-            if (needsClipping) {
-              this.pdf.saveGraphicsState();
-              this.pdf
-                .rect(
-                  this.margin[3],
-                  this.margin[0],
-                  pageWidthMinusMargins,
-                  pageHeightMinusMargins,
-                  null
-                )
-                .clip()
-                .discardPath();
-            }
+            if (doSlice) {
+              // 'slice'/true autoPaging mode: preserve exact original
+              // behavior (immediate write, optionally clipped). This mode
+              // isn't affected by the html2canvas painting-order issue
+              // that #4000 is about, and callers may use the Context2D
+              // API directly without ever going through doc.html()'s
+              // flush hook, so buffering here would silently drop text.
+              if (needsClipping) {
+                this.pdf.saveGraphicsState();
+                this.pdf
+                  .rect(
+                    this.margin[3],
+                    this.margin[0],
+                    pageWidthMinusMargins,
+                    pageHeightMinusMargins,
+                    null
+                  )
+                  .clip()
+                  .discardPath();
+              }
 
-            this.pdf.text(
-              croppedText,
-              baseLineRectOnPage.x,
-              baseLineRectOnPage.y,
-              {
+              this.pdf.text(
+                croppedText,
+                baseLineRectOnPage.x,
+                baseLineRectOnPage.y,
+                {
+                  angle: options.angle,
+                  align: textAlign,
+                  renderingMode: options.renderingMode
+                }
+              );
+
+              if (needsClipping) {
+                this.pdf.restoreGraphicsState();
+              }
+            } else {
+              // autoPaging === 'text': buffer this draw instead of writing
+              // it to the content stream immediately. html2canvas paints
+              // nodes in CSS painting order (see
+              // w3.org/TR/css-position-3/#painting-order), which is not
+              // the same as DOM/reading order - styled inline runs (e.g.
+              // <strong>/<em>/<span>) can be painted well after their
+              // plain-text siblings. Buffering and re-sorting into reading
+              // order before flushing preserves visual position while
+              // fixing the logical/extracted text order (#4000).
+              // doc.html() always flushes this buffer once rendering
+              // finishes (see html.js); direct Context2D API callers using
+              // 'text' mode should call ctx.flushTextRuns() themselves.
+              this.textRunBuffer.push({
+                page: i,
+                x: baseLineRectOnPage.x,
+                y: baseLineRectOnPage.y,
+                text: croppedText,
                 angle: options.angle,
                 align: textAlign,
-                renderingMode: options.renderingMode
-              }
-            );
-
-            if (needsClipping) {
-              this.pdf.restoreGraphicsState();
+                renderingMode: options.renderingMode,
+                fontName: this.pdf.internal.getFont().fontName,
+                fontStyle: this.pdf.internal.getFont().fontStyle,
+                fontSize: this.pdf.internal.getFontSize(),
+                textColor: this.pdf.internal.getTextColor
+                  ? this.pdf.internal.getTextColor()
+                  : null
+              });
             }
           }
         } else {
@@ -2454,6 +2515,87 @@ import {
         this.lineWidth = oldLineWidth;
       }
     }
+  };
+
+  /**
+   * Flushes any text draws that were buffered by putText() during
+   * doc.html() rendering, writing them to the PDF content stream in
+   * natural reading order instead of html2canvas's CSS painting order.
+   *
+   * Entries are grouped into "lines" using a small y-tolerance (since
+   * baselines on the same visual line can differ by sub-pixel rounding
+   * across separately-styled runs), sorted top-to-bottom by line, then
+   * left-to-right by x within each line. Font/size/color are restored
+   * per-entry since global pdf state may have moved on since the draw
+   * was buffered.
+   *
+   * @name flushTextRuns
+   * @function
+   */
+  var flushTextRuns = function() {
+    var buffer = this.textRunBuffer;
+    if (!buffer || buffer.length === 0) {
+      return;
+    }
+
+    // Group by page first so we only call setPage() when it changes.
+    var byPage = {};
+    buffer.forEach(function(entry) {
+      (byPage[entry.page] = byPage[entry.page] || []).push(entry);
+    });
+
+    var LINE_TOLERANCE = 0.75; // mm; adjust if false line-merges appear
+
+    Object.keys(byPage)
+      .map(Number)
+      .sort(function(a, b) {
+        return a - b;
+      })
+      .forEach(function(pageNum) {
+        var entries = byPage[pageNum];
+
+        // Group into lines by y-proximity.
+        var lines = [];
+        entries
+          .slice()
+          .sort(function(a, b) {
+            return a.y - b.y; // PDF y grows upward; top of page first
+          })
+          .forEach(function(entry) {
+            var line = lines[lines.length - 1];
+            if (line && Math.abs(line.y - entry.y) <= LINE_TOLERANCE) {
+              line.entries.push(entry);
+            } else {
+              lines.push({ y: entry.y, entries: [entry] });
+            }
+          });
+
+        // Within each line, sort left-to-right.
+        lines.forEach(function(line) {
+          line.entries.sort(function(a, b) {
+            return a.x - b.x;
+          });
+        });
+
+        this.pdf.setPage(pageNum);
+
+        lines.forEach(function(line) {
+          line.entries.forEach(function(entry) {
+            this.pdf.setFont(entry.fontName, entry.fontStyle);
+            this.pdf.setFontSize(entry.fontSize);
+            if (entry.textColor) {
+              this.pdf.setTextColor(entry.textColor);
+            }
+            this.pdf.text(entry.text, entry.x, entry.y, {
+              angle: entry.angle,
+              align: entry.align,
+              renderingMode: entry.renderingMode
+            });
+          }, this);
+        }, this);
+      }, this);
+
+    buffer.length = 0;
   };
 
   var drawLine = function(x, y, prevX, prevY) {
