@@ -430,7 +430,7 @@ declare module "jspdf" {
       y: number
     ): void;
     clearRect(x: number, y: number, w: number, h: number): void;
-    clip(): jsPDF;
+    clip(fillRule?: "nonzero" | "evenodd"): jsPDF;
     clipEvenOdd(): jsPDF;
     closePath(): void;
     createLinearGradient(

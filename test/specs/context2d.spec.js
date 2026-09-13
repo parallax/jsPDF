@@ -745,6 +745,40 @@ describe("Context2D: standard tests", () => {
     ]);
   });
 
+  it("clip uses the nonzero rule by default", () => {
+    var doc = new jsPDF({ floatPrecision: 2 });
+    var ctx = doc.context2d;
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(10, 0);
+    ctx.lineTo(10, 10);
+    ctx.closePath();
+    ctx.clip();
+
+    expect(writeArray).toContain("W");
+    expect(writeArray).not.toContain("W*");
+  });
+
+  it("clip respects the evenodd fill rule", () => {
+    var doc = new jsPDF({ floatPrecision: 2 });
+    var ctx = doc.context2d;
+    var writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(10, 0);
+    ctx.lineTo(10, 10);
+    ctx.closePath();
+    ctx.clip("evenodd");
+
+    expect(writeArray).toContain("W*");
+    expect(writeArray).not.toContain("W");
+  });
+
   it("margin property shorthands", () => {
     const doc = new jsPDF();
     const ctx = doc.context2d;

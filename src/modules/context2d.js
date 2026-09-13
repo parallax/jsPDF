@@ -48,6 +48,7 @@ import {
     this.globalCompositeOperation = ctx.globalCompositeOperation || "normal";
     this.globalAlpha = ctx.globalAlpha || 1.0;
     this.clip_path = ctx.clip_path || [];
+    this.clip_path_rule = ctx.clip_path_rule;
     this.currentPoint = ctx.currentPoint || new Point();
     this.miterLimit = ctx.miterLimit || 10.0;
     this.lastPoint = ctx.lastPoint || new Point();
@@ -869,10 +870,19 @@ import {
    *
    * @name clip
    * @function
+   * @param {"nonzero"|"evenodd"} [fillRule="nonzero"] The algorithm by which to determine if a point is inside or outside the clipping region.
    * @description The clip() method clips a region of any shape and size from the original canvas.
    */
-  Context2D.prototype.clip = function() {
+  Context2D.prototype.clip = function(fillRule) {
+    // The optional path argument (clip(path[, fillRule])) is not supported, so
+    // pick the fill rule from whichever argument is a string.
+    for (var i = 0; i < arguments.length; i++) {
+      if (typeof arguments[i] === "string") {
+        fillRule = arguments[i];
+      }
+    }
     this.ctx.clip_path = JSON.parse(JSON.stringify(this.path));
+    this.ctx.clip_path_rule = fillRule;
     pathPreProcess.call(this, null, true);
   };
 
@@ -2254,7 +2264,7 @@ import {
   };
 
   var doClip = function() {
-    this.pdf.clip();
+    this.pdf.clip(this.ctx.clip_path_rule);
     this.pdf.discardPath();
   };
 
