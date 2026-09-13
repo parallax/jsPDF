@@ -209,4 +209,36 @@ describe("Module: split_text_to_size", () => {
       )[4]
     ).toEqual("voluptua.");
   });
+
+  it("splitTextToSize respects charSpace (#3299)", () => {
+    var doc = new jsPDF();
+    doc.setFont("Helvetica");
+    doc.setFontSize(16);
+
+    var str =
+      "Mary had a little lamb she also had a duck. She put them on the mantlepiece to see if they would fall off.";
+    var maxWidth = 100;
+    var charSpace = 1;
+    var fontSize = 16;
+    var scaleFactor = doc.internal.scaleFactor;
+
+    var lines = doc.splitTextToSize(str, maxWidth, { charSpace: charSpace });
+
+    // Every resulting line must still fit within maxWidth once charSpace is applied.
+    lines.forEach(function(line) {
+      var lineWidth =
+        (doc.getStringUnitWidth(line, {
+          charSpace: charSpace,
+          fontSize: fontSize
+        }) *
+          fontSize) /
+        scaleFactor;
+      expect(lineWidth).toBeLessThanOrEqual(maxWidth);
+    });
+
+    // Wider character spacing wraps the text into more lines than no spacing.
+    expect(lines.length).toBeGreaterThan(
+      doc.splitTextToSize(str, maxWidth, { charSpace: 0 }).length
+    );
+  });
 });

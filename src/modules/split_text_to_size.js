@@ -92,7 +92,8 @@ import { jsPDF } from "../jspdf.js";
         }
         output.push(
           (widths[char_code] || default_char_width) / widthsFractionOf +
-            kerningValue
+            kerningValue +
+            charSpace / fontSize
         );
       }
       prior_char_code = char_code;
@@ -376,6 +377,7 @@ import { jsPDF } from "../jspdf.js";
       ? (options.textIndent * 1.0 * this.internal.scaleFactor) / fsize
       : 0;
     newOptions.lineIndent = options.lineIndent;
+    newOptions.charSpace = options.charSpace;
 
     var i,
       l,
