@@ -1,3 +1,6 @@
+// @ts-nocheck -- vendored CoffeeScript-compiled TTF font library (uses the
+// generated __extends/__super__ class pattern throughout); typed mechanically
+// it would need hundreds of casts with no safety gain and real drift risk.
 /* eslint-disable no-control-regex */
 /************************************************
  * Title : custom font                          *

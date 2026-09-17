@@ -129,7 +129,7 @@ import { atob } from "../libs/AtobBtoa.js";
    */
   var getImageFileTypeByImageData = (jsPDFAPI.__addimage__.getImageFileTypeByImageData = function(
     imageData,
-    fallbackFormat
+    fallbackFormat?
   ) {
     fallbackFormat = fallbackFormat || UNKNOWN;
     var i;
@@ -291,7 +291,7 @@ import { atob } from "../libs/AtobBtoa.js";
     if ("sMask" in image && typeof image.sMask !== "undefined") {
       const sMaskBitsPerComponent =
         image.sMaskBitsPerComponent ?? image.bitsPerComponent;
-      const sMask = {
+      const sMask: any = {
         width: image.width,
         height: image.height,
         colorSpace: "DeviceGray",
@@ -375,7 +375,7 @@ import { atob } from "../libs/AtobBtoa.js";
     return typeof object === "object" && object.nodeType === 1;
   };
 
-  var getImageDataFromElement = function(element, format) {
+  var getImageDataFromElement = function(element, format?) {
     //if element is an image which uses data url definition, just return the dataurl
     if (element.nodeName === "IMG" && element.hasAttribute("src")) {
       var src = "" + element.getAttribute("src");
@@ -750,7 +750,7 @@ import { atob } from "../libs/AtobBtoa.js";
       // functionality as fromCharCode with any provided encodings as of 3/2021.
       out += String.fromCharCode.apply(
         null,
-        buf.subarray(i, i + ARRAY_APPLY_BATCH)
+        buf.subarray(i, i + ARRAY_APPLY_BATCH) as any
       );
     }
     return out;
@@ -924,7 +924,7 @@ import { atob } from "../libs/AtobBtoa.js";
    */
   var convertBase64ToBinaryString = (jsPDFAPI.__addimage__.convertBase64ToBinaryString = function(
     stringData,
-    throwError
+    throwError?
   ) {
     throwError = typeof throwError === "boolean" ? throwError : true;
     var imageData = "";
@@ -943,7 +943,8 @@ import { atob } from "../libs/AtobBtoa.js";
             );
           } else {
             throw new Error(
-              "atob-Error in jsPDF.convertBase64ToBinaryString " + e.message
+              "atob-Error in jsPDF.convertBase64ToBinaryString " +
+                (e as any).message
             );
           }
         }

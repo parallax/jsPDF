@@ -1,3 +1,5 @@
+// @ts-nocheck -- vendored, minified libwebp port (single-letter variables
+// reused across types); typing it provides no value and risks behavior drift.
 function WebPDecoder(imageData) {
   /** @license
    * Copyright 2011 Google Inc.

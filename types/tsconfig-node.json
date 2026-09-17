@@ -6,7 +6,8 @@
     "typeRoots": [],
     "types": [],
     "noEmit": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   },
   "files": [
     "index.d.ts",

@@ -3,7 +3,7 @@
  * Detail: PDF Reference 1.3 - Chapter 3.2.4 Name Object
  * @param str
  */
-function toPDFName(str) {
+function toPDFName(str: string): string {
   // eslint-disable-next-line no-control-regex
   if (/[^\u0000-\u00ff]/.test(str)) {
     // non ascii string

@@ -59,7 +59,7 @@ import { jsPDF } from "../jspdf.js";
     this.internal.__cell__.pages = 1;
   };
 
-  var Cell = function() {
+  var Cell: any = function() {
     var _x = arguments[0];
     Object.defineProperty(this, "x", {
       enumerable: true,
@@ -266,7 +266,7 @@ import { jsPDF } from "../jspdf.js";
    * @param {string} align
    * @return {jsPDF} jsPDF-instance
    */
-  var cell = (jsPDFAPI.cell = function() {
+  var cell: any = (jsPDFAPI.cell = function() {
     var currentCell;
 
     if (arguments[0] instanceof Cell) {

@@ -7,7 +7,7 @@
  * Reference: http://www.fpdf.org/en/script/script37.php
  */
 
-function repeat(str, num) {
+function repeat(str: string, num: number): string {
   return new Array(num + 1).join(str);
 }
 
@@ -20,10 +20,12 @@ function repeat(str, num) {
  * @param {string} data Byte string of data to be encrypted
  * @returns {string} Encrypted string
  */
-function rc4(key, data) {
+function rc4(key: string, data: string): string {
   var lastKey, lastState;
   if (key !== lastKey) {
-    var k = repeat(key, ((256 / key.length) >> 0) + 1);
+    // "k" is reused below as a numeric state lookup, matching the original
+    // untyped implementation.
+    var k: any = repeat(key, ((256 / key.length) >> 0) + 1);
     var state = [];
     for (var i = 0; i < 256; i++) {
       state[i] = i;

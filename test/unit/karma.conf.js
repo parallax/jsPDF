@@ -17,6 +17,7 @@ module.exports = config => {
         type: "module"
       },
       { pattern: "src/**/*.js", included: false },
+      { pattern: "src/**/*.ts", included: false },
       "node_modules/canvg/lib/umd.js",
       "node_modules/html2canvas/dist/html2canvas.js",
       "node_modules/dompurify/dist/purify.js",
@@ -38,7 +39,11 @@ module.exports = config => {
     ],
     preprocessors: {
       "src/libs/fflate.js": ["rollup"],
-      "src/libs/fast-png.js": ["rollup"]
+      "src/libs/fast-png.js": ["rollup"],
+      "src/jspdf.ts": ["babelTS", "coverage"],
+      "src/modules/*.ts": ["babelTS", "coverage"],
+      "src/libs/*.ts": ["babelTS"],
+      "src/index.ts": ["babelTS"]
     },
 
     rollupPreprocessor: {

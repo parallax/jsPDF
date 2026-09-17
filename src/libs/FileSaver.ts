@@ -56,7 +56,7 @@ function corsEnabled(url) {
 }
 
 // `a.click()` doesn't work for all browsers (#465)
-function click(node) {
+function click(node, _unused?: any) {
   try {
     node.dispatchEvent(new MouseEvent("click"));
   } catch (e) {
@@ -141,7 +141,7 @@ var saveAs =
             });
           }
         } else {
-          navigator.msSaveOrOpenBlob(bom(blob, opts), name);
+          (navigator as any).msSaveOrOpenBlob(bom(blob, opts), name);
         }
       }
     : // Fallback to using FileReader and a popup
@@ -166,7 +166,7 @@ var saveAs =
           typeof FileReader === "object"
         ) {
           // Safari doesn't allow downloading of blob URLs
-          var reader = new FileReader();
+          var reader = new (FileReader as any)();
           reader.onloadend = function() {
             var url = reader.result;
             url = isChromeIOS

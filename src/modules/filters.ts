@@ -17,6 +17,7 @@ import { zlibSync } from "../libs/fflate.js";
     var b, c, d, e, f, g, h, i, j, k;
     // eslint-disable-next-line no-control-regex
     for (
+      // @ts-ignore -- comma-operator expression kept verbatim from the JS
       !/[^\x00-\xFF]/.test(a),
         b = "\x00\x00\x00\x00".slice(a.length % 4 || 4),
         a += b,
@@ -116,7 +117,7 @@ import { zlibSync } from "../libs/fflate.js";
     }
     var result = "";
     for (var i = 0; i < value.length; i += 2) {
-      result += String.fromCharCode("0x" + (value[i] + value[i + 1]));
+      result += String.fromCharCode(("0x" + (value[i] + value[i + 1])) as any);
     }
     return result;
   };

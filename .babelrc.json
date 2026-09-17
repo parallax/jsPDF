@@ -1,4 +1,7 @@
 {
-  "presets": [["@babel/env"]],
+  "presets": [
+    ["@babel/env"],
+    ["@babel/preset-typescript", { "allowDeclareFields": true }]
+  ],
   "exclude": ["node_modules/**"]
 }

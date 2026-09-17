@@ -26,7 +26,7 @@ import {
  */
 (function(jsPDFAPI) {
   "use strict";
-  var ContextLayer = function(ctx) {
+  var ContextLayer: any = function(ctx?) {
     ctx = ctx || {};
     this.isStrokeTransparent = ctx.isStrokeTransparent || false;
     this.strokeOpacity = ctx.strokeOpacity || 1;
@@ -1080,7 +1080,7 @@ import {
     if (isFillTransparent.call(this)) {
       return;
     }
-    var tmp = {};
+    var tmp: any = {};
     if (this.lineCap !== "butt") {
       tmp.lineCap = this.lineCap;
       this.lineCap = "butt";
@@ -1413,7 +1413,7 @@ import {
       (pdf.getStringUnitWidth(text) * fontSize) / pdf.internal.scaleFactor;
     txtWidth *= Math.round(((k * 96) / 72) * 10000) / 10000;
 
-    var TextMetrics = function(options) {
+    var TextMetrics: any = function(options) {
       options = options || {};
       var _width = options.width || 0;
       Object.defineProperty(this, "width", {
@@ -1747,7 +1747,7 @@ import {
     }
   };
 
-  var getPagesByPath = function(path, pageWrapX, pageWrapY) {
+  var getPagesByPath = function(path, pageWrapX?, pageWrapY?) {
     var result = [];
     pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
     pageWrapY =
@@ -2163,7 +2163,7 @@ import {
   };
 
   Context2D.prototype.createLinearGradient = function createLinearGradient() {
-    var canvasGradient = function canvasGradient() {};
+    var canvasGradient: any = function canvasGradient() {};
 
     canvasGradient.colorStops = [];
     canvasGradient.addColorStop = function(offset, color) {
@@ -2205,10 +2205,10 @@ import {
     r,
     a1,
     a2,
-    counterclockwise,
-    style,
-    isClip,
-    includeMove
+    counterclockwise?,
+    style?,
+    isClip?,
+    includeMove?
   ) {
     // http://hansmuller-flex.blogspot.com/2011/10/more-about-approximating-circular-arcs.html
     var curves = createArc.call(this, r, a1, a2, counterclockwise);
@@ -2456,7 +2456,7 @@ import {
     }
   };
 
-  var drawLine = function(x, y, prevX, prevY) {
+  var drawLine = function(x, y, prevX?, prevY?) {
     prevX = prevX || 0;
     prevY = prevY || 0;
 

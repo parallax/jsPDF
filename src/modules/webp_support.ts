@@ -20,7 +20,7 @@ import { WebPDecoder } from "../libs/WebPDecoder.js";
   "use strict";
 
   jsPDFAPI.processWEBP = function(imageData, index, alias, compression) {
-    var reader = new WebPDecoder(imageData, false);
+    var reader = new (WebPDecoder as any)(imageData, false);
     var width = reader.width,
       height = reader.height;
     var qu = 100;
