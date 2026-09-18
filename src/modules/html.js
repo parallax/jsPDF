@@ -500,6 +500,13 @@ import { globalObject } from "../libs/globalObject.js";
       .then(function toContext2d_post(canvas) {
         this.opt.jsPDF.context2d.restore(true);
 
+        // All text draws for this render have now been buffered (see
+        // Context2D#textRunBuffer); write them to the content stream in
+        // reading order rather than html2canvas's paint order. See #4000.
+        if (this.opt.jsPDF.context2d.flushTextRuns) {
+          this.opt.jsPDF.context2d.flushTextRuns();
+        }
+
         // Handle old-fashioned 'onrendered' argument.
         var onRendered = this.opt.html2canvas.onrendered || function() {};
         onRendered(canvas);
