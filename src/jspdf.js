@@ -5067,7 +5067,7 @@ function jsPDF(options) {
    * @memberof jsPDF#
    * @name setLineDashPattern
    */
-  API.__private__.setLineDash = jsPDF.API.setLineDash = jsPDF.API.setLineDashPattern = function(
+  API.__private__.setLineDash = API.setLineDash = API.setLineDashPattern = function(
     dashArray,
     dashPhase
   ) {
