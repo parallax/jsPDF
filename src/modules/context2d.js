@@ -26,7 +26,8 @@ import {
  */
 (function(jsPDFAPI) {
   "use strict";
-  var ContextLayer = function(ctx) {
+  var ContextLayer = function(pdf, ctx) {
+    const { Matrix, Point } = pdf.internal;
     ctx = ctx || {};
     this.isStrokeTransparent = ctx.isStrokeTransparent || false;
     this.strokeOpacity = ctx.strokeOpacity || 1;
@@ -61,34 +62,15 @@ import {
     return this;
   };
 
-  //stub
-  var f2,
-    getHorizontalCoordinateString,
-    getVerticalCoordinateString,
-    getHorizontalCoordinate,
-    getVerticalCoordinate,
-    Point,
-    Rectangle,
-    Matrix,
-    _ctx;
   jsPDFAPI.events.push([
     "initialized",
     function() {
       this.context2d = new Context2D(this);
-
-      f2 = this.internal.f2;
-      getHorizontalCoordinateString = this.internal.getCoordinateString;
-      getVerticalCoordinateString = this.internal.getVerticalCoordinateString;
-      getHorizontalCoordinate = this.internal.getHorizontalCoordinate;
-      getVerticalCoordinate = this.internal.getVerticalCoordinate;
-      Point = this.internal.Point;
-      Rectangle = this.internal.Rectangle;
-      Matrix = this.internal.Matrix;
-      _ctx = new ContextLayer();
     }
   ]);
 
   var Context2D = function(pdf) {
+    let _ctx = new ContextLayer(pdf);
     Object.defineProperty(this, "canvas", {
       get: function() {
         return { parentNode: false, style: false };
@@ -802,14 +784,14 @@ import {
       throw new Error("Invalid arguments passed to jsPDF.context2d.moveTo");
     }
 
-    var pt = this.ctx.transform.applyToPoint(new Point(x, y));
+    var pt = this.ctx.transform.applyToPoint(new this.pdf.internal.Point(x, y));
 
     this.path.push({
       type: "mt",
       x: pt.x,
       y: pt.y
     });
-    this.ctx.lastPoint = new Point(x, y);
+    this.ctx.lastPoint = new this.pdf.internal.Point(x, y);
   };
 
   /**
@@ -820,7 +802,7 @@ import {
    * @description The closePath() method creates a path from the current point back to the starting point.
    */
   Context2D.prototype.closePath = function() {
-    var pathBegin = new Point(0, 0);
+    var pathBegin = new this.pdf.internal.Point(0, 0);
     var i = 0;
     for (i = this.path.length - 1; i !== -1; i--) {
       if (this.path[i].type === "begin") {
@@ -828,7 +810,10 @@ import {
           typeof this.path[i + 1] === "object" &&
           typeof this.path[i + 1].x === "number"
         ) {
-          pathBegin = new Point(this.path[i + 1].x, this.path[i + 1].y);
+          pathBegin = new this.pdf.internal.Point(
+            this.path[i + 1].x,
+            this.path[i + 1].y
+          );
           break;
         }
       }
@@ -836,7 +821,7 @@ import {
     this.path.push({
       type: "close"
     });
-    this.ctx.lastPoint = new Point(pathBegin.x, pathBegin.y);
+    this.ctx.lastPoint = new this.pdf.internal.Point(pathBegin.x, pathBegin.y);
   };
 
   /**
@@ -854,14 +839,14 @@ import {
       throw new Error("Invalid arguments passed to jsPDF.context2d.lineTo");
     }
 
-    var pt = this.ctx.transform.applyToPoint(new Point(x, y));
+    var pt = this.ctx.transform.applyToPoint(new this.pdf.internal.Point(x, y));
 
     this.path.push({
       type: "lt",
       x: pt.x,
       y: pt.y
     });
-    this.ctx.lastPoint = new Point(pt.x, pt.y);
+    this.ctx.lastPoint = new this.pdf.internal.Point(pt.x, pt.y);
   };
 
   /**
@@ -898,8 +883,12 @@ import {
       );
     }
 
-    var pt0 = this.ctx.transform.applyToPoint(new Point(x, y));
-    var pt1 = this.ctx.transform.applyToPoint(new Point(cpx, cpy));
+    var pt0 = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(x, y)
+    );
+    var pt1 = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(cpx, cpy)
+    );
 
     this.path.push({
       type: "qct",
@@ -908,7 +897,7 @@ import {
       x: pt0.x,
       y: pt0.y
     });
-    this.ctx.lastPoint = new Point(pt0.x, pt0.y);
+    this.ctx.lastPoint = new this.pdf.internal.Point(pt0.x, pt0.y);
   };
 
   /**
@@ -941,9 +930,15 @@ import {
         "Invalid arguments passed to jsPDF.context2d.bezierCurveTo"
       );
     }
-    var pt0 = this.ctx.transform.applyToPoint(new Point(x, y));
-    var pt1 = this.ctx.transform.applyToPoint(new Point(cp1x, cp1y));
-    var pt2 = this.ctx.transform.applyToPoint(new Point(cp2x, cp2y));
+    var pt0 = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(x, y)
+    );
+    var pt1 = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(cp1x, cp1y)
+    );
+    var pt2 = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(cp2x, cp2y)
+    );
 
     this.path.push({
       type: "bct",
@@ -954,7 +949,7 @@ import {
       x: pt0.x,
       y: pt0.y
     });
-    this.ctx.lastPoint = new Point(pt0.x, pt0.y);
+    this.ctx.lastPoint = new this.pdf.internal.Point(pt0.x, pt0.y);
   };
 
   /**
@@ -991,12 +986,18 @@ import {
     counterclockwise = Boolean(counterclockwise);
 
     if (!this.ctx.transform.isIdentity) {
-      var xpt = this.ctx.transform.applyToPoint(new Point(x, y));
+      var xpt = this.ctx.transform.applyToPoint(
+        new this.pdf.internal.Point(x, y)
+      );
       x = xpt.x;
       y = xpt.y;
 
-      var x_radPt = this.ctx.transform.applyToPoint(new Point(0, radius));
-      var x_radPt0 = this.ctx.transform.applyToPoint(new Point(0, 0));
+      var x_radPt = this.ctx.transform.applyToPoint(
+        new this.pdf.internal.Point(0, radius)
+      );
+      var x_radPt0 = this.ctx.transform.applyToPoint(
+        new this.pdf.internal.Point(0, 0)
+      );
       radius = Math.sqrt(
         Math.pow(x_radPt.x - x_radPt0.x, 2) +
           Math.pow(x_radPt.y - x_radPt0.y, 2)
@@ -1171,7 +1172,7 @@ import {
 
     if (doStackPush) {
       this.ctx.fontSize = this.pdf.internal.getFontSize();
-      var ctx = new ContextLayer(this.ctx);
+      var ctx = new ContextLayer(this.pdf, this.ctx);
       this.ctxStack.push(this.ctx);
       this.ctx = ctx;
     }
@@ -1442,7 +1443,14 @@ import {
       console.error("jsPDF.context2d.scale: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.scale");
     }
-    var matrix = new Matrix(scalewidth, 0.0, 0.0, scaleheight, 0.0, 0.0);
+    var matrix = new this.pdf.internal.Matrix(
+      scalewidth,
+      0.0,
+      0.0,
+      scaleheight,
+      0.0,
+      0.0
+    );
     this.ctx.transform = this.ctx.transform.multiply(matrix);
   };
 
@@ -1460,7 +1468,7 @@ import {
       console.error("jsPDF.context2d.rotate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.rotate");
     }
-    var matrix = new Matrix(
+    var matrix = new this.pdf.internal.Matrix(
       Math.cos(angle),
       Math.sin(angle),
       -Math.sin(angle),
@@ -1485,7 +1493,7 @@ import {
       console.error("jsPDF.context2d.translate: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.translate");
     }
-    var matrix = new Matrix(1.0, 0.0, 0.0, 1.0, x, y);
+    var matrix = new this.pdf.internal.Matrix(1.0, 0.0, 0.0, 1.0, x, y);
     this.ctx.transform = this.ctx.transform.multiply(matrix);
   };
 
@@ -1507,7 +1515,7 @@ import {
       console.error("jsPDF.context2d.transform: Invalid arguments", arguments);
       throw new Error("Invalid arguments passed to jsPDF.context2d.transform");
     }
-    var matrix = new Matrix(a, b, c, d, e, f);
+    var matrix = new this.pdf.internal.Matrix(a, b, c, d, e, f);
     this.ctx.transform = this.ctx.transform.multiply(matrix);
   };
 
@@ -1531,7 +1539,7 @@ import {
     d = isNaN(d) ? 1 : d;
     e = isNaN(e) ? 0 : e;
     f = isNaN(f) ? 0 : f;
-    this.ctx.transform = new Matrix(a, b, c, d, e, f);
+    this.ctx.transform = new this.pdf.internal.Matrix(a, b, c, d, e, f);
   };
 
   /**
@@ -1641,12 +1649,12 @@ import {
 
     var decomposedTransformationMatrix = this.ctx.transform.decompose();
     var angle = rad2deg(decomposedTransformationMatrix.rotate.shx);
-    var matrix = new Matrix();
+    var matrix = new this.pdf.internal.Matrix();
     matrix = matrix.multiply(decomposedTransformationMatrix.translate);
     matrix = matrix.multiply(decomposedTransformationMatrix.skew);
     matrix = matrix.multiply(decomposedTransformationMatrix.scale);
     var xRect = matrix.applyToRectangle(
-      new Rectangle(
+      new this.pdf.internal.Rectangle(
         x - sx * clipFactorX,
         y - sy * clipFactorY,
         swidth * factorX,
@@ -1770,7 +1778,8 @@ import {
         );
         break;
       case "qct":
-        var rectOfQuadraticCurve = getQuadraticCurveBoundary(
+        var rectOfQuadraticCurve = getQuadraticCurveBoundary.call(
+          this,
           this.ctx.lastPoint.x,
           this.ctx.lastPoint.y,
           path.x1,
@@ -1789,7 +1798,8 @@ import {
         );
         break;
       case "bct":
-        var rectOfBezierCurve = getBezierCurveBoundary(
+        var rectOfBezierCurve = getBezierCurveBoundary.call(
+          this,
           this.ctx.lastPoint.x,
           this.ctx.lastPoint.y,
           path.x1,
@@ -2260,9 +2270,9 @@ import {
 
   var doMove = function(x, y) {
     this.pdf.internal.out(
-      getHorizontalCoordinateString(x) +
+      this.pdf.internal.getCoordinateString(x) +
         " " +
-        getVerticalCoordinateString(y) +
+        this.pdf.internal.getVerticalCoordinateString(y) +
         " m"
     );
   };
@@ -2289,22 +2299,34 @@ import {
     var yBottom = getTextBottom.call(this, yBaseLine);
     var yTop = yBottom - textDimensions.h;
 
-    var pt = this.ctx.transform.applyToPoint(new Point(options.x, yBaseLine));
+    var pt = this.ctx.transform.applyToPoint(
+      new this.pdf.internal.Point(options.x, yBaseLine)
+    );
 
     var clipPath, oldSize, oldLineWidth;
 
     if (this.autoPaging) {
       var decomposedTransformationMatrix = this.ctx.transform.decompose();
-      var matrix = new Matrix();
+      var matrix = new this.pdf.internal.Matrix();
       matrix = matrix.multiply(decomposedTransformationMatrix.translate);
       matrix = matrix.multiply(decomposedTransformationMatrix.skew);
       matrix = matrix.multiply(decomposedTransformationMatrix.scale);
 
       var baselineRect = this.ctx.transform.applyToRectangle(
-        new Rectangle(options.x, yBaseLine, textDimensions.w, textDimensions.h)
+        new this.pdf.internal.Rectangle(
+          options.x,
+          yBaseLine,
+          textDimensions.w,
+          textDimensions.h
+        )
       );
       var textBounds = matrix.applyToRectangle(
-        new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
+        new this.pdf.internal.Rectangle(
+          options.x,
+          yTop,
+          textDimensions.w,
+          textDimensions.h
+        )
       );
       var pageArray = getPagesByPath.call(this, textBounds);
       var pages = [];
@@ -2461,9 +2483,9 @@ import {
     prevY = prevY || 0;
 
     this.pdf.internal.out(
-      getHorizontalCoordinateString(x + prevX) +
+      this.pdf.internal.getCoordinateString(x + prevX) +
         " " +
-        getVerticalCoordinateString(y + prevY) +
+        this.pdf.internal.getVerticalCoordinateString(y + prevY) +
         " l"
     );
   };
@@ -2473,6 +2495,11 @@ import {
   };
 
   var drawCurve = function(x, y, x1, y1, x2, y2, x3, y3) {
+    const {
+      f2,
+      getHorizontalCoordinate,
+      getVerticalCoordinate
+    } = this.pdf.internal;
     this.pdf.internal.out(
       [
         f2(getHorizontalCoordinate(x1 + x)),
@@ -2578,7 +2605,7 @@ import {
     var resultX2 = Math.max(sx, ex, midX1, midX2);
     var resultY1 = Math.min(sy, ey, midY1, midY2);
     var resultY2 = Math.max(sy, ey, midY1, midY2);
-    return new Rectangle(
+    return new this.pdf.internal.Rectangle(
       resultX1,
       resultY1,
       resultX2 - resultX1,
@@ -2653,7 +2680,7 @@ import {
         maxy = Math.max(maxy, y);
       }
     }
-    return new Rectangle(
+    return new this.pdf.internal.Rectangle(
       Math.round(minx),
       Math.round(miny),
       Math.round(maxx - minx),
