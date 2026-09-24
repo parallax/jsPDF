@@ -1,31 +1,30 @@
+/** @license
+ * Copyright 2011 Google Inc.
+ *
+ * This code is licensed under the same terms as WebM:
+ *  Software License Agreement:  http://www.webmproject.org/license/software/
+ *  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
+ * -----------------------------------------------------------------------------
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright 2011-2017 Dominik Homberger
+ * Libwebp Javascript / libwebpjs - the libwebp implementation in javascript (v0.6.0)
+ *
+ * Author: Dominik Homberger (dominik.homberger@gmail.com)
+ */
 function WebPDecoder(imageData) {
-  /** @license
-   * Copyright 2011 Google Inc.
-   *
-   * This code is licensed under the same terms as WebM:
-   *  Software License Agreement:  http://www.webmproject.org/license/software/
-   *  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
-   * -----------------------------------------------------------------------------
-   *
-   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-   * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-   * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-   * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-   * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-   * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-   * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-   * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-   *
-   * -----------------------------------------------------------------------------
-   *
-   * Copyright 2011-2017 Dominik Homberger
-   * Libwebp Javascript / libwebpjs - the libwebp implementation in javascript (v0.6.0)
-   *
-   * Author: Dominik Homberger (dominik.homberger@gmail.com)
-   */
-
   var self = this;
   var UpsampleRgbLinePair,
     UpsampleBgrLinePair,
