@@ -439,25 +439,77 @@ import { atob } from "../libs/AtobBtoa.js";
     }
   };
 
+  // Orientations 5-8 store the samples with width and height swapped.
+  var orientedPixelSize = function(image) {
+    var orientation = image && image.orientation;
+    if (orientation >= 5 && orientation <= 8) {
+      return [image.height, image.width];
+    }
+    return [image.width, image.height];
+  };
+
   var determineWidthAndHeight = function(width, height, image) {
+    var pixelSize = orientedPixelSize(image);
+    var pixelWidth = pixelSize[0];
+    var pixelHeight = pixelSize[1];
     if (!width && !height) {
       width = -96;
       height = -96;
     }
     if (width < 0) {
-      width = (-1 * image.width * 72) / width / this.internal.scaleFactor;
+      width = (-1 * pixelWidth * 72) / width / this.internal.scaleFactor;
     }
     if (height < 0) {
-      height = (-1 * image.height * 72) / height / this.internal.scaleFactor;
+      height = (-1 * pixelHeight * 72) / height / this.internal.scaleFactor;
     }
     if (width === 0) {
-      width = (height * image.width) / image.height;
+      width = (height * pixelWidth) / pixelHeight;
     }
     if (height === 0) {
-      height = (width * image.height) / image.width;
+      height = (width * pixelHeight) / pixelWidth;
     }
 
     return [width, height];
+  };
+
+  // Map the unit-square image into the destination box for TIFF orientation 2-8.
+  // The box origin is already the lower-left corner in PDF space.
+  var exifPlacementMatrix = function(orientation, width, height, coord) {
+    var w = width;
+    var h = height;
+    var m;
+    switch (orientation) {
+      case 2:
+        m = [-w, 0, 0, h, w, 0];
+        break;
+      case 3:
+        m = [-w, 0, 0, -h, w, h];
+        break;
+      case 4:
+        m = [w, 0, 0, -h, 0, h];
+        break;
+      case 5:
+        m = [0, -h, -w, 0, w, h];
+        break;
+      case 6:
+        m = [0, -h, w, 0, 0, h];
+        break;
+      case 7:
+        m = [0, h, w, 0, 0, 0];
+        break;
+      case 8:
+        m = [0, h, -w, 0, w, 0];
+        break;
+      default:
+        m = [w, 0, 0, h, 0, 0];
+    }
+    var parts = [];
+    var i;
+    for (i = 0; i < m.length; i += 1) {
+      parts.push(coord(m[i]));
+    }
+    parts.push("cm");
+    return parts.join(" ");
   };
 
   var writeImageToPDF = function(x, y, width, height, image, rotation) {
@@ -470,6 +522,9 @@ import { atob } from "../libs/AtobBtoa.js";
     width = dims[0];
     height = dims[1];
     images[image.index] = image;
+
+    var orientation = image.orientation || 1;
+    var useExif = !rotation && orientation > 1 && orientation <= 8;
 
     if (rotation) {
       rotation *= Math.PI / 180;
@@ -498,6 +553,13 @@ import { atob } from "../libs/AtobBtoa.js";
       this.internal.write(
         [coord(width), "0", "0", coord(height), "0", "0", "cm"].join(" ")
       ); //Scale
+    } else if (useExif) {
+      this.internal.write(
+        [1, "0", "0", 1, coord(x), vcoord(y + height), "cm"].join(" ")
+      );
+      this.internal.write(
+        exifPlacementMatrix(orientation, width, height, coord)
+      );
     } else {
       this.internal.write(
         [
