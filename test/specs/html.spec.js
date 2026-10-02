@@ -380,6 +380,62 @@ describe("Module: html", () => {
     comparePdf(doc.output(), "html-margin-page-break-text.pdf", "html");
   });
 
+  it("page break with autoPaging: 'text' keeps lines in order and in place", async () => {
+    // html2canvas draws inline text (<span>, <em>, <strong>) after the block
+    // text of the whole document, so the lines are not drawn in order.
+    const id = i => `LINE${String(i).padStart(3, "0")}`;
+    let markup = `<p>${id(0)} this is a <em>basic</em> example of <strong>tiptap</strong></p>`;
+    for (let i = 1; i < 120; i++) {
+      const line = `${id(i)} lorem ipsum dolor sit amet`;
+      markup += i % 3 === 0 ? `<p><span>${line}</span></p>` : `<p>${line}</p>`;
+    }
+
+    const doc = jsPDF({ floatPrecision: 2, unit: "pt" });
+    await new Promise(resolve =>
+      doc.html(
+        `<div style="font-size: 12px; line-height: 16px">${markup}</div>`,
+        {
+          callback: resolve,
+          margin: [30, 20, 30, 20],
+          autoPaging: "text",
+          width: 500,
+          windowWidth: 500
+        }
+      )
+    );
+
+    const words = [];
+    for (let page = 1; page <= doc.getNumberOfPages(); page++) {
+      const content = doc.internal.pages[page].join("\n");
+      const regex = /([\d.-]+) Td\n\((\w+)/g;
+      let match;
+      while ((match = regex.exec(content)) !== null) {
+        words.push({ text: match[2], page, y: -parseFloat(match[1]) });
+      }
+    }
+    const lines = words
+      .filter(word => word.text.startsWith("LINE"))
+      .sort((a, b) => a.page - b.page || a.y - b.y);
+
+    expect(doc.getNumberOfPages()).toBeGreaterThan(2);
+    expect(lines.map(line => line.text)).toEqual(
+      Array.from({ length: 120 }, (_, i) => id(i))
+    );
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].page === lines[i - 1].page) {
+        expect(lines[i].y - lines[i - 1].y).toBeCloseTo(
+          lines[1].y - lines[0].y,
+          1
+        );
+      }
+    }
+    for (const text of ["basic", "tiptap"]) {
+      const word = words.find(word => word.text === text);
+      expect(word.page).toEqual(lines[0].page);
+      expect(word.y).toBeCloseTo(lines[0].y, 1);
+    }
+  });
+
   it("page break with autoPaging: 'slice'", async () => {
     const text = Array.from({ length: 200 })
       .map((_, i) => `ABC${i}`)

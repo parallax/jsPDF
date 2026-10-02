@@ -54,7 +54,6 @@ import {
     this.lineDashOffset = ctx.lineDashOffset || 0.0;
     this.lineDash = ctx.lineDash || [];
     this.margin = ctx.margin || [0, 0, 0, 0];
-    this.prevPageLastElemOffset = ctx.prevPageLastElemOffset || 0;
 
     this.ignoreClearRect =
       typeof ctx.ignoreClearRect === "boolean" ? ctx.ignoreClearRect : true;
@@ -221,6 +220,72 @@ import {
       },
       set: function(value) {
         _autoPaging = value;
+        this.autoPagingBreaks = [];
+      }
+    });
+
+    /**
+     * The y coordinates (relative to the canvas, plus posY) at which autoPaging 'text' starts a new page, so that
+     * the text line starting there is not cut in half. Sorted in ascending order.
+     * @private
+     * @ignore
+     */
+    this.autoPagingBreaks = [];
+
+    /**
+     * The text lines (y relative to the canvas and height) collected while measureOnly is true.
+     * @private
+     * @ignore
+     */
+    this.autoPagingTextLines = [];
+
+    var _measureOnly = false;
+    /**
+     * html2canvas does not draw in document order, so with autoPaging 'text' the page breaks have to be known
+     * before anything is drawn. While measureOnly is true, nothing is drawn and only the text lines are collected.
+     * Setting it back to false computes the page breaks from the collected text lines in document order.
+     * @private
+     * @ignore
+     */
+    Object.defineProperty(this, "measureOnly", {
+      get: function() {
+        return _measureOnly;
+      },
+      set: function(value) {
+        if (value === _measureOnly) {
+          return;
+        }
+        _measureOnly = value;
+        if (value) {
+          this.autoPagingTextLines = [];
+          this.autoPagingBreaks = [];
+          this.pdf.__private__.setCustomOutputDestination([]);
+        } else {
+          this.pdf.__private__.resetCustomOutputDestination();
+          this.pdf.setPage(this.pdf.internal.getCurrentPageInfo().pageNumber);
+          var textLines = this.autoPagingTextLines.sort(function(a, b) {
+            return a.y - b.y;
+          });
+          for (var i = 0; i < textLines.length; i++) {
+            addAutoPagingBreak.call(this, textLines[i].y, textLines[i].h);
+          }
+          // Add the pages for the text up front, so that backgrounds drawn before the text can be stretched onto them
+          var currentPage = this.pdf.internal.getCurrentPageInfo().pageNumber;
+          for (var j = 0; j < textLines.length; j++) {
+            getPagesByPath.call(
+              this,
+              {
+                type: "rect",
+                y: textLines[j].y,
+                h: textLines[j].h
+              },
+              undefined,
+              undefined,
+              textLines[j].y
+            );
+          }
+          this.pdf.setPage(currentPage);
+        }
       }
     });
 
@@ -1606,6 +1671,9 @@ import {
     width,
     height
   ) {
+    if (this.measureOnly) {
+      return;
+    }
     var imageProperties = this.pdf.getImageProperties(img);
     var factorX = 1;
     var factorY = 1;
@@ -1655,7 +1723,13 @@ import {
     );
 
     if (this.autoPaging) {
-      var pageArray = getPagesByPath.call(this, xRect);
+      var pageArray = getPagesByPath.call(
+        this,
+        xRect,
+        undefined,
+        undefined,
+        xRect.y
+      );
       var pages = [];
       for (var ii = 0; ii < pageArray.length; ii += 1) {
         if (pages.indexOf(pageArray[ii]) === -1) {
@@ -1673,33 +1747,27 @@ import {
 
         var pageWidthMinusMargins =
           this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
-        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
-        var firstPageHeight =
-          this.pdf.internal.pageSize.height -
-          this.posY -
-          this.margin[0] -
-          this.margin[2];
         var pageHeightMinusMargins =
           this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-        var previousPageHeightSum =
-          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-          this.path = pathPositionRedo(
+          this.path = pathPositionRedo.call(
+            this,
             clipPath,
             this.posX + this.margin[3],
-            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+            i
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
         }
         var tmpRect = JSON.parse(JSON.stringify(xRect));
-        tmpRect = pathPositionRedo(
+        tmpRect = pathPositionRedo.call(
+          this,
           [tmpRect],
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          i
         )[0];
 
         const needsClipping = (i > min || i < max) && hasMargins.call(this);
@@ -1747,26 +1815,39 @@ import {
     }
   };
 
-  var getPagesByPath = function(path, pageWrapX, pageWrapY) {
+  var getPagesByPath = function(path, pageWrapX, pageWrapY, regionY) {
     var result = [];
     pageWrapX = pageWrapX || this.pdf.internal.pageSize.width;
     pageWrapY =
       pageWrapY ||
       this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-    var yOffset = this.posY + this.ctx.prevPageLastElemOffset;
+    var yOffset = this.posY;
+    regionY = typeof regionY === "number" ? regionY + yOffset : undefined;
 
     switch (path.type) {
       default:
       case "mt":
       case "lt":
-        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
+        result.push(
+          getAutoPagingPage.call(this, path.y + yOffset, pageWrapY, regionY)
+        );
         break;
       case "arc":
         result.push(
-          Math.floor((path.y + yOffset - path.radius) / pageWrapY) + 1
+          getAutoPagingPage.call(
+            this,
+            path.y + yOffset - path.radius,
+            pageWrapY,
+            regionY
+          )
         );
         result.push(
-          Math.floor((path.y + yOffset + path.radius) / pageWrapY) + 1
+          getAutoPagingPage.call(
+            this,
+            path.y + yOffset + path.radius,
+            pageWrapY,
+            regionY
+          )
         );
         break;
       case "qct":
@@ -1779,13 +1860,20 @@ import {
           path.y
         );
         result.push(
-          Math.floor((rectOfQuadraticCurve.y + yOffset) / pageWrapY) + 1
+          getAutoPagingPage.call(
+            this,
+            rectOfQuadraticCurve.y + yOffset,
+            pageWrapY,
+            regionY
+          )
         );
         result.push(
-          Math.floor(
-            (rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset) /
-              pageWrapY
-          ) + 1
+          getAutoPagingPage.call(
+            this,
+            rectOfQuadraticCurve.y + rectOfQuadraticCurve.h + yOffset,
+            pageWrapY,
+            regionY
+          )
         );
         break;
       case "bct":
@@ -1800,17 +1888,34 @@ import {
           path.y
         );
         result.push(
-          Math.floor((rectOfBezierCurve.y + yOffset) / pageWrapY) + 1
+          getAutoPagingPage.call(
+            this,
+            rectOfBezierCurve.y + yOffset,
+            pageWrapY,
+            regionY
+          )
         );
         result.push(
-          Math.floor(
-            (rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset) / pageWrapY
-          ) + 1
+          getAutoPagingPage.call(
+            this,
+            rectOfBezierCurve.y + rectOfBezierCurve.h + yOffset,
+            pageWrapY,
+            regionY
+          )
         );
         break;
       case "rect":
-        result.push(Math.floor((path.y + yOffset) / pageWrapY) + 1);
-        result.push(Math.floor((path.y + path.h + yOffset) / pageWrapY) + 1);
+        result.push(
+          getAutoPagingPage.call(this, path.y + yOffset, pageWrapY, regionY)
+        );
+        result.push(
+          getAutoPagingPage.call(
+            this,
+            path.y + path.h + yOffset,
+            pageWrapY,
+            regionY
+          )
+        );
     }
 
     for (var i = 0; i < result.length; i += 1) {
@@ -1837,21 +1942,116 @@ import {
     this.lineJoin = lineJoin;
   };
 
-  var pathPositionRedo = function(paths, x, y) {
+  /**
+   * Returns the start (relative to the canvas, plus posY) and the page of the part of the canvas that contains y
+   * (relative to the canvas, plus posY), or null if no page break of autoPaging 'text' lies above y.
+   */
+  var getAutoPagingRegion = function(y) {
+    var pageHeightMinusMargins =
+      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+    var breaks = this.autoPagingBreaks;
+    var region = null;
+    for (var i = 0; i < breaks.length && breaks[i] <= y; i++) {
+      var page =
+        region === null
+          ? Math.floor(breaks[i] / pageHeightMinusMargins) + 1
+          : region.page +
+            Math.floor((breaks[i] - region.y) / pageHeightMinusMargins);
+      region = { y: breaks[i], page: page + 1 };
+    }
+    return region;
+  };
+
+  /**
+   * Returns the page that y (relative to the canvas, plus posY) is drawn on. If regionY is given, y is moved together
+   * with regionY.
+   */
+  var getAutoPagingPage = function(y, pageWrapY, regionY) {
+    var region = getAutoPagingRegion.call(
+      this,
+      typeof regionY === "number" ? regionY : y
+    );
+    if (region === null) {
+      return Math.floor(y / pageWrapY) + 1;
+    }
+    return region.page + Math.floor((y - region.y) / pageWrapY);
+  };
+
+  /**
+   * Returns the y coordinate on the given page for y (relative to the canvas). If regionY is given, y is moved
+   * together with regionY, so that an element is not torn apart by a page break of autoPaging 'text'.
+   */
+  var getYOnPage = function(page, y, regionY) {
+    var topMargin = page === 1 ? this.posY + this.margin[0] : this.margin[0];
+    var firstPageHeight =
+      this.pdf.internal.pageSize.height -
+      this.posY -
+      this.margin[0] -
+      this.margin[2];
+    var pageHeightMinusMargins =
+      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+    var previousPageHeightSum =
+      page === 1 ? 0 : firstPageHeight + (page - 2) * pageHeightMinusMargins;
+    var region = getAutoPagingRegion.call(
+      this,
+      (typeof regionY === "number" ? regionY : y) + this.posY
+    );
+    if (region === null) {
+      return y + (-previousPageHeightSum + topMargin);
+    }
+    return (
+      y +
+      this.posY -
+      region.y +
+      (region.page - page) * pageHeightMinusMargins +
+      this.margin[0]
+    );
+  };
+
+  /**
+   * With autoPaging 'text', starts a new page at the text line with the given y (relative to the canvas) and
+   * height, if the line would otherwise be cut by the bottom margin. Everything below the line moves down with it.
+   */
+  var addAutoPagingBreak = function(y, h) {
+    var pageHeightMinusMargins =
+      this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
+    var pageHeightMinusBottomMargin =
+      this.pdf.internal.pageSize.height - this.margin[2];
+    var page = getAutoPagingPage.call(
+      this,
+      y + this.posY,
+      pageHeightMinusMargins
+    );
+    var topMargin = page === 1 ? this.posY + this.margin[0] : this.margin[0];
+    var yOnPage = getYOnPage.call(this, page, y);
+
+    if (yOnPage + h > pageHeightMinusBottomMargin && yOnPage > topMargin) {
+      var breaks = this.autoPagingBreaks;
+      var index = 0;
+      while (index < breaks.length && breaks[index] < y + this.posY) {
+        index++;
+      }
+      if (breaks[index] !== y + this.posY) {
+        breaks.splice(index, 0, y + this.posY);
+      }
+    }
+  };
+
+  var pathPositionRedo = function(paths, x, page, regionY) {
     for (var i = 0; i < paths.length; i++) {
       switch (paths[i].type) {
         case "bct":
           paths[i].x2 += x;
-          paths[i].y2 += y;
+          paths[i].y2 = getYOnPage.call(this, page, paths[i].y2, regionY);
         case "qct":
           paths[i].x1 += x;
-          paths[i].y1 += y;
+          paths[i].y1 = getYOnPage.call(this, page, paths[i].y1, regionY);
         case "mt":
         case "lt":
         case "arc":
         default:
           paths[i].x += x;
-          paths[i].y += y;
+          paths[i].y = getYOnPage.call(this, page, paths[i].y, regionY);
       }
     }
     return paths;
@@ -1871,6 +2071,10 @@ import {
     var lineWidth = Math.abs(oldLineWidth * this.ctx.transform.scaleX);
     var lineJoin = this.lineJoin;
 
+    if (this.measureOnly) {
+      return;
+    }
+
     if (this.autoPaging) {
       var origPath = JSON.parse(JSON.stringify(this.path));
       var xPath = JSON.parse(JSON.stringify(this.path));
@@ -1878,9 +2082,42 @@ import {
       var tmpPath;
       var pages = [];
 
+      // A path that crosses a page break of autoPaging 'text' is stretched. It is drawn on all existing pages it
+      // reaches, but it only adds the pages it would need if it was moved together with its top, so that the
+      // stretching doesn't add empty pages.
+      var top;
+      var bottom;
+      for (var n = 0; n < xPath.length; n++) {
+        if (typeof xPath[n].y !== "undefined") {
+          var ys = [
+            xPath[n].y - (xPath[n].radius || 0),
+            xPath[n].y + (xPath[n].radius || 0)
+          ];
+          if (typeof xPath[n].y1 === "number") {
+            ys.push(xPath[n].y1);
+          }
+          if (typeof xPath[n].y2 === "number") {
+            ys.push(xPath[n].y2);
+          }
+          var pointTop = Math.min.apply(null, ys);
+          var pointBottom = Math.max.apply(null, ys);
+          top = typeof top === "number" ? Math.min(top, pointTop) : pointTop;
+          bottom =
+            typeof bottom === "number"
+              ? Math.max(bottom, pointBottom)
+              : pointBottom;
+        }
+      }
+
       for (var i = 0; i < xPath.length; i++) {
         if (typeof xPath[i].x !== "undefined") {
-          var page = getPagesByPath.call(this, xPath[i]);
+          var page = getPagesByPath.call(
+            this,
+            xPath[i],
+            undefined,
+            undefined,
+            top
+          );
 
           for (var ii = 0; ii < page.length; ii += 1) {
             if (pages.indexOf(page[ii]) === -1) {
@@ -1898,7 +2135,17 @@ import {
       sortPages(pages);
 
       var min = pages[0];
-      var max = pages[pages.length - 1];
+      var max = Math.max(
+        pages[pages.length - 1],
+        Math.min(
+          getAutoPagingPage.call(
+            this,
+            bottom + this.posY,
+            this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2]
+          ),
+          this.pdf.internal.getNumberOfPages()
+        )
+      );
       for (var k = min; k < max + 1; k++) {
         this.pdf.setPage(k);
 
@@ -1910,33 +2157,27 @@ import {
 
         var pageWidthMinusMargins =
           this.pdf.internal.pageSize.width - this.margin[3] - this.margin[1];
-        var topMargin = k === 1 ? this.posY + this.margin[0] : this.margin[0];
-        var firstPageHeight =
-          this.pdf.internal.pageSize.height -
-          this.posY -
-          this.margin[0] -
-          this.margin[2];
         var pageHeightMinusMargins =
           this.pdf.internal.pageSize.height - this.margin[0] - this.margin[2];
-        var previousPageHeightSum =
-          k === 1 ? 0 : firstPageHeight + (k - 2) * pageHeightMinusMargins;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-          this.path = pathPositionRedo(
+          this.path = pathPositionRedo.call(
+            this,
             clipPath,
             this.posX + this.margin[3],
-            -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+            k
           );
           drawPaths.call(this, rule, true);
           this.path = tmpPaths;
         }
         tmpPath = JSON.parse(JSON.stringify(origPath));
-        this.path = pathPositionRedo(
+        this.path = pathPositionRedo.call(
+          this,
           tmpPath,
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          k
         );
         if (isClip === false || k === 0) {
           const needsClipping = (k > min || k < max) && hasMargins.call(this);
@@ -2306,7 +2547,22 @@ import {
       var textBounds = matrix.applyToRectangle(
         new Rectangle(options.x, yTop, textDimensions.w, textDimensions.h)
       );
-      var pageArray = getPagesByPath.call(this, textBounds);
+
+      if (this.autoPaging === "text") {
+        if (this.measureOnly) {
+          this.autoPagingTextLines.push({ y: textBounds.y, h: textBounds.h });
+          return;
+        }
+        addAutoPagingBreak.call(this, textBounds.y, textBounds.h);
+      }
+
+      var pageArray = getPagesByPath.call(
+        this,
+        textBounds,
+        undefined,
+        undefined,
+        textBounds.y
+      );
       var pages = [];
       for (var ii = 0; ii < pageArray.length; ii += 1) {
         if (pages.indexOf(pageArray[ii]) === -1) {
@@ -2321,12 +2577,6 @@ import {
       for (var i = min; i < max + 1; i++) {
         this.pdf.setPage(i);
 
-        var topMargin = i === 1 ? this.posY + this.margin[0] : this.margin[0];
-        var firstPageHeight =
-          this.pdf.internal.pageSize.height -
-          this.posY -
-          this.margin[0] -
-          this.margin[2];
         var pageHeightMinusBottomMargin =
           this.pdf.internal.pageSize.height - this.margin[2];
         var pageHeightMinusMargins =
@@ -2334,24 +2584,24 @@ import {
         var pageWidthMinusRightMargin =
           this.pdf.internal.pageSize.width - this.margin[1];
         var pageWidthMinusMargins = pageWidthMinusRightMargin - this.margin[3];
-        var previousPageHeightSum =
-          i === 1 ? 0 : firstPageHeight + (i - 2) * pageHeightMinusMargins;
 
         if (this.ctx.clip_path.length !== 0) {
           var tmpPaths = this.path;
           clipPath = JSON.parse(JSON.stringify(this.ctx.clip_path));
-          this.path = pathPositionRedo(
+          this.path = pathPositionRedo.call(
+            this,
             clipPath,
             this.posX + this.margin[3],
-            -1 * previousPageHeightSum + topMargin
+            i
           );
           drawPaths.call(this, "fill", true);
           this.path = tmpPaths;
         }
-        var textBoundsOnPage = pathPositionRedo(
+        var textBoundsOnPage = pathPositionRedo.call(
+          this,
           [JSON.parse(JSON.stringify(textBounds))],
           this.posX + this.margin[3],
-          -previousPageHeightSum + topMargin + this.ctx.prevPageLastElemOffset
+          i
         )[0];
 
         if (options.scale >= 0.01) {
@@ -2369,7 +2619,8 @@ import {
         ) {
           if (
             doSlice ||
-            (textBoundsOnPage.y >= topMargin &&
+            (i === min &&
+              (i > 1 || textBoundsOnPage.y >= this.posY + this.margin[0]) &&
               textBoundsOnPage.x <= pageWidthMinusRightMargin)
           ) {
             var croppedText = doSlice
@@ -2379,12 +2630,12 @@ import {
                   options.maxWidth ||
                     pageWidthMinusRightMargin - textBoundsOnPage.x
                 )[0];
-            var baseLineRectOnPage = pathPositionRedo(
+            var baseLineRectOnPage = pathPositionRedo.call(
+              this,
               [JSON.parse(JSON.stringify(baselineRect))],
               this.posX + this.margin[3],
-              -previousPageHeightSum +
-                topMargin +
-                this.ctx.prevPageLastElemOffset
+              i,
+              textBounds.y
             )[0];
 
             const needsClipping =
@@ -2418,15 +2669,6 @@ import {
             if (needsClipping) {
               this.pdf.restoreGraphicsState();
             }
-          }
-        } else {
-          // This text is the last element of the page, but it got cut off due to the margin
-          // so we render it in the next page
-
-          if (textBoundsOnPage.y < pageHeightMinusBottomMargin) {
-            // As a result, all other elements have their y offset increased
-            this.ctx.prevPageLastElemOffset +=
-              pageHeightMinusBottomMargin - textBoundsOnPage.y;
           }
         }
 
