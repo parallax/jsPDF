@@ -494,8 +494,30 @@ import { globalObject } from "../libs/globalObject.js";
               )
             : options.windowHeight;
 
-        pdf.context2d.save(true);
-        return html2canvas(this.prop.container, options);
+        var container = this.prop.container;
+        var render = function() {
+          pdf.context2d.save(true);
+          return html2canvas(container, options);
+        };
+
+        if (pdf.context2d.autoPaging !== "text") {
+          return render();
+        }
+
+        // html2canvas does not draw in document order, so the page breaks that keep text lines whole are computed
+        // in a first pass that only measures the text lines.
+        pdf.context2d.measureOnly = true;
+        return render().then(
+          function() {
+            pdf.context2d.restore(true);
+            pdf.context2d.measureOnly = false;
+            return render();
+          },
+          function(error) {
+            pdf.context2d.measureOnly = false;
+            throw error;
+          }
+        );
       })
       .then(function toContext2d_post(canvas) {
         this.opt.jsPDF.context2d.restore(true);
