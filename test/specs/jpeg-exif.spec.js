@@ -1,4 +1,4 @@
-/* global describe, it, jsPDF, expect */
+/* global describe, it, jsPDF, expect, loadBinaryResource */
 
 describe("Module: JPEG EXIF orientation", function() {
   function u16be(value) {
@@ -59,6 +59,18 @@ describe("Module: JPEG EXIF orientation", function() {
       format: "a4",
       floatPrecision: 2
     });
+  }
+
+  function validJpegWithOrientation(orientation, littleEndian) {
+    var binary = loadBinaryResource("reference/jpeg-exif-corners.jpg", true);
+    if (orientation == null) {
+      return binary;
+    }
+    return (
+      binary.slice(0, 2) +
+      exifApp1(orientation, littleEndian !== false) +
+      binary.slice(2)
+    );
   }
 
   function placementLines(pdf) {
@@ -233,6 +245,99 @@ describe("Module: JPEG EXIF orientation", function() {
     );
   });
 
+  [
+    { name: "automatic dimensions", width: undefined, height: undefined },
+    { name: "96 DPI dimensions", width: -96, height: -96 },
+    { name: "derived height", width: 20, height: 0 },
+    { name: "derived width", width: 0, height: 20 }
+  ].forEach(function(size) {
+    it(
+      "keeps raw pixel dimensions with explicit rotation and " + size.name,
+      function() {
+        [90, 270, -90, 45, 450].forEach(function(rotation) {
+          for (var orientation = 1; orientation <= 8; orientation += 1) {
+            var plain = newDoc();
+            var tagged = newDoc();
+            [plain, tagged].forEach(function(doc, index) {
+              doc.addImage(
+                validJpegWithOrientation(index === 0 ? null : orientation),
+                "JPEG",
+                10,
+                20,
+                size.width,
+                size.height,
+                undefined,
+                undefined,
+                rotation
+              );
+            });
+            expect(placementLines(tagged.output())).toEqual(
+              placementLines(plain.output())
+            );
+          }
+        });
+      }
+    );
+  });
+
+  it("keeps zero rotation equivalent to omitted rotation with automatic size", function() {
+    var omitted = newDoc();
+    var zero = newDoc();
+    omitted.addImage(validJpegWithOrientation(6), "JPEG", 10, 20);
+    zero.addImage(
+      validJpegWithOrientation(6),
+      "JPEG",
+      10,
+      20,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      0
+    );
+    expect(placementLines(zero.output())).toEqual(
+      placementLines(omitted.output())
+    );
+    expect(cmNumbers(placementLines(zero.output())[1])).toEqual(
+      expectedExifMatrix(6, 7.5, 15)
+    );
+  });
+
+  [
+    { name: "BYTE type", type: 1, count: 1 },
+    { name: "LONG type", type: 4, count: 1 },
+    { name: "zero count", type: 3, count: 0 },
+    { name: "multiple values", type: 3, count: 2 }
+  ].forEach(function(tag) {
+    it("ignores malformed orientation with " + tag.name, function() {
+      [true, false].forEach(function(little) {
+        var segment = exifApp1(6, little);
+        var typeBytes = little
+          ? String.fromCharCode(tag.type, 0)
+          : String.fromCharCode(0, tag.type);
+        var countBytes = little
+          ? String.fromCharCode(tag.count, 0, 0, 0)
+          : String.fromCharCode(0, 0, 0, tag.count);
+        // APP1 header + Exif identifier + TIFF header + IFD entry count.
+        var entry = 4 + 6 + 8 + 2;
+        segment =
+          segment.slice(0, entry + 2) +
+          typeBytes +
+          countBytes +
+          segment.slice(entry + 8);
+        var binary = validJpegWithOrientation(null);
+        var malformed = binary.slice(0, 2) + segment + binary.slice(2);
+        var doc = newDoc();
+        var plain = newDoc();
+        doc.addImage(malformed, "JPEG", 10, 20, 30, 40);
+        plain.addImage(binary, "JPEG", 10, 20, 30, 40);
+        expect(placementLines(doc.output())).toEqual(
+          placementLines(plain.output())
+        );
+      });
+    });
+  });
+
   it("ignores an orientation value outside 1-8", function() {
     var plain = newDoc();
     var invalid = newDoc();
@@ -242,5 +347,47 @@ describe("Module: JPEG EXIF orientation", function() {
     expect(placementLines(invalid.output())).toEqual(
       placementLines(plain.output())
     );
+  });
+
+  it("keeps every EXIF orientation inside the caller rectangle in advanced mode", function() {
+    for (var orientation = 1; orientation <= 8; orientation += 1) {
+      var doc = newDoc();
+      doc.advancedAPI();
+      doc.addImage(
+        validJpegWithOrientation(orientation),
+        "JPEG",
+        10,
+        20,
+        30,
+        40
+      );
+      var matrices = placementLines(doc.output()).map(cmNumbers);
+      var points = [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [1, 1]
+      ].map(function(point) {
+        return matrices
+          .slice()
+          .reverse()
+          .reduce(function(p, m) {
+            return [
+              m[0] * p[0] + m[2] * p[1] + m[4],
+              m[1] * p[0] + m[3] * p[1] + m[5]
+            ];
+          }, point);
+      });
+      var xs = points.map(function(point) {
+        return point[0];
+      });
+      var ys = points.map(function(point) {
+        return point[1];
+      });
+      expect(Math.min.apply(null, xs)).toBe(10);
+      expect(Math.max.apply(null, xs)).toBe(40);
+      expect(Math.min.apply(null, ys)).toBe(20);
+      expect(Math.max.apply(null, ys)).toBe(60);
+    }
   });
 });

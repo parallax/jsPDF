@@ -108,6 +108,13 @@ import { jsPDF } from "../jspdf.js";
       if (readU16(data, entry, little) !== 0x0112) {
         continue;
       }
+      // Exif Orientation is one inline SHORT (CIPA DC-008, section 4.6.4).
+      if (
+        readU16(data, entry + 2, little) !== 3 ||
+        readU32(data, entry + 4, little) !== 1
+      ) {
+        return 0;
+      }
       var value = readU16(data, entry + 8, little);
       return value >= 1 && value <= 8 ? value : 0;
     }

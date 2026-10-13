@@ -448,8 +448,10 @@ import { atob } from "../libs/AtobBtoa.js";
     return [image.width, image.height];
   };
 
-  var determineWidthAndHeight = function(width, height, image) {
-    var pixelSize = orientedPixelSize(image);
+  var determineWidthAndHeight = function(width, height, image, rotation) {
+    var pixelSize = rotation
+      ? [image.width, image.height]
+      : orientedPixelSize(image);
     var pixelWidth = pixelSize[0];
     var pixelHeight = pixelSize[1];
     if (!width && !height) {
@@ -474,7 +476,13 @@ import { atob } from "../libs/AtobBtoa.js";
 
   // Map the unit-square image into the destination box for TIFF orientation 2-8.
   // The box origin is already the lower-left corner in PDF space.
-  var exifPlacementMatrix = function(orientation, width, height, coord) {
+  var exifPlacementMatrix = function(
+    orientation,
+    width,
+    height,
+    coord,
+    advanced
+  ) {
     var w = width;
     var h = height;
     var m;
@@ -503,6 +511,12 @@ import { atob } from "../libs/AtobBtoa.js";
       default:
         m = [w, 0, 0, h, 0, 0];
     }
+    if (advanced) {
+      // Conjugate by the Y reflection used for image painting in advanced mode.
+      m[1] = -m[1];
+      m[2] = -m[2];
+      m[5] = -m[5];
+    }
     var parts = [];
     var i;
     for (i = 0; i < m.length; i += 1) {
@@ -513,7 +527,13 @@ import { atob } from "../libs/AtobBtoa.js";
   };
 
   var writeImageToPDF = function(x, y, width, height, image, rotation) {
-    var dims = determineWidthAndHeight.call(this, width, height, image),
+    var dims = determineWidthAndHeight.call(
+        this,
+        width,
+        height,
+        image,
+        rotation
+      ),
       coord = this.internal.getCoordinateString,
       vcoord = this.internal.getVerticalCoordinateString;
 
@@ -558,7 +578,13 @@ import { atob } from "../libs/AtobBtoa.js";
         [1, "0", "0", 1, coord(x), vcoord(y + height), "cm"].join(" ")
       );
       this.internal.write(
-        exifPlacementMatrix(orientation, width, height, coord)
+        exifPlacementMatrix(
+          orientation,
+          width,
+          height,
+          coord,
+          this.isAdvancedAPI()
+        )
       );
     } else {
       this.internal.write(
