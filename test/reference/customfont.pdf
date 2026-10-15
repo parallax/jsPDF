@@ -201,11 +201,11 @@ endobj
 23 0 obj
 <<
 /Type /FontDescriptor
-/FontName /PTSans
+/FontName /DNLBJD+PTSans-Regular
 /FontFile2 21 0 R
 /FontBBox [-355 -245 1093 993]
 /Flags 32
-/StemV 0
+/StemV 88
 /ItalicAngle 0
 /Ascent 1018
 /Descent -276
@@ -215,7 +215,7 @@ endobj
 24 0 obj
 <<
 /Type /Font
-/BaseFont /PTSans
+/BaseFont /DNLBJD+PTSans-Regular
 /FontDescriptor 23 0 R
 /W [51 [559] 68 [496] 74 [537] 72 [508] 3 [267] 20 [545] 82 [536] 73 [319] 94 [346] 87 [339] 79 [292] 86 [421] 96 [346] 21 [545]]
 /CIDToGIDMap /Identity
@@ -225,7 +225,7 @@ endobj
 <<
 /Supplement 0
 /Registry (Adobe)
-/Ordering (Identity-H)
+/Ordering (Identity)
 >>
 >>
 endobj
@@ -234,7 +234,7 @@ endobj
 /Type /Font
 /Subtype /Type0
 /ToUnicode 22 0 R
-/BaseFont /PTSans
+/BaseFont /DNLBJD+PTSans-Regular
 /Encoding /Identity-H
 /DescendantFonts [24 0 R]
 >>
@@ -281,7 +281,7 @@ xref
 0 28
 0000000000 65535 f 
 0000000805 00000 n 
-0000080582 00000 n 
+0000080626 00000 n 
 0000000015 00000 n 
 0000000124 00000 n 
 0000000410 00000 n 
@@ -303,10 +303,10 @@ xref
 0000002630 00000 n 
 0000078812 00000 n 
 0000079925 00000 n 
-0000080112 00000 n 
-0000080448 00000 n 
-0000080844 00000 n 
-0000080930 00000 n 
+0000080128 00000 n 
+0000080477 00000 n 
+0000080888 00000 n 
+0000080974 00000 n 
 trailer
 <<
 /Size 28
@@ -315,5 +315,5 @@ trailer
 /ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]
 >>
 startxref
-81034
+81078
 %%EOF

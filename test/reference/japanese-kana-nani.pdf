@@ -184,11 +184,11 @@ endobj
 21 0 obj
 <<
 /Type /FontDescriptor
-/FontName /Mouhitsu
+/FontName /JPATCC+mouhitu
 /FontFile2 19 0 R
 /FontBBox [14 -120 995 842]
 /Flags 32
-/StemV 0
+/StemV 88
 /ItalicAngle 0
 /Ascent 859
 /Descent -141
@@ -198,7 +198,7 @@ endobj
 22 0 obj
 <<
 /Type /Font
-/BaseFont /Mouhitsu
+/BaseFont /JPATCC+mouhitu
 /FontDescriptor 21 0 R
 /W [2021 [1000] 2022 [1000]]
 /CIDToGIDMap /Identity
@@ -208,7 +208,7 @@ endobj
 <<
 /Supplement 0
 /Registry (Adobe)
-/Ordering (Identity-H)
+/Ordering (Identity)
 >>
 >>
 endobj
@@ -217,7 +217,7 @@ endobj
 /Type /Font
 /Subtype /Type0
 /ToUnicode 20 0 R
-/BaseFont /Mouhitsu
+/BaseFont /JPATCC+mouhitu
 /Encoding /Identity-H
 /DescendantFonts [22 0 R]
 >>
@@ -264,7 +264,7 @@ xref
 0 26
 0000000000 65535 f 
 0000000334 00000 n 
-0000349475 00000 n 
+0000349492 00000 n 
 0000000015 00000 n 
 0000000124 00000 n 
 0000000391 00000 n 
@@ -284,10 +284,10 @@ xref
 0000002151 00000 n 
 0000348119 00000 n 
 0000348917 00000 n 
-0000349102 00000 n 
-0000349339 00000 n 
-0000349735 00000 n 
-0000349821 00000 n 
+0000349109 00000 n 
+0000349350 00000 n 
+0000349752 00000 n 
+0000349838 00000 n 
 trailer
 <<
 /Size 26
@@ -296,5 +296,5 @@ trailer
 /ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]
 >>
 startxref
-349925
+349942
 %%EOF

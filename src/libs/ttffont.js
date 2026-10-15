@@ -72,7 +72,7 @@ jsPDF.API.TTFFont = (function() {
   /* comment : Get the value to assign pdf font descriptors.     */
   /***************************************************************/
   TTFFont.prototype.registerTTF = function() {
-    var e, hi, low, raw, _ref;
+    var e, raw, _ref;
     this.scaleFactor = 1000.0 / this.head.unitsPerEm;
     this.bbox = function() {
       var _i, _len, _ref, _results;
@@ -84,22 +84,26 @@ jsPDF.API.TTFFont = (function() {
       }
       return _results;
     }.call(this);
-    this.stemV = 0;
+    // TrueType fonts carry no stem width. Estimate it from the OS/2 weight
+    // class (the heuristic PDFBox uses: 400 -> 88, 700 -> 166) rather than
+    // writing 0.
+    var weightClass = (this.os2.exists && this.os2.weightClass) || 400;
+    this.stemV = Math.round(50 + Math.pow(weightClass / 65, 2));
     if (this.post.exists) {
-      raw = this.post.italic_angle;
-      hi = raw >> 16;
-      low = raw & 0xff;
-      if ((hi & 0x8000) !== 0) {
-        hi = -((hi ^ 0xffff) + 1);
-      }
-      this.italicAngle = +("" + hi + "." + low);
+      // post.italicAngle is a signed 16.16 fixed-point number.
+      raw = this.post.italicAngle;
+      this.italicAngle = Math.round((raw / 65536) * 100) / 100;
     } else {
       this.italicAngle = 0;
     }
     this.ascender = Math.round(this.ascender * this.scaleFactor);
     this.decender = Math.round(this.decender * this.scaleFactor);
     this.lineGap = Math.round(this.lineGap * this.scaleFactor);
-    this.capHeight = (this.os2.exists && this.os2.capHeight) || this.ascender;
+    // OS/2 capHeight is in font units, like the ascender and descender.
+    this.capHeight =
+      this.os2.exists && this.os2.capHeight
+        ? Math.round(this.os2.capHeight * this.scaleFactor)
+        : this.ascender;
     this.xHeight = (this.os2.exists && this.os2.xHeight) || 0;
     this.familyClass = ((this.os2.exists && this.os2.familyClass) || 0) >> 8;
     this.isSerif =
