@@ -46,11 +46,11 @@ endobj
 7 0 obj
 <<
 /Type /FontDescriptor
-/FontName /PTSans
+/FontName /SYYQBP+PTSans-Regular
 /FontFile2 5 0 R
 /FontBBox [-355 -245 1093 993]
 /Flags 32
-/StemV 0
+/StemV 88
 /ItalicAngle 0
 /Ascent 1018
 /Descent -276
@@ -60,7 +60,7 @@ endobj
 8 0 obj
 <<
 /Type /Font
-/BaseFont /PTSans
+/BaseFont /SYYQBP+PTSans-Regular
 /FontDescriptor 7 0 R
 /W [329 [585] 3 [267] 374 [540] 380 [466] 384 [490] 369 [546] 371 [478] 362 [536] 377 [541] 363 [499] 365 [541] 361 [496] 373 [645] 4 [305]]
 /CIDToGIDMap /Identity
@@ -70,7 +70,7 @@ endobj
 <<
 /Supplement 0
 /Registry (Adobe)
-/Ordering (Identity-H)
+/Ordering (Identity)
 >>
 >>
 endobj
@@ -79,7 +79,7 @@ endobj
 /Type /Font
 /Subtype /Type0
 /ToUnicode 6 0 R
-/BaseFont /PTSans
+/BaseFont /SYYQBP+PTSans-Regular
 /Encoding /Identity-H
 /DescendantFonts [8 0 R]
 >>
@@ -112,16 +112,16 @@ xref
 0 12
 0000000000 65535 f 
 0000000540 00000 n 
-0000084287 00000 n 
+0000084331 00000 n 
 0000000015 00000 n 
 0000000124 00000 n 
 0000000597 00000 n 
 0000082514 00000 n 
 0000083626 00000 n 
-0000083811 00000 n 
-0000084156 00000 n 
-0000084392 00000 n 
-0000084478 00000 n 
+0000083827 00000 n 
+0000084185 00000 n 
+0000084436 00000 n 
+0000084522 00000 n 
 trailer
 <<
 /Size 12
@@ -130,5 +130,5 @@ trailer
 /ID [ <00000000000000000000000000000000> <00000000000000000000000000000000> ]
 >>
 startxref
-84582
+84626
 %%EOF

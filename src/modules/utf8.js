@@ -82,6 +82,32 @@ import { toPDFName } from "../libs/pdfname.js";
     return unicodeMap;
   };
 
+  // An embedded font is named by its own PostScript name, not the addFont()
+  // alias, which the regular, bold and italic faces of a family share. A
+  // subset also gets the six-letter tag the PDF spec requires (ISO 32000-1,
+  // 9.6.4), derived from the font and the glyphs it carries, so two different
+  // subsets never share a name. Printers that cache fonts by name rely on it.
+  var embeddedFontName = function(font, glyphIds) {
+    var name =
+      (font.metadata.name && font.metadata.name.postscriptName) ||
+      font.fontName;
+    if (!glyphIds) {
+      return name;
+    }
+    var key = name + "|" + font.id + "|" + glyphIds.join(",");
+    var hash = 0x811c9dc5;
+    for (var i = 0; i < key.length; i++) {
+      hash ^= key.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    var tag = "";
+    for (var j = 0; j < 6; j++) {
+      tag += String.fromCharCode(65 + (hash % 26));
+      hash = Math.floor(hash / 26);
+    }
+    return tag + "+" + name;
+  };
+
   var identityHFunction = function(options) {
     var font = options.font;
     var out = options.out;
@@ -109,10 +135,14 @@ import { toPDFName } from "../libs/pdfname.js";
       putStream({ data: cmapData, addLength1: true, objectId: cmap });
       out("endobj");
 
+      var baseFont = toPDFName(
+        embeddedFontName(font, font.metadata.glyIdsUsed)
+      );
+
       var fontDescriptor = newObject();
       out("<<");
       out("/Type /FontDescriptor");
-      out("/FontName /" + toPDFName(font.fontName));
+      out("/FontName /" + baseFont);
       out("/FontFile2 " + fontTable + " 0 R");
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
       out("/Flags " + font.metadata.flags);
@@ -127,7 +157,7 @@ import { toPDFName } from "../libs/pdfname.js";
       var DescendantFont = newObject();
       out("<<");
       out("/Type /Font");
-      out("/BaseFont /" + toPDFName(font.fontName));
+      out("/BaseFont /" + baseFont);
       out("/FontDescriptor " + fontDescriptor + " 0 R");
       out("/W " + jsPDF.API.PDFObject.convert(widths));
       out("/CIDToGIDMap /Identity");
@@ -137,7 +167,9 @@ import { toPDFName } from "../libs/pdfname.js";
       out("<<");
       out("/Supplement 0");
       out("/Registry (Adobe)");
-      out("/Ordering (" + font.encoding + ")");
+      // The character collection is Adobe-Identity; Identity-H is the name of
+      // the CMap (the encoding), not of a collection.
+      out("/Ordering (Identity)");
       out(">>");
       out(">>");
       out("endobj");
@@ -147,7 +179,7 @@ import { toPDFName } from "../libs/pdfname.js";
       out("/Type /Font");
       out("/Subtype /Type0");
       out("/ToUnicode " + cmap + " 0 R");
-      out("/BaseFont /" + toPDFName(font.fontName));
+      out("/BaseFont /" + baseFont);
       out("/Encoding /" + font.encoding);
       out("/DescendantFonts [" + DescendantFont + " 0 R]");
       out(">>");
@@ -197,9 +229,10 @@ import { toPDFName } from "../libs/pdfname.js";
       out("/StemV " + font.metadata.stemV);
       out("/Type /FontDescriptor");
       out("/FontFile2 " + fontTable + " 0 R");
-      out("/Flags 96");
+      // This path embeds the whole font file, so its name takes no subset tag.
+      out("/Flags " + font.metadata.flags);
       out("/FontBBox " + jsPDF.API.PDFObject.convert(font.metadata.bbox));
-      out("/FontName /" + toPDFName(font.fontName));
+      out("/FontName /" + toPDFName(embeddedFontName(font)));
       out("/ItalicAngle " + font.metadata.italicAngle);
       out("/Ascent " + font.metadata.ascender);
       out(">>");
@@ -214,7 +247,7 @@ import { toPDFName } from "../libs/pdfname.js";
         "<</Subtype/TrueType/Type/Font/ToUnicode " +
           cmap +
           " 0 R/BaseFont/" +
-          toPDFName(font.fontName) +
+          toPDFName(embeddedFontName(font)) +
           "/FontDescriptor " +
           fontDescriptor +
           " 0 R" +
