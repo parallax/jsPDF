@@ -34,17 +34,17 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
-    "fflate": "^0.8.1",
+    "fflate": "^0.8.3",
     "fast-png": "^6.2.0"
   },
   "optionalDependencies": {
     "canvg": "^3.0.11",
     "core-js": "^3.6.0",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.4.17",
     "html2canvas": "^1.0.0-rc.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.4",
+    "@babel/core": "^7.29.7",
     "@babel/plugin-transform-runtime": "^7.14.5",
     "@babel/preset-env": "^7.10.4",
     "@rollup/plugin-babel": "^5.3.0",
@@ -56,9 +56,8 @@
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
     "chalk": "^4.1.0",
-    "codeclimate-test-reporter": "^0.5.1",
     "core-js": "^3.33.0",
-    "diff": "^4.0.2",
+    "diff": "^5.2.0",
     "docdash": "^1.2.0",
     "eslint": "^7.4.0",
     "eslint-plugin-jasmine": "^4.1.1",
@@ -67,7 +66,7 @@
     "jasmine": "3.5.0",
     "jasmine-core": "3.5.0",
     "jasmine-expect": "4.0.3",
-    "jsdoc": "^3.6.3",
+    "jsdoc": "^4.0.5",
     "karma": "6.4.4",
     "karma-babel-preprocessor": "8.0.1",
     "karma-chrome-launcher": "3.1.0",
@@ -78,22 +77,20 @@
     "karma-jasmine-matchers": "4.0.2",
     "karma-mocha-reporter": "2.2.5",
     "karma-rollup-preprocessor": "^7.0.7",
-    "karma-typescript": "^5.5.4",
     "karma-verbose-reporter": "0.0.6",
     "local-web-server": "^5.4.0",
     "log-utils": "^1.0.0",
-    "markdown": "0.5.0",
     "preprocess": "^3.2.0",
     "prettier": "^1.19.1",
     "regenerator-runtime": "^0.13.5",
     "requirejs": "^2.3.6",
     "rollup": "^2.18.2",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-license": "^2.1.0",
+    "rollup-plugin-license": "^3.7.1",
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-preprocess": "0.0.4",
     "typescript": "^5.6.2",
-    "yarpm": "^0.2.1"
+    "yarpm": "^1.2.0"
   },
   "scripts": {
     "start": "ws",
@@ -101,7 +98,7 @@
     "version": "yarpm run build && yarpm run generate-docs && git add -A dist docs",
     "pretest": "yarpm run build",
     "test": "yarpm run test-node && yarpm run test-ci",
-    "test-ci": "karma start test/unit/karma.conf.js --browsers=ChromeHeadless --single-run --verbose && for a in coverage/*; do codeclimate-test-reporter < \\\"$a/lcov.info\\\"; break; done",
+    "test-ci": "karma start test/unit/karma.conf.js --browsers=ChromeHeadless --single-run --verbose",
     "test-local": "yarpm run test-unit && yarpm run test-node && yarpm run test-amd && yarpm run test-esm && yarpm run test-globals && yarpm run test-typescript && yarpm run test-webworker",
     "test-unit": "karma start test/unit/karma.conf.js --single-run",
     "test-amd": "karma start test/deployment/amd/karma.conf.js --single-run",
@@ -119,5 +116,42 @@
   },
   "browserslist": [
     "last 2 versions"
-  ]
+  ],
+  "overrides": {
+    "@babel/core": "^7.29.7",
+    "@tootallnate/once": "^2.0.1",
+    "ajv": "^6.14.0",
+    "body-parser": "^1.20.8",
+    "brace-expansion": "^1.1.21",
+    "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.0",
+    "karma": {
+      "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.0"
+    },
+    "browserslist": "^4.29.3",
+    "chokidar": "^4.0.3",
+    "cross-spawn": "^7.0.6",
+    "dompurify": "^3.4.17",
+    "engine.io": "^6.6.11",
+    "fflate": "^0.8.3",
+    "flatted": "^3.3.3",
+    "follow-redirects": "^1.16.1",
+    "js-yaml": "^4.1.0",
+    "koa": "^2.16.4",
+    "linkify-it": "^5.0.2",
+    "lodash": "^4.18.1",
+    "markdown-it": "^14.3.1",
+    "moment": "^2.31.0",
+    "morgan": "^1.12.1",
+    "pbkdf2": "^3.1.7",
+    "picomatch": "^2.3.2",
+    "qs": "^6.16.0",
+    "serialize-javascript": "^7.0.5",
+    "socket.io-parser": "^4.2.7",
+    "sprintf-js": "^1.1.3",
+    "tmp": "^0.2.6",
+    "tough-cookie": "^4.1.3",
+    "underscore": "^1.13.8",
+    "uuid": "^11.1.1",
+    "ws": "^8.21.0"
+  }
 }
