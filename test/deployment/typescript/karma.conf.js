@@ -8,7 +8,7 @@ module.exports = config => {
   config.set({
     ...karmaConfig,
 
-    frameworks: [...karmaConfig.frameworks, "karma-typescript"],
+    frameworks: [...karmaConfig.frameworks],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: "../../..",
