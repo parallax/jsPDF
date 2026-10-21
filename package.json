@@ -67,7 +67,7 @@
     "jasmine": "3.5.0",
     "jasmine-core": "3.5.0",
     "jasmine-expect": "4.0.3",
-    "jsdoc": "^3.6.3",
+    "jsdoc": "^4.0.5",
     "karma": "6.4.4",
     "karma-babel-preprocessor": "8.0.1",
     "karma-chrome-launcher": "3.1.0",
