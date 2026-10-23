@@ -379,6 +379,7 @@ declare module "jspdf" {
   export interface Context2d {
     autoPaging: boolean;
     margin: number[];
+    direction: "ltr" | "rtl" | "inherit";
     fillStyle: string | Gradient;
     filter: string;
     font: string;

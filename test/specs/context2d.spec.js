@@ -812,4 +812,66 @@ describe("Context2D: standard tests", () => {
     // The test passes if no errors are thrown during font changes
     expect(true).toBe(true);
   });
+
+  // The text of a fillText() call, in the order its glyphs are painted.
+  // A PDF paints glyphs left to right, so right-to-left words must be
+  // written reversed. Standard fonts write every character as two bytes
+  // once the text has characters above U+00FF.
+  function paintedText(doc, text) {
+    const writeArray = [];
+    doc.__private__.setCustomOutputDestination(writeArray);
+    doc.context2d.fillText(text, 10, 10);
+    const bytes = /\((.*)\) Tj/.exec(writeArray.join("\n"))[1];
+    let painted = "";
+    for (let i = 0; i < bytes.length; i += 2) {
+      painted += String.fromCharCode(
+        (bytes.charCodeAt(i) << 8) | bytes.charCodeAt(i + 1)
+      );
+    }
+    return painted;
+  }
+
+  it("context2d: fillText paints right-to-left text in visual order", () => {
+    const painted = (text, direction) => {
+      const doc = new jsPDF();
+      if (direction) {
+        doc.context2d.direction = direction;
+      }
+      return paintedText(doc, text);
+    };
+
+    expect(painted("שלום", "rtl")).toEqual("םולש");
+    expect(painted("פרק 3: מבוא", "rtl")).toEqual("אובמ :3 קרפ");
+    expect(painted("שלום abc", "rtl")).toEqual("abc םולש");
+    expect(painted("abc שלום", "ltr")).toEqual("abc םולש");
+    // "inherit", the default, works like "ltr" (a canvas outside a document)
+    expect(painted("שלום abc")).toEqual("םולש abc");
+  });
+
+  it("context2d: fillText keeps Arabic in visual order", () => {
+    const doc = new jsPDF();
+    doc.context2d.direction = "rtl";
+    // "سلام", shaped by the Arabic plugin: seen, lam-alef, meem, painted last
+    // letter first
+    expect(paintedText(doc, "سلام")).toEqual("ﻡﻼﺳ");
+  });
+
+  it("context2d: fillText is not reversed again by setR2L", () => {
+    const doc = new jsPDF();
+    doc.setR2L(true);
+    doc.context2d.direction = "rtl";
+    expect(paintedText(doc, "שלום")).toEqual("םולש");
+  });
+
+  it("context2d: direction is validated and kept by save() and restore()", () => {
+    const ctx = new jsPDF().context2d;
+    expect(ctx.direction).toEqual("inherit");
+    ctx.direction = "rtl";
+    ctx.save();
+    ctx.direction = "ltr";
+    ctx.restore();
+    expect(ctx.direction).toEqual("rtl");
+    ctx.direction = "up";
+    expect(ctx.direction).toEqual("rtl");
+  });
 });

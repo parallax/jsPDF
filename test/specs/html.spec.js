@@ -403,4 +403,28 @@ describe("Module: html", () => {
     }
     comparePdf(doc.output(), "html-margin-page-break-slice.pdf", "html");
   });
+
+  it("paints right-to-left words in visual order", async () => {
+    const doc = await render('<div dir="rtl">שלום עולם</div>');
+
+    // Every string the page paints, two bytes per character (standard
+    // fonts write characters above U+00FF that way).
+    const painted = [];
+    const re = /\((.*?)\) Tj/g;
+    let match;
+    while ((match = re.exec(doc.output())) !== null) {
+      let text = "";
+      for (let i = 0; i < match[1].length; i += 2) {
+        text += String.fromCharCode(
+          (match[1].charCodeAt(i) << 8) | match[1].charCodeAt(i + 1)
+        );
+      }
+      painted.push(text.trim());
+    }
+
+    // A PDF paints glyphs left to right, so each word is painted last
+    // letter first.
+    expect(painted).toContain("םולש");
+    expect(painted).toContain("םלוע");
+  });
 });
