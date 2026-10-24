@@ -37,6 +37,7 @@ import {
     this.font = ctx.font || "10px sans-serif";
     this.textBaseline = ctx.textBaseline || "alphabetic";
     this.textAlign = ctx.textAlign || "left";
+    this.direction = ctx.direction || "inherit";
     this.lineWidth = ctx.lineWidth || 1;
     this.lineJoin = ctx.lineJoin || "miter";
     this.lineCap = ctx.lineCap || "butt";
@@ -445,6 +446,25 @@ import {
       set: function(value) {
         if (["right", "end", "center", "left", "start"].indexOf(value) !== -1) {
           this.ctx.textAlign = value;
+        }
+      }
+    });
+
+    /**
+     * The base direction of drawn text: "ltr", "rtl" or "inherit".
+     * fillText() and strokeText() take text in logical order, as on a canvas.
+     * "inherit" works like "ltr".
+     *
+     * @name direction
+     * @default inherit
+     */
+    Object.defineProperty(this, "direction", {
+      get: function() {
+        return this.ctx.direction;
+      },
+      set: function(value) {
+        if (["ltr", "rtl", "inherit"].indexOf(value) !== -1) {
+          this.ctx.direction = value;
         }
       }
     });
@@ -2284,6 +2304,19 @@ import {
         break;
     }
 
+    // Like a canvas, fillText() and strokeText() take text in logical order.
+    // A PDF paints glyphs left to right, so the bidi engine has to turn the
+    // text into visual order, or right-to-left scripts come out reversed.
+    // R2L stays off: it would reverse the text before the bidi engine runs.
+    var bidiOptions = {
+      isInputVisual: false,
+      isInputRtl: this.ctx.direction === "rtl",
+      isOutputVisual: true,
+      isOutputRtl: false,
+      isSymmetricSwapping: true,
+      R2L: false
+    };
+
     var textDimensions = this.pdf.getTextDimensions(options.text);
     var yBaseLine = getBaseline.call(this, options.y);
     var yBottom = getTextBottom.call(this, yBaseLine);
@@ -2408,11 +2441,14 @@ import {
               croppedText,
               baseLineRectOnPage.x,
               baseLineRectOnPage.y,
-              {
-                angle: options.angle,
-                align: textAlign,
-                renderingMode: options.renderingMode
-              }
+              Object.assign(
+                {
+                  angle: options.angle,
+                  align: textAlign,
+                  renderingMode: options.renderingMode
+                },
+                bidiOptions
+              )
             );
 
             if (needsClipping) {
@@ -2442,12 +2478,20 @@ import {
         oldLineWidth = this.lineWidth;
         this.lineWidth = oldLineWidth * options.scale;
       }
-      this.pdf.text(options.text, pt.x + this.posX, pt.y + this.posY, {
-        angle: options.angle,
-        align: textAlign,
-        renderingMode: options.renderingMode,
-        maxWidth: options.maxWidth
-      });
+      this.pdf.text(
+        options.text,
+        pt.x + this.posX,
+        pt.y + this.posY,
+        Object.assign(
+          {
+            angle: options.angle,
+            align: textAlign,
+            renderingMode: options.renderingMode,
+            maxWidth: options.maxWidth
+          },
+          bidiOptions
+        )
+      );
 
       if (options.scale >= 0.01) {
         this.pdf.setFontSize(oldSize);
