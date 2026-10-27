@@ -34,4 +34,17 @@ describe("Module: JPEGSupport", () => {
 
     comparePdf(doc.output(), "jpg.pdf", "addimage");
   });
+
+  it("reads the size of a JPEG that has the DHT segment before the SOF segment", () => {
+    // 40x30 RGB image with the DHT segments (0xc4) before the SOF segment
+    var jpg =
+      "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/xAAXAAEBAQEAAAAAAAAAAAAAAAAAAwYH/8QAGRABAAIDAAAAAAAAAAAAAAAAAAEDFFOS/8QAFwEBAQEBAAAAAAAAAAAAAAAAAAcFCP/EABwRAAEDBQAAAAAAAAAAAAAAAAABFJECAwRSU//AABEIAB4AKAMBIgACEQEDEQH/2gAMAwEAAhEDEQA/AOVCuNfpt4kxr9NvEqe8x+lMoYbW/osKSFca/TbxJjX6beJHmP0plA1v6LCkhXGv028SDzH6Uyga39FhTTgOfi3gAAAAf//Z";
+
+    const doc = new jsPDF();
+    const properties = doc.getImageProperties(jpg);
+
+    expect(properties.width).toEqual(40);
+    expect(properties.height).toEqual(30);
+    expect(properties.colorSpace).toEqual("DeviceRGB");
+  });
 });
