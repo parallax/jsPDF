@@ -17,16 +17,18 @@ import { jsPDF } from "../jspdf.js";
   "use strict";
 
   /**
-   * 0xc0 (SOF) Huffman  - Baseline DCT
-   * 0xc1 (SOF) Huffman  - Extended sequential DCT
+   * Start of frame markers, which carry the image size. 0xc4 (DHT) lies in
+   * the same range but holds Huffman tables and may come before the frame.
+   *
+   * 0xc0 Baseline DCT (SOF0)
+   * 0xc1 Extended sequential DCT (SOF1)
    * 0xc2 Progressive DCT (SOF2)
-   * 0xc3 Spatial (sequential) lossless (SOF3)
-   * 0xc4 Differential sequential DCT (SOF5)
-   * 0xc5 Differential progressive DCT (SOF6)
-   * 0xc6 Differential spatial (SOF7)
-   * 0xc7
+   * 0xc3 Lossless (SOF3)
+   * 0xc5 Differential sequential DCT (SOF5)
+   * 0xc6 Differential progressive DCT (SOF6)
+   * 0xc7 Differential lossless (SOF7)
    */
-  var markers = [0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7];
+  var markers = [0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7];
 
   //takes a string imgData containing the raw bytes of
   //a jpeg image and returns [width, height]
