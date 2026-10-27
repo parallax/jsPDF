@@ -21,12 +21,13 @@ import { jsPDF } from "../jspdf.js";
    * 0xc1 (SOF) Huffman  - Extended sequential DCT
    * 0xc2 Progressive DCT (SOF2)
    * 0xc3 Spatial (sequential) lossless (SOF3)
-   * 0xc4 Differential sequential DCT (SOF5)
-   * 0xc5 Differential progressive DCT (SOF6)
-   * 0xc6 Differential spatial (SOF7)
-   * 0xc7
+   * 0xc5 Differential sequential DCT (SOF5)
+   * 0xc6 Differential progressive DCT (SOF6)
+   * 0xc7 Differential spatial (SOF7)
+   *
+   * 0xc4 is the DHT (Huffman table) marker, not a frame header.
    */
-  var markers = [0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7];
+  var markers = [0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7];
 
   //takes a string imgData containing the raw bytes of
   //a jpeg image and returns [width, height]
