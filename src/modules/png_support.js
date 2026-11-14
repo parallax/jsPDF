@@ -479,7 +479,7 @@ function processAlphaPNG(decodedPng) {
 }
 
 function processOpaquePNG(decodedPng) {
-  const { data, channels } = decodedPng;
+  const { data, channels, transparency } = decodedPng;
   const colorSpace = channels === 1 ? "DeviceGray" : "DeviceRGB";
   const colorsPerPixel = colorSpace === "DeviceGray" ? 1 : 3;
 
@@ -490,7 +490,11 @@ function processOpaquePNG(decodedPng) {
     colorBytes = data;
   }
 
-  return { colorSpace, colorsPerPixel, colorBytes, needSMask: false };
+  // A tRNS chunk on a grayscale or RGB image defines a single color key,
+  // which maps directly onto a PDF color key mask
+  const mask = transparency ? Array.from(transparency) : undefined;
+
+  return { colorSpace, colorsPerPixel, colorBytes, needSMask: false, mask };
 }
 
 function convertUint16ArrayToUint8Array(data) {
